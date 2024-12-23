@@ -36,9 +36,14 @@ a 'portable' dictionary of the class's default parameters.
 * `register_parameterizable_class(cls)` - registers a class as parameterizable.
 This is required for `get_object_from_portable_dict()` to work 
 with objects of the class.
-* `get_object_from_portable_dict()` - recreates an object from
+* `get_object_from_portable_params()` - recreates an object from
 a 'portable' dictionary. Only works for classes that were previously 
 registered with `register_parameterizable_class()`.
+
+## Short Example
+
+Visit this Colab notebook for a short demonstration of the package usage:
+[https://colab.research.google.com/drive/1myLzvM2g43_bLhEMazb4a4OZx8lsPrzd](https://colab.research.google.com/drive/1myLzvM2g43_bLhEMazb4a4OZx8lsPrzd)
 
 ## How To Get It?
 
