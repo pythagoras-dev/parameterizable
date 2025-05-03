@@ -103,7 +103,14 @@ class ParameterizableClass:
         Default parameters are the values that are used to
         configure an object if no arguments are explicitly passed to
         the .__init__() method.
+
+        Note: This implementation creates an instance of the class to get
+        default parameters. Subclasses can override this method to provide
+        default parameters without creating an instance, which is recommended
+        if the __init__ method has side effects.
         """
+        # This is a safe fallback implementation that creates an instance
+        # Subclasses should override this method if __init__ has side effects
         params = cls().get_params()
         return params
 
