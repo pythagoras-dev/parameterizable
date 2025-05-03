@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="parameterizable"
-    ,version="0.2.4"
+    ,version="0.2.5"
     ,author="Vlad (Volodymyr) Pavlov"
     ,author_email="vlpavlov@ieee.org"
     ,description= "Library for work with parameterizable classes."
