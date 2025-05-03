@@ -11,7 +11,6 @@ and for converting the parameters to and from a portable dictionary
 """
 
 
-
 from typing import Any
 
 CLASSNAME_PARAM_KEY = "__class__.__name__"
@@ -170,12 +169,17 @@ def get_object_from_portable_params(portable_params: dict[str, Any]) -> Any:
     method of a ParameterizableClass object.
     """
     # Verify we have a dictionary with either class name or builtin type key
-    assert isinstance(portable_params, dict)
-    assert {CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY} & set(portable_params)
+    if not isinstance(portable_params, dict):
+        raise TypeError("portable_params must be a dictionary")
+    if not {CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY} & set(portable_params):
+        raise ValueError(f"portable_params must contain either"
+                         f" {CLASSNAME_PARAM_KEY} or {BUILTIN_TYPE_KEY}")
 
     # Special case: If this is a dictionary representing a builtin type (like int, str)
     if BUILTIN_TYPE_KEY in portable_params:
-        assert len(portable_params) == 1  # Should only contain the type key
+        if len(portable_params) != 1:
+            raise ValueError(f"Dictionary with {BUILTIN_TYPE_KEY} "
+                             "should only contain the type key")
         type_name = portable_params[BUILTIN_TYPE_KEY]
         return _supported_builtin_type_names[type_name]  # Return the actual type object
 
@@ -299,12 +303,19 @@ def _smoketest_parameterizable_class(cls: Any):
     This is an internal testing function used to validate the correctness
     of parameterizable class implementations.
     """
-    assert is_parameterizable(cls)
+    if not is_parameterizable(cls):
+        raise TypeError(f"Class {cls.__name__} is not parameterizable")
     default_params = cls.get_default_params()
     params = cls().get_params()
-    assert isinstance(default_params, dict)
-    assert isinstance(params, dict)
-    assert default_params == params  # Default params should match params of a new instance
+    if not isinstance(default_params, dict):
+        raise TypeError(f"get_default_params() must return a dictionary,"
+                        " got {type(default_params)} instead")
+    if not isinstance(params, dict):
+        raise TypeError(f"get_params() must return a dictionary,"
+                        " got {type(params)} instead")
+    if default_params != params:
+        raise ValueError("Default parameters do not match "
+                         "parameters of a new instance")
     return True
 
 
