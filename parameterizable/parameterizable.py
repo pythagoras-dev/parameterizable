@@ -62,10 +62,23 @@ class ParameterizableClass:
             elif isinstance(value, type) and value in _supported_builtin_types:
                 portable_params[key] = {
                     BUILTIN_TYPE_KEY: _supported_builtin_types[value]}
-            # Case 3: Parameter is a basic type instance (like 5, "hello") - keep as is
+            # Case 3: Parameter is a collection (list ot dict, tuples are not supported) -
+            # process its elements
+            elif isinstance(value, list):
+                portable_params[key] = [
+                    item.__get_portable_params__() if is_parameterizable(type(item))
+                    else item
+                    for item in value
+                ]
+            elif isinstance(value, dict):
+                portable_params[key] = {
+                    k: v.__get_portable_params__() if is_parameterizable(type(v)) else v
+                    for k, v in value.items()
+                }
+            # Case 4: Parameter is a basic type instance (like 5, "hello") - keep as is
             elif type(value) in _supported_builtin_types:
                 continue
-            # Case 4: Unsupported type - raise error
+            # Case 5: Unsupported type - raise error
             else:
                 raise ValueError(f"Unsupported type: {type(value)}")
         return portable_params
@@ -81,8 +94,42 @@ class ParameterizableClass:
         They are returned as a 'portable' dictionary: a dictionary that only
         contains basic types and portable sub-dictionaries.
         """
-        params = cls().__get_portable_params__()
-        return params
+        # Get default parameters and convert to portable dictionary
+        default_params = cls.get_default_params()
+
+        # Create a portable dictionary with class name
+        portable_params = default_params.copy()
+        portable_params[CLASSNAME_PARAM_KEY] = cls.__name__
+
+        # Process each parameter based on its type (similar to __get_portable_params__)
+        for key, value in list(portable_params.items()):
+            # Case 1: Parameter is itself a parameterizable object - recursively convert it
+            if is_parameterizable(type(value)):
+                portable_params[key] = value.__get_portable_params__()
+            # Case 2: Parameter is a Python type object (like int, str) - store its name
+            elif isinstance(value, type) and value in _supported_builtin_types:
+                portable_params[key] = {
+                    BUILTIN_TYPE_KEY: _supported_builtin_types[value]}
+            # Case 3: Parameter is a collection (list, dict, etc.) - process its elements
+            elif isinstance(value, (list, tuple)):
+                portable_params[key] = [
+                    item.__get_portable_params__() if is_parameterizable(type(item))
+                    else item
+                    for item in value
+                ]
+            elif isinstance(value, dict):
+                portable_params[key] = {
+                    k: v.__get_portable_params__() if is_parameterizable(type(v)) else v
+                    for k, v in value.items()
+                }
+            # Case 4: Parameter is a basic type instance (like 5, "hello") - keep as is
+            elif type(value) in _supported_builtin_types:
+                continue
+            # Case 5: Unsupported type - raise error
+            else:
+                raise ValueError(f"Unsupported type: {type(value)}")
+
+        return portable_params
 
     def get_params(self) -> dict[str, Any]:
         """ Get the parameters of the object as a dictionary.
@@ -144,10 +191,28 @@ def get_object_from_portable_params(portable_params: dict[str, Any]) -> Any:
             # Skip the class name key as it's not a parameter for __init__
             continue
         elif (isinstance(value, dict) and
-              set(value) & {CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY}):
+              {CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY} & set(value)):
             # This is a nested portable dictionary (either another parameterizable object
             # or a builtin type) - recursively convert it back to an object
             params[key] = get_object_from_portable_params(value)
+        elif isinstance(value, list):
+            # This is a list - process its elements recursively
+            params[key] = [
+                get_object_from_portable_params(item) 
+                if isinstance(item, dict) and 
+                   ({CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY} & set(item))
+                else item
+                for item in value
+            ]
+        elif isinstance(value, dict):
+            # This is a dictionary - process its values recursively
+            params[key] = {
+                k: get_object_from_portable_params(v) 
+                if isinstance(v, dict) and 
+                   ({CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY} & set(v))
+                else v
+                for k, v in value.items()
+            }
         else:
             # This is a basic type value - use it directly
             params[key] = value
