@@ -1,7 +1,7 @@
 """ Package with basic infrastructure for parameterizable classes.
 
 This package provides the functionality for work with parameterizable classes:
-classes that have (hyper) parameters which define object's configuration,
+classes that have (hyper) parameters which define an object's configuration,
 but not its internal contents or data. Such parameters are typically
 passed to the .__init__() method.
 
@@ -25,14 +25,14 @@ class ParameterizableClass:
     """ Base class for parameterizable classes.
 
     This class provides the basic functionality for parameterizable classes:
-    classes that have (hyper) parameters which define object's configuration,
+    classes that have (hyper) parameters which define an object's configuration
     and which are typically passed to the .__init__() method.
-    The class provides an API for getting parameters' values from an object,
+    The class provides an API for getting parameters' values from an object
     and for converting the parameters to and from a portable dictionary
     (a dictionary that only contains basic types
     and portable sub-dictionaries).
 
-    This class is not meant to be used directly, but to be subclassed
+    This class is not meant to be used directly but to be subclassed
     by classes that need to be parameterizable.
     """
     def __init__(self):
@@ -150,13 +150,11 @@ class ParameterizableClass:
         configure an object if no arguments are explicitly passed to
         the .__init__() method.
 
-        Note: This implementation creates an instance of the class to get
-        default parameters. Subclasses can override this method to provide
-        default parameters without creating an instance, which is recommended
-        if the __init__ method has side effects.
+        This is a safe fallback implementation creates an instance of the class
+        to get default parameters. Subclasses can override this method
+        to provide default parameters without creating an instance, which is
+        recommended if the __init__ method has side effects.
         """
-        # This is a safe fallback implementation that creates an instance
-        # Subclasses should override this method if __init__ has side effects
         params = cls().get_params()
         return params
 

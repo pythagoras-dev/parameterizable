@@ -12,12 +12,14 @@ are typically passed to the `.__init__()` method when an object is created.
 `parameterizable` allows to:
 * Get parameters of an object as a dictionary.
 * Get default parameters of a class as a dictionary.
-* Serialize object's parameters to a 'portable' dictionary, that only 
+* Serialize an object's parameters to a 'portable' dictionary that only 
 contains basic (builtin) types and portable sub-dictionaries. 
 * Recreate an object from its parameters, stored in a 'portable' dictionary.
 
 ## Usage
 Inherit from `ParameterizableClass` class and define method `.get_params()`. 
+If the class has default parameters, and its `.__init__()` method 
+has side effects, you should also define method `.get_default_params()`.
 
 ## Key Classes, Functions, and Constants
 
@@ -25,9 +27,9 @@ Inherit from `ParameterizableClass` class and define method `.get_params()`.
 You should derive your class from it if you want to 
 use the functionality of this package.
 * `ParameterizableClass.get_params()` - a method to be defined in a subclass,
-returns the current parameters of an object as a dictionary.
+returns the current parameters of an object as a regular dictionary.
 * `ParameterizableClass.get_default_params()` - returns the default parameters
-of the class as a dictionary.
+of the class as a regular dictionary.
 * `ParameterizableClass.__get_portable_params__()` - returns a 'portable'
 dictionary of the object's parameters.
 * `ParameterizableClass.__get_portable_default_params__()` - returns 
