@@ -10,7 +10,7 @@ and for converting the parameters to and from a portable dictionary
 (a dictionary that only contains basic types and portable sub-dictionaries).
 """
 
-from .parameterizable import (
+from src.parameterizable.parameterizable import (
     # Classes
     ParameterizableClass,
 

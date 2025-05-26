@@ -7,16 +7,13 @@ This module tests edge cases and advanced type handling functionality:
 - Edge cases like empty collections and special values
 """
 
-import pytest
-from parameterizable.parameterizable import (
+from parameterizable import (
     ParameterizableClass,
     get_object_from_portable_params,
-    CLASSNAME_PARAM_KEY,
     BUILTIN_TYPE_KEY,
-    _supported_builtin_types,
     _known_parameterizable_classes
 )
-from parameterizable.tests.fixtures import (
+from parameterizable import (
     clear_registry,
     basic_parameterizable_class
 )

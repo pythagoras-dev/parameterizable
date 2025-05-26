@@ -1,10 +1,9 @@
-from parameterizable.parameterizable import *
-from parameterizable.parameterizable import _known_parameterizable_classes
-from parameterizable.parameterizable import CLASSNAME_PARAM_KEY
-import pytest
+from parameterizable import *
+from parameterizable import _known_parameterizable_classes
+from parameterizable import CLASSNAME_PARAM_KEY
 
 # Import the test class from test_basic to reuse it
-from parameterizable.tests.test_basic import GoodPameterizable
+from parameterizable import GoodPameterizable
 
 
 def test_nested_parameterizable_objects():

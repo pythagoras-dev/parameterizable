@@ -55,7 +55,15 @@ The source code is hosted on GitHub at:
 Binary installers for the latest released version are available at the Python package index at:
 [https://pypi.org/project/parameterizable](https://pypi.org/project/parameterizable)
 
-        pip install parameterizable
+Using uv :
+```
+uv install parameterizable
+```
+
+Using pip (legacy alternative to uv):
+```
+pip install parameterizable
+```
 
 ## Dependencies
 

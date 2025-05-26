@@ -7,12 +7,12 @@ This module tests:
 """
 
 import pytest
-from parameterizable.parameterizable import (
+from parameterizable import (
     ParameterizableClass,
     get_object_from_portable_params,
     CLASSNAME_PARAM_KEY
 )
-from parameterizable.tests.fixtures import (
+from parameterizable import (
     clear_registry,
     basic_parameterizable_class,
     nested_parameterizable_class

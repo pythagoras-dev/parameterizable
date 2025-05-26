@@ -1,6 +1,5 @@
-from parameterizable.parameterizable import *
-from parameterizable.parameterizable import _known_parameterizable_classes
-import pytest
+from parameterizable import *
+from parameterizable import _known_parameterizable_classes
 
 
 def test_inheritance_and_overriding():

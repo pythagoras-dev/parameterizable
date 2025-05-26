@@ -5,10 +5,9 @@ to reduce code duplication and improve test maintainability.
 """
 
 import pytest
-from parameterizable.parameterizable import (
+from parameterizable import (
     ParameterizableClass, 
     _known_parameterizable_classes,
-    register_parameterizable_class,
     Any
 )
 

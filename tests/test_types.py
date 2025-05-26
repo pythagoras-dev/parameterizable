@@ -1,6 +1,5 @@
-from parameterizable.parameterizable import *
-from parameterizable.parameterizable import _known_parameterizable_classes
-from parameterizable.parameterizable import CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY
+from parameterizable import *
+from parameterizable import _known_parameterizable_classes
 import pytest
 
 
