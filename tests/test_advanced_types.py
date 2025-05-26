@@ -7,20 +7,21 @@ This module tests edge cases and advanced type handling functionality:
 - Edge cases like empty collections and special values
 """
 
-from parameterizable import (
+from src.parameterizable.parameterizable import (
     ParameterizableClass,
     get_object_from_portable_params,
     BUILTIN_TYPE_KEY,
     _known_parameterizable_classes
 )
-from parameterizable import (
-    clear_registry,
-    basic_parameterizable_class
-)
+from tests.fixtures import basic_parameterizable_class
 
 
 def test_type_objects_as_parameters(basic_parameterizable_class):
     """Test that type objects (like int, str) can be used as parameters."""
+
+    # Ensure the registry is clear
+    _known_parameterizable_classes.clear()
+
     # Create an object with type objects as parameters
     obj = basic_parameterizable_class(param1=10, param2="test", param3=dict)
 
@@ -41,7 +42,8 @@ def test_type_objects_as_parameters(basic_parameterizable_class):
 
 def test_all_supported_builtin_types():
     """Test all supported built-in types."""
-    # Ensure registry is clear
+
+    # Ensure the registry is clear
     _known_parameterizable_classes.clear()
 
     class AllTypesClass(ParameterizableClass):
@@ -106,7 +108,8 @@ def test_all_supported_builtin_types():
 
 def test_complex_nested_collections():
     """Test complex nested collections like lists of lists and dicts of dicts."""
-    # Ensure registry is clear
+
+    # Ensure the registry is clear
     _known_parameterizable_classes.clear()
 
     class ComplexCollectionsClass(ParameterizableClass):
@@ -154,7 +157,8 @@ def test_complex_nested_collections():
 
 def test_edge_cases():
     """Test edge cases like empty collections and special values."""
-    # Ensure registry is clear
+
+    # Ensure the registry is clear
     _known_parameterizable_classes.clear()
 
     class EdgeCasesClass(ParameterizableClass):

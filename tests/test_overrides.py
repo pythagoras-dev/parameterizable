@@ -1,6 +1,6 @@
-from parameterizable import *
-from parameterizable import _known_parameterizable_classes
-from parameterizable import CLASSNAME_PARAM_KEY
+from src.parameterizable.parameterizable import *
+from src.parameterizable.parameterizable import _known_parameterizable_classes
+from src.parameterizable.parameterizable import CLASSNAME_PARAM_KEY
 
 
 def test_override_get_default_params():

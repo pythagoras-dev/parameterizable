@@ -6,27 +6,14 @@ This module tests the fundamental functionality of parameterizable classes:
 - Object reconstruction from portable parameters
 """
 
-from parameterizable import *
-from parameterizable import _known_parameterizable_classes
-from parameterizable import _smoketest_parameterizable_class
-from parameterizable import CLASSNAME_PARAM_KEY
+from src.parameterizable.parameterizable import *
+from src.parameterizable.parameterizable import _known_parameterizable_classes
+from src.parameterizable.parameterizable import _smoketest_parameterizable_class
+from src.parameterizable.parameterizable import CLASSNAME_PARAM_KEY
+
+from tests.demo_types import GoodPameterizable, EvenBetterOne, EmptyClass
+
 import pytest
-from abc import *
-from parameterizable import clear_registry
-
-class GoodPameterizable(ABC, ParameterizableClass):
-    """A well-implemented parameterizable class for testing."""
-    def __init__(self, a: int = 10, b: str = "hello", c=int):
-        ParameterizableClass.__init__(self)
-        self.a = a
-        self.b = b
-        self.c = c
-
-    def get_params(self) -> dict[str, Any]:
-        """Get the parameters of the object."""
-        params = dict(a=self.a, b=self.b, c=self.c)
-        return params
-
 
 def test_good_class():
     """Test a properly implemented parameterizable class.
@@ -38,14 +25,14 @@ def test_good_class():
     4. Parameters can be serialized to a portable dictionary
     5. An object can be reconstructed from portable parameters
     """
-    # Ensure registry is clear
+    # Ensure the registry is clear
     _known_parameterizable_classes.clear()
 
-    # Test class recognition and smoketest
+    # Test class recognition and smoke-test
     assert is_parameterizable(GoodPameterizable)
     assert _smoketest_parameterizable_class(GoodPameterizable)
 
-    # The smoketest creates an instance which registers the class,
+    # The smoke-test creates an instance which registers the class,
     # so we need to clear the registry again
     _known_parameterizable_classes.clear()
 
@@ -78,18 +65,6 @@ def test_good_class():
     assert obj2.b == "Hi!"
     assert obj2.c == str
 
-class EvenBetterOne(GoodPameterizable):
-    """A subclass of GoodPameterizable that adds an additional parameter."""
-    def __init__(self, a: int = 10, b: str = "hello", c=int, d: float = 3.14):
-        GoodPameterizable.__init__(self, a, b, c)
-        self.d = d
-
-    def get_params(self) -> dict[str, Any]:
-        """Get the parameters of the object, including inherited ones."""
-        params = super().get_params()
-        params["d"] = self.d
-        return params
-
 def test_even_better_one():
     """Test a subclass of a parameterizable class.
 
@@ -98,7 +73,7 @@ def test_even_better_one():
     2. Parameter inheritance works correctly
     3. Objects can be serialized and reconstructed
     """
-    # Ensure registry is clear
+    # Ensure the registry is clear
     _known_parameterizable_classes.clear()
 
     # Test registration
@@ -128,10 +103,6 @@ def test_even_better_one():
     assert reconstructed.c == float
     assert reconstructed.d == 6.28
 
-
-class EmptyClass:
-    """A class that doesn't implement the parameterizable interface."""
-    pass
 
 def test_empty_class():
     """Test that non-parameterizable classes are correctly identified."""

@@ -3,14 +3,13 @@
 This module contains pytest fixtures that can be reused across test files
 to reduce code duplication and improve test maintainability.
 """
+from typing import Any
 
 import pytest
-from parameterizable import (
-    ParameterizableClass, 
-    _known_parameterizable_classes,
-    Any
+from src.parameterizable.parameterizable import (
+    ParameterizableClass
+    , _known_parameterizable_classes
 )
-
 
 @pytest.fixture(autouse=True)
 def clear_registry():

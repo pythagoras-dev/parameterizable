@@ -1,10 +1,12 @@
-from parameterizable import *
-from parameterizable import _known_parameterizable_classes
-from parameterizable import _smoketest_known_parameterizable_classes
+from src.parameterizable.parameterizable import *
+from src.parameterizable.parameterizable import (
+    _known_parameterizable_classes
+    , _smoketest_known_parameterizable_classes
+)
 import pytest
 
 # Import the test classes from test_basic to reuse them
-from parameterizable import GoodPameterizable, EvenBetterOne, EmptyClass
+from tests.demo_types import GoodPameterizable, EvenBetterOne, EmptyClass
 
 def test_is_registered():
     _known_parameterizable_classes.clear()
