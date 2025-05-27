@@ -18,7 +18,10 @@ from .parameterizable import (
     get_object_from_portable_params,
     is_parameterizable,
     register_parameterizable_class,
-    is_registered
+    is_registered,
+
+    # Constants
+    CLASSNAME_PARAM_KEY
 )
 
 __all__ = [
@@ -26,5 +29,6 @@ __all__ = [
     'get_object_from_portable_params',
     'is_parameterizable',
     'register_parameterizable_class',
-    'is_registered'
+    'is_registered',
+    'CLASSNAME_PARAM_KEY'
 ]
