@@ -57,7 +57,7 @@ Binary installers for the latest released version are available at the Python pa
 
 Using uv :
 ```
-uv install parameterizable
+uv add parameterizable
 ```
 
 Using pip (legacy alternative to uv):
