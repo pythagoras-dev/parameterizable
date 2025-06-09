@@ -37,9 +37,3 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/pythagoras-dev/parameterizable"
-
-
-#[tool.uv]
-# uv-specific configurations
-#exclude = ["dist", "build", "*.egg-info"]
-#packages = ["parameterizable"]
