@@ -7,8 +7,9 @@ This module tests the fundamental functionality of parameterizable classes:
 """
 
 from src.parameterizable.parameterizable import *
-from src.parameterizable.parameterizable import _known_parameterizable_classes
-from src.parameterizable.parameterizable import _smoketest_parameterizable_class
+from src.parameterizable.parameterizable import (
+    _known_parameterizable_classes, _smoketest_parameterizable_class,
+    _register_parameterizable_class)
 from src.parameterizable.parameterizable import CLASSNAME_PARAM_KEY
 
 from tests.demo_types import GoodPameterizable, EvenBetterOne, EmptyClass
@@ -38,7 +39,7 @@ def test_good_class():
 
     # Test registration
     assert not is_registered(GoodPameterizable)
-    register_parameterizable_class(GoodPameterizable)
+    _register_parameterizable_class(GoodPameterizable)
     assert is_registered(GoodPameterizable)
     assert len(_known_parameterizable_classes) == 1
 
@@ -110,7 +111,7 @@ def test_empty_class():
 
     # Test that attempting to register a non-parameterizable class raises an error
     with pytest.raises(ValueError, match="is not parameterizable"):
-        register_parameterizable_class(EmptyClass)
+        _register_parameterizable_class(EmptyClass)
 
     # Test with other non-parameterizable objects
     assert not is_parameterizable(None)

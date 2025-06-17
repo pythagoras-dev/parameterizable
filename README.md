@@ -12,8 +12,9 @@ are typically passed to the `.__init__()` method when an object is created.
 `parameterizable` allows to:
 * Get parameters of an object as a dictionary.
 * Get default parameters of a class as a dictionary.
-* Serialize an object's parameters to a 'portable' dictionary that only 
-contains basic (builtin) types and portable sub-dictionaries. 
+* Serialize an object's parameters to a 'portable' dictionary that 
+has sorted str keys and contains values with only basic (builtin) types 
+and portable sub-dictionaries. 
 * Recreate an object from its parameters, stored in a 'portable' dictionary.
 
 ## Usage

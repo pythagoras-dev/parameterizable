@@ -1,6 +1,7 @@
 from src.parameterizable.parameterizable import *
 from src.parameterizable.parameterizable import (
     _known_parameterizable_classes
+    , _register_parameterizable_class
     , _smoketest_known_parameterizable_classes
 )
 import pytest
@@ -20,7 +21,7 @@ def test_is_registered():
     _known_parameterizable_classes.clear()
 
     # Test direct registration
-    register_parameterizable_class(GoodPameterizable)
+    _register_parameterizable_class(GoodPameterizable)
     assert is_registered(GoodPameterizable)
 
     _known_parameterizable_classes.clear()
@@ -31,18 +32,18 @@ def test_register_parameterizable_class_errors():
 
     # Test registering a non-parameterizable class
     with pytest.raises(ValueError):
-        register_parameterizable_class(EmptyClass)
+        _register_parameterizable_class(EmptyClass)
 
     # Create a class with the same name as GoodPameterizable but different identity
     class GoodPameterizable:
         pass
 
     # Register the original GoodPameterizable
-    register_parameterizable_class(globals()["GoodPameterizable"])
+    _register_parameterizable_class(globals()["GoodPameterizable"])
 
     # Try to register the new class with the same name
     with pytest.raises(ValueError, match="is already registered with a different identity"):
-        register_parameterizable_class(GoodPameterizable)
+        _register_parameterizable_class(GoodPameterizable)
 
     _known_parameterizable_classes.clear()
 
@@ -51,8 +52,8 @@ def test_smoketest_known_parameterizable_classes():
     _known_parameterizable_classes.clear()
 
     # Register multiple parameterizable classes
-    register_parameterizable_class(GoodPameterizable)
-    register_parameterizable_class(EvenBetterOne)
+    _register_parameterizable_class(GoodPameterizable)
+    _register_parameterizable_class(EvenBetterOne)
 
     # Test that smoketest runs without errors
     _smoketest_known_parameterizable_classes()

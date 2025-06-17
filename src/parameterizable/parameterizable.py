@@ -7,7 +7,8 @@ passed to the .__init__() method.
 
 The package provides an API for getting parameters' values from an object,
 and for converting the parameters to and from a portable dictionary
-(a dictionary that only contains basic types and portable sub-dictionaries).
+(a dictionary with sorted str keys that only contains
+basic types and portable sub-dictionaries).
 """
 
 
@@ -36,7 +37,7 @@ class ParameterizableClass:
     by classes that need to be parameterizable.
     """
     def __init__(self):
-        register_parameterizable_class(type(self))
+        _register_parameterizable_class(type(self))
 
     def __get_portable_params__(self) -> dict[str, Any]:
         """ Get the parameters of an object as a portable dictionary.
@@ -45,8 +46,9 @@ class ParameterizableClass:
         configuration (but not its internal contents or data)
         plus information about its type.
 
-        They are returned as a 'portable' dictionary: a dictionary that only
-        contains basic types and portable sub-dictionaries.
+        They are returned as a 'portable' dictionary:
+        a dictionary with sorted str keys that only contain basic types
+        and portable sub-dictionaries as values.
         """
         # Start with the object's parameters and add a class name for reconstruction
         portable_params = self.get_params()
@@ -80,7 +82,9 @@ class ParameterizableClass:
             # Case 5: Unsupported type - raise error
             else:
                 raise ValueError(f"Unsupported type: {type(value)}")
-        return portable_params
+
+        sorted_portable_params = dict(sorted(portable_params.items()))
+        return sorted_portable_params
 
     @classmethod
     def __get_portable_default_params__(cls) -> dict[str, Any]:
@@ -128,7 +132,8 @@ class ParameterizableClass:
             else:
                 raise ValueError(f"Unsupported type: {type(value)}")
 
-        return portable_params
+        sorted_portable_params = dict(sorted(portable_params.items()))
+        return sorted_portable_params
 
     def get_params(self) -> dict[str, Any]:
         """ Get the parameters of the object as a dictionary.
@@ -150,13 +155,14 @@ class ParameterizableClass:
         configure an object if no arguments are explicitly passed to
         the .__init__() method.
 
-        This is a safe fallback implementation creates an instance of the class
-        to get default parameters. Subclasses can override this method
+        This is a safe fallback implementation that creates an instance of
+        the class to get default parameters. Subclasses can override this method
         to provide default parameters without creating an instance, which is
         recommended if the __init__ method has side effects.
         """
         params = cls().get_params()
-        return params
+        sorted_params = dict(sorted(params.items()))
+        return sorted_params
 
 
 def get_object_from_portable_params(portable_params: dict[str, Any]) -> Any:
@@ -260,6 +266,9 @@ def is_parameterizable(cls: Any) -> bool:
     if not isinstance(cls, type):
         return False
 
+    if issubclass(cls, ParameterizableClass):
+        return True
+
     # Check for all required methods that make a class parameterizable
     # These checks ensure the class has the complete interface needed for
     # parameter handling, serialization, and deserialization
@@ -311,6 +320,18 @@ def _smoketest_parameterizable_class(cls: Any):
     if not isinstance(params, dict):
         raise TypeError(f"get_params() must return a dictionary,"
                         " got {type(params)} instead")
+    for key in default_params:
+        if not isinstance(key, str):
+            raise TypeError(f"Default parameters keys must be strings,"
+                            f" got {type(key)} instead")
+    for key in params:
+        if not isinstance(key, str):
+            raise TypeError(f"Parameters keys must be strings,"
+                            f" got {type(key)} instead")
+    if list(default_params.keys()) != sorted(default_params.keys()):
+        raise ValueError("Default parameters dictionary is not sorted by keys")
+    if list(params.keys()) != sorted(params.keys()):
+        raise ValueError("Parameters dictionary is not sorted by keys")
     if default_params != params:
         raise ValueError("Default parameters do not match "
                          "parameters of a new instance")
@@ -330,12 +351,16 @@ def _smoketest_known_parameterizable_classes():
         _smoketest_parameterizable_class(cls)
 
 
-def register_parameterizable_class(new_parameterizable_class: Any):
+def _register_parameterizable_class(new_parameterizable_class: Any):
     """ Register a parameterizable class.
 
     This function registers a parameterizable class so that it can be
     used with the get_object_from_portable_params()
     """
+    if not isinstance(new_parameterizable_class, type):
+        raise TypeError("new_parameterizable_class must be a class type"
+                        f", got {type(new_parameterizable_class)} instead")
+
     # If the class is already registered with the same name and identity,
     # there's nothing to do - avoid duplicate registrations
     # otherwise, raise an error
@@ -357,6 +382,7 @@ def register_parameterizable_class(new_parameterizable_class: Any):
     # Add the class to the registry using its name as the key
     _known_parameterizable_classes[new_parameterizable_class.__name__
         ] = new_parameterizable_class
+
 
 def is_registered(cls) -> bool:
     """ Check if a class is registered in the parameterizable registry.
