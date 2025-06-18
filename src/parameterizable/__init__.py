@@ -18,7 +18,7 @@ from .parameterizable import (
     # Functions
     get_object_from_portable_params,
     is_parameterizable,
-    _register_parameterizable_class,
+    register_parameterizable_class,
     is_registered,
 
     # Constants

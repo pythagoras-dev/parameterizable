@@ -37,7 +37,7 @@ class ParameterizableClass:
     by classes that need to be parameterizable.
     """
     def __init__(self):
-        _register_parameterizable_class(type(self))
+        register_parameterizable_class(type(self))
 
     def __get_portable_params__(self) -> dict[str, Any]:
         """ Get the parameters of an object as a portable dictionary.
@@ -351,7 +351,7 @@ def _smoketest_known_parameterizable_classes():
         _smoketest_parameterizable_class(cls)
 
 
-def _register_parameterizable_class(new_parameterizable_class: Any):
+def register_parameterizable_class(new_parameterizable_class: Any):
     """ Register a parameterizable class.
 
     This function registers a parameterizable class so that it can be
