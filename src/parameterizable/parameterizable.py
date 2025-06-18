@@ -178,6 +178,8 @@ def get_object_from_portable_params(portable_params: dict[str, Any]) -> Any:
     if not {CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY} & set(portable_params):
         raise ValueError(f"portable_params must contain either"
                          f" {CLASSNAME_PARAM_KEY} or {BUILTIN_TYPE_KEY}")
+    if not list(portable_params.keys()) == sorted(portable_params.keys()):
+        raise ValueError("portable_params must be a dictionary with sorted keys")
 
     # Special case: If this is a dictionary representing a builtin type (like int, str)
     if BUILTIN_TYPE_KEY in portable_params:
