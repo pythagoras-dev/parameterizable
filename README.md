@@ -19,12 +19,19 @@ and portable sub-dictionaries.
 
 ## Why Is It Useful?
 
-`parameterizable` is useful for developers working with configurable Python objects, especially in scenarios involving machine learning, scientific computing, or any domain where objects are defined by parameters. It provides:
+`parameterizable` is useful for developers working with 
+configurable Python objects, especially in scenarios involving 
+machine learning, scientific computing, or any domain where 
+object's behavior is defined by the object's parameters. It provides:
 
-* **Consistency**: Ensures a standardized way to handle parameters across different classes.
-* **Serialization**: Simplifies saving and loading object configurations using portable dictionaries.
-* **Reproducibility**: Facilitates recreating objects with the same configuration, which is critical for debugging and sharing experiments.
-* **Extensibility**: Allows easy integration with custom classes by subclassing `ParameterizableClass`.
+* **Consistency**: Ensures a standardized way to handle parameters 
+across different classes.
+* **Serialization**: Simplifies saving and loading object configurations 
+using portable dictionaries.
+* **Reproducibility**: Facilitates recreating objects with the same configuration, 
+which is critical for debugging and sharing experiments.
+* **Extensibility**: Allows easy integration with custom classes 
+by subclassing `ParameterizableClass`.
 
 By abstracting parameter handling, this library reduces boilerplate code and improves maintainability.
 
