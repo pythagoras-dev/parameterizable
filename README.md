@@ -17,6 +17,17 @@ has sorted str keys and contains values with only basic (builtin) types
 and portable sub-dictionaries. 
 * Recreate an object from its parameters, stored in a 'portable' dictionary.
 
+## Why Is It Useful?
+
+`parameterizable` is useful for developers working with configurable Python objects, especially in scenarios involving machine learning, scientific computing, or any domain where objects are defined by parameters. It provides:
+
+* **Consistency**: Ensures a standardized way to handle parameters across different classes.
+* **Serialization**: Simplifies saving and loading object configurations using portable dictionaries.
+* **Reproducibility**: Facilitates recreating objects with the same configuration, which is critical for debugging and sharing experiments.
+* **Extensibility**: Allows easy integration with custom classes by subclassing `ParameterizableClass`.
+
+By abstracting parameter handling, this library reduces boilerplate code and improves maintainability.
+
 ## Usage
 Inherit from `ParameterizableClass` class and define method `.get_params()`. 
 If the class has default parameters, and its `.__init__()` method 
