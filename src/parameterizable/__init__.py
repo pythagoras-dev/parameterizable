@@ -20,6 +20,7 @@ from .parameterizable import (
     is_parameterizable,
     register_parameterizable_class,
     is_registered,
+    smoketest_parameterizable_class,
 
     # Constants
     CLASSNAME_PARAM_KEY

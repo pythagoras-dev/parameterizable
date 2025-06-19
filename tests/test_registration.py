@@ -2,7 +2,7 @@ from src.parameterizable.parameterizable import *
 from src.parameterizable.parameterizable import (
     _known_parameterizable_classes
     , register_parameterizable_class
-    , _smoketest_known_parameterizable_classes
+    , smoketest_all_known_parameterizable_classes
 )
 import pytest
 
@@ -56,6 +56,6 @@ def test_smoketest_known_parameterizable_classes():
     register_parameterizable_class(EvenBetterOne)
 
     # Test that smoketest runs without errors
-    _smoketest_known_parameterizable_classes()
+    smoketest_all_known_parameterizable_classes()
 
     _known_parameterizable_classes.clear()

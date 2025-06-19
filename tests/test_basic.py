@@ -8,7 +8,7 @@ This module tests the fundamental functionality of parameterizable classes:
 
 from src.parameterizable.parameterizable import *
 from src.parameterizable.parameterizable import (
-    _known_parameterizable_classes, _smoketest_parameterizable_class,
+    _known_parameterizable_classes, smoketest_parameterizable_class,
     register_parameterizable_class)
 from src.parameterizable.parameterizable import CLASSNAME_PARAM_KEY
 
@@ -31,7 +31,7 @@ def test_good_class():
 
     # Test class recognition and smoke-test
     assert is_parameterizable(GoodPameterizable)
-    assert _smoketest_parameterizable_class(GoodPameterizable)
+    assert smoketest_parameterizable_class(GoodPameterizable)
 
     # The smoke-test creates an instance which registers the class,
     # so we need to clear the registry again

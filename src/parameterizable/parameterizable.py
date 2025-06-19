@@ -299,7 +299,7 @@ def is_parameterizable(cls: Any) -> bool:
     return True
 
 
-def _smoketest_parameterizable_class(cls: Any):
+def smoketest_parameterizable_class(cls: Any):
     """ Run a smoke test on a parameterizable class.
 
     This function runs a basic unit test on a parameterizable class to verify
@@ -337,10 +337,26 @@ def _smoketest_parameterizable_class(cls: Any):
     if default_params != params:
         raise ValueError("Default parameters do not match "
                          "parameters of a new instance")
+
+    if not is_registered(cls):
+        raise ValueError(f"Class {cls.__name__} is not registered. "
+                         "Please register it with register_parameterizable_class().")
+
+    default_portable_params = cls.__get_portable_default_params__()
+    portable_params = cls().__get_portable_params__()
+    restored_from_defaults = get_object_from_portable_params(default_portable_params)
+    restored_from_params = get_object_from_portable_params(portable_params)
+    if not restored_from_defaults.get_params() == default_params:
+        raise ValueError(f"Smoke test for parameterizable class {cls.__name__} "
+                         "has failed")
+    if not restored_from_params.get_params() == params:
+        raise ValueError(f"Smoke test for parameterizable class {cls.__name__} "
+                         "has failed")
+
     return True
 
 
-def _smoketest_known_parameterizable_classes():
+def smoketest_all_known_parameterizable_classes():
     """ Run a smoketest on all known parameterizable classes.
 
     This function runs a basic unit test on all known parameterizable classes
@@ -350,7 +366,7 @@ def _smoketest_known_parameterizable_classes():
     correctness of all registered parameterizable classes at once.
     """
     for class_name, cls in _known_parameterizable_classes.items():
-        _smoketest_parameterizable_class(cls)
+        smoketest_parameterizable_class(cls)
 
 
 def register_parameterizable_class(new_parameterizable_class: Any):
