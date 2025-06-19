@@ -48,7 +48,7 @@ def test_good_class():
     obj.a = -12345
     obj.b = "Hi!"
     obj.c = str
-    params = obj.__get_portable_params__()
+    params = obj.get_portable_params()
 
     # Verify portable parameters structure
     assert CLASSNAME_PARAM_KEY in params
@@ -90,7 +90,7 @@ def test_even_better_one():
     assert params["d"] == 6.28
 
     # Test serialization
-    portable_params = obj.__get_portable_params__()
+    portable_params = obj.get_portable_params()
     assert portable_params[CLASSNAME_PARAM_KEY] == "EvenBetterOne"
     assert portable_params["a"] == 20
     assert portable_params["b"] == "subclass"

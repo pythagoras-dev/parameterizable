@@ -39,7 +39,7 @@ class ParameterizableClass:
     def __init__(self):
         register_parameterizable_class(type(self))
 
-    def __get_portable_params__(self) -> dict[str, Any]:
+    def get_portable_params(self) -> dict[str, Any]:
         """ Get the parameters of an object as a portable dictionary.
 
         These are the parameters that define the object's
@@ -58,7 +58,7 @@ class ParameterizableClass:
         for key, value in portable_params.items():
             # Case 1: Parameter is itself a parameterizable object - recursively convert it
             if is_parameterizable(type(value)):
-                portable_params[key] = value.__get_portable_params__()
+                portable_params[key] = value.get_portable_params()
             # Case 2: Parameter is a Python type object (like int, str) - store its name
             elif isinstance(value, type) and value in _supported_builtin_types:
                 portable_params[key] = {
@@ -67,13 +67,13 @@ class ParameterizableClass:
             # process its elements
             elif isinstance(value, list):
                 portable_params[key] = [
-                    item.__get_portable_params__() if is_parameterizable(type(item))
+                    item.get_portable_params() if is_parameterizable(type(item))
                     else item
                     for item in value
                 ]
             elif isinstance(value, dict):
                 portable_params[key] = {
-                    k: v.__get_portable_params__() if is_parameterizable(type(v)) else v
+                    k: v.get_portable_params() if is_parameterizable(type(v)) else v
                     for k, v in value.items()
                 }
             # Case 4: Parameter is a basic type instance (like 5, "hello") - keep as is
@@ -87,7 +87,7 @@ class ParameterizableClass:
         return sorted_portable_params
 
     @classmethod
-    def __get_portable_default_params__(cls) -> dict[str, Any]:
+    def get_portable_default_params(cls) -> dict[str, Any]:
         """ Get default parameters of a class as a portable dictionary.
 
         These are the values that are used to configure an object
@@ -104,11 +104,11 @@ class ParameterizableClass:
         portable_params = default_params.copy()
         portable_params[CLASSNAME_PARAM_KEY] = cls.__name__
 
-        # Process each parameter based on its type (similar to __get_portable_params__)
+        # Process each parameter based on its type (similar to get_portable_params)
         for key, value in list(portable_params.items()):
             # Case 1: Parameter is itself a parameterizable object - recursively convert it
             if is_parameterizable(type(value)):
-                portable_params[key] = value.__get_portable_params__()
+                portable_params[key] = value.get_portable_params()
             # Case 2: Parameter is a Python type object (like int, str) - store its name
             elif isinstance(value, type) and value in _supported_builtin_types:
                 portable_params[key] = {
@@ -116,13 +116,13 @@ class ParameterizableClass:
             # Case 3: Parameter is a collection (list, dict, etc.) - process its elements
             elif isinstance(value, (list, tuple)):
                 portable_params[key] = [
-                    item.__get_portable_params__() if is_parameterizable(type(item))
+                    item.get_portable_params() if is_parameterizable(type(item))
                     else item
                     for item in value
                 ]
             elif isinstance(value, dict):
                 portable_params[key] = {
-                    k: v.__get_portable_params__() if is_parameterizable(type(v)) else v
+                    k: v.get_portable_params() if is_parameterizable(type(v)) else v
                     for k, v in value.items()
                 }
             # Case 4: Parameter is a basic type instance (like 5, "hello") - keep as is
@@ -169,7 +169,7 @@ def get_object_from_portable_params(portable_params: dict[str, Any]) -> Any:
     """ Create an object from a dictionary of parameters.
 
     This function creates an object from a dictionary of portable parameters.
-    The dictionary should have been created by the .__get_portable_params__()
+    The dictionary should have been created by the .get_portable_params()
     method of a ParameterizableClass object.
     """
     # Verify we have a dictionary with either class name or builtin type key
@@ -286,13 +286,13 @@ def is_parameterizable(cls: Any) -> bool:
         return False
 
     # Methods for portable dictionary conversion
-    if not hasattr(cls, "__get_portable_params__"):
+    if not hasattr(cls, "get_portable_params"):
         return False
-    if not callable(cls.__get_portable_params__):
+    if not callable(cls.get_portable_params):
         return False
-    if not hasattr(cls, "__get_portable_default_params__"):
+    if not hasattr(cls, "get_portable_default_params"):
         return False
-    if not callable(cls.__get_portable_default_params__):
+    if not callable(cls.get_portable_default_params):
         return False
 
     # All checks passed - this is a parameterizable class
@@ -342,8 +342,8 @@ def smoketest_parameterizable_class(cls: Any):
         raise ValueError(f"Class {cls.__name__} is not registered. "
                          "Please register it with register_parameterizable_class().")
 
-    default_portable_params = cls.__get_portable_default_params__()
-    portable_params = cls().__get_portable_params__()
+    default_portable_params = cls.get_portable_default_params()
+    portable_params = cls().get_portable_params()
     restored_from_defaults = get_object_from_portable_params(default_portable_params)
     restored_from_params = get_object_from_portable_params(portable_params)
     if not restored_from_defaults.get_params() == default_params:

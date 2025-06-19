@@ -38,8 +38,8 @@ def test_inheritance_and_overriding():
     assert derived_params == {"base_param": 15, "derived_param": 25}
 
     # Test portable params and reconstruction
-    base_portable = base.__get_portable_params__()
-    derived_portable = derived.__get_portable_params__()
+    base_portable = base.get_portable_params()
+    derived_portable = derived.get_portable_params()
 
     reconstructed_base = get_object_from_portable_params(base_portable)
     reconstructed_derived = get_object_from_portable_params(derived_portable)

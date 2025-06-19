@@ -35,4 +35,4 @@ def test_circular_reference_detection():
     # Attempting to convert to portable params should raise an error
     # due to infinite recursion
     with pytest.raises(RecursionError):
-        portable_params = obj1.__get_portable_params__()
+        portable_params = obj1.get_portable_params()

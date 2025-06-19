@@ -37,9 +37,9 @@ def test_override_get_default_params():
     assert not init_called[0]  # __init__ should not be called
     assert default_params == {"param1": 10, "param2": "default"}
 
-    # Test that __get_portable_default_params__ doesn't create an instance
+    # Test that get_portable_default_params doesn't create an instance
     init_called[0] = False
-    portable_default_params = ClassWithSideEffects.__get_portable_default_params__()
+    portable_default_params = ClassWithSideEffects.get_portable_default_params()
     assert not init_called[0]  # __init__ should not be called
     assert portable_default_params[CLASSNAME_PARAM_KEY] == "ClassWithSideEffects"
     assert portable_default_params["param1"] == 10

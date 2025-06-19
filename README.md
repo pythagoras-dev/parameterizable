@@ -49,9 +49,9 @@ use the functionality of this package.
 returns the current parameters of an object as a regular dictionary.
 * `ParameterizableClass.get_default_params()` - returns the default parameters
 of the class as a regular dictionary.
-* `ParameterizableClass.__get_portable_params__()` - returns a 'portable'
+* `ParameterizableClass.get_portable_params()` - returns a 'portable'
 dictionary of the object's parameters.
-* `ParameterizableClass.__get_portable_default_params__()` - returns 
+* `ParameterizableClass.get_portable_default_params()` - returns 
 a 'portable' dictionary of the class's default parameters.
 * `is_parameterizable(obj)` - checks if an object or a class is parameterizable.
 * `register_parameterizable_class(cls)` - registers a class as parameterizable.

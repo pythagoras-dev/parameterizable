@@ -39,7 +39,7 @@ def test_complex_object_hierarchy(basic_parameterizable_class):
     obj = ComplexHierarchyClass()
 
     # Convert to portable params
-    portable_params = obj.__get_portable_params__()
+    portable_params = obj.get_portable_params()
 
     # Reconstruct from portable params
     reconstructed = get_object_from_portable_params(portable_params)

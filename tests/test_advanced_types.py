@@ -26,7 +26,7 @@ def test_type_objects_as_parameters(basic_parameterizable_class):
     obj = basic_parameterizable_class(param1=10, param2="test", param3=dict)
 
     # Convert to portable params
-    portable_params = obj.__get_portable_params__()
+    portable_params = obj.get_portable_params()
 
     # Check that the type object is properly converted
     assert isinstance(portable_params["param3"], dict)
@@ -86,7 +86,7 @@ def test_all_supported_builtin_types():
     obj = AllTypesClass()
 
     # Convert to portable params
-    portable_params = obj.__get_portable_params__()
+    portable_params = obj.get_portable_params()
 
     # Reconstruct from portable params
     reconstructed = get_object_from_portable_params(portable_params)
@@ -137,7 +137,7 @@ def test_complex_nested_collections():
     obj = ComplexCollectionsClass()
 
     # Convert to portable params
-    portable_params = obj.__get_portable_params__()
+    portable_params = obj.get_portable_params()
 
     # Reconstruct from portable params
     reconstructed = get_object_from_portable_params(portable_params)
@@ -187,7 +187,7 @@ def test_edge_cases():
     obj = EdgeCasesClass()
 
     # Convert to portable params
-    portable_params = obj.__get_portable_params__()
+    portable_params = obj.get_portable_params()
 
     # Reconstruct from portable params
     reconstructed = get_object_from_portable_params(portable_params)

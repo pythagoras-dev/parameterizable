@@ -43,7 +43,7 @@ def test_deep_nesting(basic_parameterizable_class, nested_parameterizable_class)
     top_obj = DeepNestingClass(nested_obj=middle_obj, top_level_param="level1")
 
     # Convert to portable params
-    portable_params = top_obj.__get_portable_params__()
+    portable_params = top_obj.get_portable_params()
 
     # Verify the structure of the portable params
     assert CLASSNAME_PARAM_KEY in portable_params

@@ -30,7 +30,7 @@ def test_builtin_types_in_portable_params():
             }
 
     obj = TypeTester()
-    params = obj.__get_portable_params__()
+    params = obj.get_portable_params()
 
     # Check that all values are preserved correctly
     assert params["int_val"] == 42
@@ -66,6 +66,6 @@ class UnsupportedTypeClass(ParameterizableClass):
 def test_unsupported_type_error():
     obj = UnsupportedTypeClass()
 
-    # Test that __get_portable_params__ raises ValueError for unsupported types
+    # Test that get_portable_params raises ValueError for unsupported types
     with pytest.raises(ValueError, match="Unsupported type"):
-        obj.__get_portable_params__()
+        obj.get_portable_params()

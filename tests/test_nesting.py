@@ -22,7 +22,7 @@ def test_nested_parameterizable_objects():
     container = NestedContainer(inner_obj)
 
     # Convert to portable params
-    portable_params = container.__get_portable_params__()
+    portable_params = container.get_portable_params()
 
     # Check that the nested object is properly converted
     assert CLASSNAME_PARAM_KEY in portable_params["nested_obj"]
@@ -65,7 +65,7 @@ def test_collections_with_parameterizable_objects():
     )
 
     # Convert to portable params
-    portable_params = container.__get_portable_params__()
+    portable_params = container.get_portable_params()
 
     # Check that the collections are properly converted
     assert isinstance(portable_params["obj_list"], list)
