@@ -31,5 +31,7 @@ __all__ = [
     'get_object_from_portable_params',
     'is_parameterizable',
     'is_registered',
+    'register_parameterizable_class',
+    'smoketest_parameterizable_class',
     'CLASSNAME_PARAM_KEY'
 ]
