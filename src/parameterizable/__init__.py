@@ -26,6 +26,8 @@ from .parameterizable import (
     CLASSNAME_PARAM_KEY
 )
 
+from .dict_sorter import sort_dict_by_keys
+
 __all__ = [
     'ParameterizableClass',
     'get_object_from_portable_params',
@@ -33,5 +35,6 @@ __all__ = [
     'is_registered',
     'register_parameterizable_class',
     'smoketest_parameterizable_class',
-    'CLASSNAME_PARAM_KEY'
+    'CLASSNAME_PARAM_KEY',
+    'sort_dict_by_keys'
 ]
