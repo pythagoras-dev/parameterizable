@@ -14,6 +14,8 @@ basic types and portable sub-dictionaries).
 
 from typing import Any
 
+from .dict_sorter import sort_dict_by_keys
+
 CLASSNAME_PARAM_KEY = "__class__.__name__"
 BUILTIN_TYPE_KEY = "__builtins__.__builtins__"
 
@@ -83,7 +85,7 @@ class ParameterizableClass:
             else:
                 raise ValueError(f"Unsupported type: {type(value)}")
 
-        sorted_portable_params = dict(sorted(portable_params.items()))
+        sorted_portable_params = sort_dict_by_keys(portable_params)
         return sorted_portable_params
 
     @classmethod
@@ -132,7 +134,7 @@ class ParameterizableClass:
             else:
                 raise ValueError(f"Unsupported type: {type(value)}")
 
-        sorted_portable_params = dict(sorted(portable_params.items()))
+        sorted_portable_params = sort_dict_by_keys(portable_params)
         return sorted_portable_params
 
     def get_params(self) -> dict[str, Any]:
@@ -161,7 +163,7 @@ class ParameterizableClass:
         recommended if the __init__ method has side effects.
         """
         params = cls().get_params()
-        sorted_params = dict(sorted(params.items()))
+        sorted_params = sort_dict_by_keys(params)
         return sorted_params
 
 
