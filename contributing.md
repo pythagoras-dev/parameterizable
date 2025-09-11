@@ -1,105 +1,71 @@
 # Contributing to parameterizable
 
-Thank you for your interest in contributing to parameterizable! 
-This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to `parameterizable`! 
+Your help is greatly appreciated. These guidelines will help you get started.
 
 ## Getting Started
 
-### Prerequisites
-- Python 3.10 or higher
-- [uv](https://docs.astral.sh/uv/) package manager
+1.  **Fork and Clone:**
+    ```bash
+    git clone https://github.com/your-username/parameterizable.git
+    cd parameterizable
+    ```
 
-### Setting Up Development Environment
+2.  **Install Dependencies:**
+    We use `uv` for package management.
+    ```bash
+    uv pip install -e ".[dev]"
+    ```
 
-1. Fork and clone the repository:
-   ```bash
-   git clone https://github.com/your-username/parameterizable.git
-   cd parameterizable
-   ```
-
-2. Install dependencies using uv:
-   ```bash
-   uv pip install -e ".[dev]"
-   ```
-
-### Running Tests
-
-Run the test suite using pytest:
-```bash
-pytest
-```
-
+3.  **Run Tests:**
+    Make sure the test suite passes before making changes.
+    ```bash
+    pytest
+    ```
 
 ## How to Contribute
 
-### Reporting Issues
-- Use the GitHub issue tracker to report bugs or request features
-- Provide a clear description, steps to reproduce, and expected behavior
-- Include Python version and package version information
+*   **Report Bugs:** Use the GitHub issue tracker to report bugs. 
+Please provide a clear description, steps to reproduce, and your Python version.
+*   **Suggest Enhancements:** Open an issue to discuss new features or improvements.
 
-### Submitting Changes
+### Submitting Pull Requests
 
-1. Create a new branch for your feature or bug fix:
-   ```bash
-   git checkout -b feature-name
-   ```
-2. Make your changes and add tests if applicable
-3. Ensure all tests pass
-4. Commit your changes with a descriptive message (see commit conventions below)
-5. Push your branch and create a pull request
+1.  **Create a Branch:**
+    ```bash
+    git checkout -b your-feature-name
+    ```
+2.  **Make Changes:** Write your code and add corresponding tests in the `tests/` directory.
+3.  **Follow Code Style:**
+    *   Adhere to PEP 8 guidelines.
+    *   Write clear, Google-style docstrings for public functions and classes.
+    *   Add type hints where appropriate.
+4.  **Write Commit Messages:** Follow the conventions below.
+5.  **Push and Open a Pull Request:** Push your branch to your fork and open a pull request.
 
-### Commit Message Conventions
+### Commit Message Prefixes
 
-We follow the same title-prefix conventions used in pandas. Below are common prefixes:
+Use these prefixes for your commit messages:
 
-```
-ENH: Enhancement, new functionality
-BUG: Bug fix
-DOC: Additions/updates to documentation
-TST: Additions/updates to tests
-BLD: Updates to the build process/scripts
-PERF: Performance improvement
-TYP: Type annotations
-CLN: Code cleanup
-```
+| Prefix | Description                      |
+| :----- | :------------------------------- |
+| `ENH:` | Enhancement, new functionality   |
+| `BUG:` | Bug fix                          |
+| `DOC:` | Additions/updates to documentation |
+| `TST:` | Additions/updates to tests       |
+| `BLD:` | Build process/script updates     |
+| `PERF:`| Performance improvement          |
+| `TYP:` | Type annotations                 |
+| `CLN:` | Code cleanup                     |
 
-Example: `ENH: Add support for nested parameter validation`
+*Example: `ENH: Add support for nested parameter validation`*
 
-### Code Style
-- Follow PEP 8 Python style guidelines
-- Keep functions and classes focused on a single responsibility
-- Write clear, concise Google-style docstrings for all public functions and classes
-- Write/update documentation where appropriate
-- Add type hints where appropriate
+## License
 
-### Testing
-- Add tests for new functionality
-- Ensure existing tests continue to pass
-- Aim for good test coverage of new code
-- Tests should be placed in the `tests/` directory
-
-## Development Workflow
-
-1. Check that your changes don't break existing functionality
-2. Add appropriate tests for new features
-3. Update documentation if needed
-4. Ensure your code follows the project's style guidelines
-5. Submit a pull request with a clear description of changes
-
-## License Agreement
-
-By contributing to this project, you agree that your contributions 
-will be licensed under the MIT License, the same license that covers the project. 
-When you submit code changes, you are agreeing that:
-
-- You have the right to license your contribution under the MIT License
-- Your contribution is your original work, or you have permission to submit it
-- You understand that your contributions will become part of the project under the MIT License
+By contributing, you confirm that your contributions are an original work,
+or you have permission to use it, and agree that it will be 
+licensed under the MIT License.
 
 ## Questions?
 
-If you have questions about contributing, feel free to:
-- Open an issue for discussion
-- Contact the maintainer: Vlad (Volodymyr) Pavlov
-
-Thank you for contributing to parameterizable!
+Feel free to open an issue or contact the maintainer, Vlad (Volodymyr) Pavlov.
