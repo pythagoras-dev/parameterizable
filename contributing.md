@@ -1,6 +1,7 @@
 # Contributing to parameterizable
 
-Thank you for your interest in contributing to parameterizable! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to parameterizable! 
+This document provides guidelines for contributing to the project.
 
 ## Getting Started
 
@@ -27,6 +28,7 @@ Run the test suite using pytest:
 ```bash
 pytest
 ```
+
 
 ## How to Contribute
 
@@ -83,6 +85,16 @@ Example: `ENH: Add support for nested parameter validation`
 3. Update documentation if needed
 4. Ensure your code follows the project's style guidelines
 5. Submit a pull request with a clear description of changes
+
+## License Agreement
+
+By contributing to this project, you agree that your contributions 
+will be licensed under the MIT License, the same license that covers the project. 
+When you submit code changes, you are agreeing that:
+
+- You have the right to license your contribution under the MIT License
+- Your contribution is your original work, or you have permission to submit it
+- You understand that your contributions will become part of the project under the MIT License
 
 ## Questions?
 
