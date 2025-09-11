@@ -2,12 +2,12 @@
 """
 
 import pytest
-from src.parameterizable.parameterizable import (
+from parameterizable.parameterizable import (
     ParameterizableClass,
     get_object_from_portable_params,
     _known_parameterizable_classes
 )
-from tests.fixtures import (
+from fixtures import (
     basic_parameterizable_class,
     nested_parameterizable_class
 )

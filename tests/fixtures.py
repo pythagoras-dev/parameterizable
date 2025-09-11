@@ -6,7 +6,7 @@ to reduce code duplication and improve test maintainability.
 from typing import Any
 
 import pytest
-from src.parameterizable.parameterizable import (
+from parameterizable.parameterizable import (
     ParameterizableClass
     , _known_parameterizable_classes
 )

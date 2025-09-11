@@ -1,5 +1,5 @@
-from src.parameterizable.parameterizable import *
-from src.parameterizable.parameterizable import CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY
+from parameterizable.parameterizable import *
+from parameterizable.parameterizable import CLASSNAME_PARAM_KEY, BUILTIN_TYPE_KEY
 import pytest
 
 

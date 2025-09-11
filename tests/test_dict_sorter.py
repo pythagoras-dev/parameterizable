@@ -1,4 +1,4 @@
-from src.parameterizable.dict_sorter import sort_dict_by_keys
+from parameterizable.dict_sorter import sort_dict_by_keys
 
 import pytest
 

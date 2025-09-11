@@ -2,7 +2,7 @@
 """
 
 import pytest
-from src.parameterizable.parameterizable import (
+from parameterizable.parameterizable import (
     ParameterizableClass,
     _known_parameterizable_classes)
 

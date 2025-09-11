@@ -1,5 +1,5 @@
-from src.parameterizable.parameterizable import *
-from src.parameterizable.parameterizable import (
+from parameterizable.parameterizable import *
+from parameterizable.parameterizable import (
     _known_parameterizable_classes
     , register_parameterizable_class
     , smoketest_all_known_parameterizable_classes
@@ -7,7 +7,7 @@ from src.parameterizable.parameterizable import (
 import pytest
 
 # Import the test classes from test_basic to reuse them
-from tests.demo_types import GoodPameterizable, EvenBetterOne, EmptyClass
+from demo_types import GoodPameterizable, EvenBetterOne, EmptyClass
 
 def test_is_registered():
     _known_parameterizable_classes.clear()

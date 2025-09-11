@@ -6,13 +6,13 @@ This module tests the fundamental functionality of parameterizable classes:
 - Object reconstruction from portable parameters
 """
 
-from src.parameterizable.parameterizable import *
-from src.parameterizable.parameterizable import (
+from parameterizable.parameterizable import *
+from parameterizable.parameterizable import (
     _known_parameterizable_classes, smoketest_parameterizable_class,
     register_parameterizable_class)
-from src.parameterizable.parameterizable import CLASSNAME_PARAM_KEY
+from parameterizable.parameterizable import CLASSNAME_PARAM_KEY
 
-from tests.demo_types import GoodPameterizable, EvenBetterOne, EmptyClass
+from demo_types import GoodPameterizable, EvenBetterOne, EmptyClass
 
 import pytest
 

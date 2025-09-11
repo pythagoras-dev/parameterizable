@@ -4,7 +4,7 @@ This module offers sample classes that are used
 for testing the fundamental
 """
 
-from src.parameterizable.parameterizable import *
+from parameterizable.parameterizable import *
 
 from abc import ABC
 

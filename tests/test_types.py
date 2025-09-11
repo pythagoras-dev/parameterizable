@@ -1,5 +1,5 @@
-from src.parameterizable.parameterizable import *
-from src.parameterizable.parameterizable import _known_parameterizable_classes
+from parameterizable.parameterizable import *
+from parameterizable.parameterizable import _known_parameterizable_classes
 import pytest
 
 
