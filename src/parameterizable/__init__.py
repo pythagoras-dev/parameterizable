@@ -37,7 +37,7 @@ from .parameterizable import (
     smoketest_parameterizable_class,
 
     # Constants
-    CLASSNAME_PARAM_KEY
+    CLASSNAME_PARAM_KEY,
 )
 
 from .dict_sorter import sort_dict_by_keys
