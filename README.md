@@ -6,7 +6,7 @@ Parameter manipulation for Python classes.
 
 `parameterizable` provides functionality for work with parameterizable 
 classes: those that have (hyper) parameters which define object's configuration,
-that is different from the object's internal contents or data.  Such parameters 
+that is different from the object's internal contents or data. Such parameters 
 are typically passed to the `.__init__()` method when an object is created.
 
 `parameterizable` allows to:
