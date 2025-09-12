@@ -33,7 +33,8 @@ which is critical for debugging and sharing experiments.
 * **Extensibility**: Allows easy integration with custom classes 
 by subclassing `ParameterizableClass`.
 
-By abstracting parameter handling, this library reduces boilerplate code and improves maintainability.
+By abstracting parameter handling, this library reduces boilerplate code 
+and improves maintainability.
 
 ## Usage
 Inherit from `ParameterizableClass` class and define method `.get_params()`. 
