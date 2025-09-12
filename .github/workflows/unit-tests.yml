@@ -1,4 +1,4 @@
-name: Run Python Tests
+name: Run Pytest
 
 on:
   push:
@@ -23,11 +23,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'uv'
-          cache-dependency-path: pyproject.toml
 
       - name: Install dependencies
-        run: uv pip install -e .
+        run: uv pip install -e ".[dev]"
 
       - name: Test with pytest
         run: pytest
