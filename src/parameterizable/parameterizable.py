@@ -10,8 +10,7 @@ and for converting the parameters to and from a portable dictionary
 (a dictionary with sorted str keys that only contains
 basic types and portable sub-dictionaries).
 """
-
-
+import inspect
 from typing import Any
 
 from .dict_sorter import sort_dict_by_keys
@@ -180,16 +179,24 @@ class ParameterizableClass:
         configure an object if no arguments are explicitly passed to
         the .__init__() method.
 
-        This is a safe fallback implementation that creates an instance of
-        the class to get default parameters. Subclasses can override this method
-        to provide default parameters without creating an instance, which is
-        recommended if the __init__ method has side effects.
+        This implementation inspects the __init__() method of the class to get
+        the default parameters. Subclasses can override this method to provide
+        default parameters if the logic for determining defaults is more
+        complex than what can be inferred from the __init__ signature.
 
         Returns:
             dict[str, Any]: A dictionary containing the class's default parameters
                 with string keys and arbitrary values, sorted by key.
         """
-        params = cls().get_params()
+        signature = inspect.signature(cls.__init__)
+        # The first parameter of __init__ is the instance itself (e.g. 'self')
+        # We are skipping it.
+        params_to_consider = list(signature.parameters.values())[1:]
+        params = {
+            p.name: p.default
+            for p in params_to_consider
+            if p.default is not inspect.Parameter.empty
+        }
         sorted_params = sort_dict_by_keys(params)
         return sorted_params
 
