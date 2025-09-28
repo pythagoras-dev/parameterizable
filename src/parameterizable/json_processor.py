@@ -16,7 +16,7 @@ from enum import Enum
 from typing import Any, Mapping
 
 
-class _Markers(str, Enum):
+class _Markers:
     """Internal keys used to tag non-JSON-native constructs.
 
     The serializer uses these markers inside dictionaries to encode special
@@ -33,12 +33,14 @@ class _Markers(str, Enum):
             reconstruction.
     """
 
-    TUPLE = "..tuple.."
-    SET = "..set.."
-    CLASS = "..class.."
-    MODULE = "..module.."
-    PARAMS = "..parameters.."
-    STATE = "..state.."
+    DICT = "...DICT..."
+    TUPLE = "...TUPLE..."
+    SET = "...SET..."
+    CLASS = "...CLASS..."
+    MODULE = "...MODULE..."
+    PARAMS = "...PARAMETERS..."
+    STATE = "...STATE..."
+    ENUM = "...ENUM..."
 
 
 def _collect_object_state(obj: Any) -> dict:
@@ -82,9 +84,8 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
     """Convert a Python object into a JSON-serializable structure.
 
     The transformation is recursive and supports primitives, lists, tuples,
-    sets, and dicts with string keys. Certain custom objects are supported
-    either through a ``get_params()`` method or the pickle protocol
-    ``__getstate__()``.
+    sets, and dicts. Certain custom objects are supported either through
+    a ``get_params()`` method or the pickle protocol ``__getstate__()``.
 
     Args:
         x: The object to convert.
@@ -96,23 +97,15 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
         keys to represent tuples, sets, and reconstructable objects.
 
     Raises:
-        TypeError: If ``x`` (or any nested value) contains an unsupported type,
-            or if a dictionary contains a non-string key.
+        TypeError: If ``x`` (or any nested value) contains an unsupported type.
 
     Examples:
         - Tuples and sets are encoded with markers:
 
           >>> _to_serializable_dict((1, 2))
-          {'..tuple..': [1, 2]}
+          {'...TUPLE...': [1, 2]}
           >>> _to_serializable_dict({1, 2})
-          {'..set..': [1, 2]}
-
-        - Dict keys must be strings:
-
-          >>> _to_serializable_dict({1: 'a'})
-          Traceback (most recent call last):
-          ...
-          TypeError: Dictionary key must be a string, but got: int
+          {'...SET...': [1, 2]}
     """
 
     match x:
@@ -126,52 +119,40 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
     if obj_id in seen:
         raise RecursionError(
             f"Cyclic reference detected while serializing object of type {type(obj).__name__}")
-    seen.add(x)
+    seen.add(obj_id)
 
-    match x:
-        case list():
-            return [_to_serializable_dict(i, seen) for i in x]
-        case tuple():
-            return {_Markers.TUPLE: [_to_serializable_dict(i, seen) for i in x]}
-        case set():
-            return {_Markers.SET: [_to_serializable_dict(i, seen) for i in x]}
-        case dict():
-            return _process_dict(x, seen)
-        case obj if hasattr(obj, "get_params"):
-            return _process_state(obj.get_params(), obj, _Markers.PARAMS, seen)
-        case obj if hasattr(obj, "__getstate__"):
-            return _process_state(obj.__getstate__(), obj, _Markers.STATE, seen)
-        case obj if hasattr(obj, "__dict__") or hasattr(obj.__class__, "__slots__"):
-            return _process_state(_collect_object_state(obj), obj, _Markers.STATE, seen)
-        case _:
-            raise TypeError(f"Unsupported type: {type(x).__name__}")
+    try:
+        match x:
+            case obj if hasattr(obj, "get_params"):
+                result = _process_state(obj.get_params(), obj, _Markers.PARAMS, seen)
 
-def _process_dict(x: dict, seen: set[int]) -> dict:
-    """Convert a dict ensuring string keys and recursively serializing values.
+            case list():
+                result = [_to_serializable_dict(i, seen) for i in x]
+            case tuple():
+                result = {_Markers.TUPLE: [_to_serializable_dict(i, seen) for i in x]}
+            case set():
+                result = {_Markers.SET: [_to_serializable_dict(i, seen) for i in x]}
+            case dict():
+                result = {_Markers.DICT:
+                              [[_to_serializable_dict(k, seen), _to_serializable_dict(v, seen)]
+                               for k, v in x.items()]}
+            case Enum():
+                result = {_Markers.ENUM: x.name
+                    , _Markers.CLASS: x.__class__.__qualname__
+                    , _Markers.MODULE: x.__class__.__module__}
 
-    Validates that all keys are strings (as required by JSON) and applies
-    _to_serializable_dict() to each value.
-
-    Args:
-        x: Mapping to convert. Keys must be strings.
-        seen:  A set of visited object ids for cycle detection.
-
-    Returns:
-        A new dict with JSON-serializable values.
-
-    Raises:
-        TypeError: If any key is not a string.
-    """
-    result = {}
-    for k, v in x.items():
-        if not isinstance(k, str):
-            raise TypeError(f"Dictionary key must be a string, "
-                            f"but got: {type(k).__name__}")
-        result[k] = _to_serializable_dict(v, seen)
+            case obj if hasattr(obj, "__getstate__"):
+                result = _process_state(obj.__getstate__(), obj, _Markers.STATE, seen)
+            case obj if hasattr(obj, "__dict__") or hasattr(obj.__class__, "__slots__"):
+                result = _process_state(_collect_object_state(obj), obj, _Markers.STATE, seen)
+            case _:
+                raise TypeError(f"Unsupported type: {type(x).__name__}")
+    finally:
+        seen.remove(obj_id)
     return result
 
 
-def _process_state(state: dict, obj: Any, marker: str, seen: set[int]) -> dict:
+def _process_state(state: Any, obj: Any, marker: str, seen: set[int]) -> dict:
     """Wrap object identity and state into a marker-bearing mapping.
 
     Produces a dictionary containing the object's class and module names along
@@ -179,7 +160,7 @@ def _process_state(state: dict, obj: Any, marker: str, seen: set[int]) -> dict:
     ``STATE``). The state is recursively converted to JSON-serializable types.
 
     Args:
-        state: The attribute/parameter mapping representing the object's state.
+        state: The object's state, e.g. from `__getstate__()`.
         obj: The object being serialized (used to extract class/module names).
         marker: Which marker to use for the state payload.
         seen: A set of visited object ids for cycle detection.
@@ -188,7 +169,8 @@ def _process_state(state: dict, obj: Any, marker: str, seen: set[int]) -> dict:
         A dictionary suitable for JSON encoding that can be used by
         _recreate_object() to rebuild the instance.
     """
-    return {_Markers.CLASS: obj.__class__.__name__,
+
+    return {_Markers.CLASS: obj.__class__.__qualname__,
         _Markers.MODULE: obj.__class__.__module__,
         marker: _to_serializable_dict(state, seen)}
 
@@ -219,7 +201,7 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
                         f"got: {type(x).__name__}")
     if _Markers.MODULE not in x or _Markers.CLASS not in x:
         raise TypeError("Object metadata missing required markers "
-                        "'..module..' and '..class..'")
+                        "MODULE and CLASS")
 
     module_name = x[_Markers.MODULE]
     class_name = x[_Markers.CLASS]
@@ -242,6 +224,10 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
                 for k, v in state.items():
                     setattr(obj, k, v)
             return obj
+        case {_Markers.ENUM: member_name}:
+            if not issubclass(cls, Enum):
+                raise TypeError(f"Class {class_name} is not an Enum")
+            return cls[member_name]
         case _:
             raise TypeError("Unable to recreate object from provided data")
 
@@ -268,14 +254,25 @@ def _from_serializable_dict(x: Any) -> Any:
         case list():
             return [_from_serializable_dict(i) for i in x]
         case {_Markers.TUPLE: val}:
+            if not len(x) == 1:
+                raise TypeError("TUPLE marker must be the only key")
             if not isinstance(val, list):
-                raise TypeError("Tuple marker must map to a list")
+                raise TypeError("TUPLE marker must map to a list")
             return tuple(_from_serializable_dict(i) for i in val)
         case {_Markers.SET: val}:
+            if not len(x) == 1:
+                raise TypeError("SET marker must be the only key")
             if not isinstance(val, list):
-                raise TypeError("Set marker must map to a list")
+                raise TypeError("SET marker must map to a list")
             return set(_from_serializable_dict(i) for i in val)
-        case {_Markers.MODULE: _, **__} as d:
+        case {_Markers.DICT: val}:
+            if not len(x) == 1:
+                raise TypeError("DICT marker must be the only key")
+            if not isinstance(val, list):
+                raise TypeError("DICT marker must map to a list of lists")
+            return {_from_serializable_dict(k): _from_serializable_dict(v)
+                    for k, v in val}
+        case {_Markers.MODULE: _, **__} | {_Markers.CLASS: _, **__} as d:
             return _recreate_object(d)
         case dict() as d:
             return {k: _from_serializable_dict(v) for k, v in d.items()}
@@ -303,9 +300,12 @@ def loads(s: str, **kwargs) -> Any:
     Args:
         s: The JSON string to parse.
         **kwargs: Additional keyword arguments forwarded to
-            :func:`json.loads` (e.g., ``object_hook`` is not used here).
+            `json.loads` (``object_hook`` is not allowed here).
 
     Returns:
         The Python object reconstructed from the JSON string.
     """
+    if "object_hook" in kwargs:
+        raise ValueError("object_hook cannot be used with "
+                         "parametetizable.loads()")
     return _from_serializable_dict(json.loads(s, **kwargs))
