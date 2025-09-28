@@ -42,13 +42,17 @@ from .parameterizable import (
 
 from .dict_sorter import sort_dict_by_keys
 
+from .json_processor import loads, dumps
+
 __all__ = [
+    'sort_dict_by_keys',
     'ParameterizableClass',
+    "loads",
+    "dumps",
     'get_object_from_portable_params',
     'is_parameterizable',
     'is_registered',
     'register_parameterizable_class',
     'smoketest_parameterizable_class',
-    'CLASSNAME_PARAM_KEY',
-    'sort_dict_by_keys'
+    'CLASSNAME_PARAM_KEY'
 ]
