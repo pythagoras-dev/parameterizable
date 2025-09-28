@@ -25,17 +25,16 @@ object's behavior is defined by the object's parameters. It provides:
 * **Consistency**: Ensures a standardized way to handle parameters 
 across different classes.
 * **Serialization**: Simplifies saving and loading object configurations 
-using portable dictionaries.
+using JSON.
 * **Reproducibility**: Facilitates recreating objects with the same configuration, 
 which is critical for debugging and sharing experiments.
-* **Extensibility**: Allows easy integration with custom classes 
-by subclassing `ParameterizableClass`.
 
 By abstracting parameter handling, this library reduces boilerplate code 
 and improves maintainability.
 
 ## Usage
-Inherit from `ParameterizableClass` class and/or define method `.get_params()`.
+Inherit from `ParameterizableClass` class and/or define method `.get_params()`
+in your class.
 
 ## Key Classes, Functions, and Constants
 
