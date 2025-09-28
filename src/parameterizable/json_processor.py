@@ -12,6 +12,7 @@ encoded using internal marker keys.
 
 import importlib
 import json
+import types
 from enum import Enum
 from typing import Any, Mapping
 
@@ -118,8 +119,12 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
     obj_id = id(x)
     if obj_id in seen:
         raise RecursionError(
-            f"Cyclic reference detected while serializing object of type {type(obj).__name__}")
+            f"Cyclic reference detected while serializing object of type {type(x).__name__}")
     seen.add(obj_id)
+
+    # Reject certain unsupported reflective/builtin types early
+    if isinstance(x, (types.ModuleType, types.FunctionType, types.LambdaType, types.BuiltinFunctionType, types.MethodType, types.CodeType, type)):
+        raise TypeError(f"Unsupported type: {type(x).__name__}")
 
     try:
         match x:
@@ -133,16 +138,27 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
             case set():
                 result = {_Markers.SET: [_to_serializable_dict(i, seen) for i in x]}
             case dict():
-                result = {_Markers.DICT:
-                              [[_to_serializable_dict(k, seen), _to_serializable_dict(v, seen)]
-                               for k, v in x.items()]}
+                # Keep plain dict when keys are strings; use DICT marker otherwise
+                if all(isinstance(k, str) for k in x.keys()):
+                    result = {k: _to_serializable_dict(v, seen) for k, v in x.items()}
+                else:
+                    result = {
+                        _Markers.DICT: [
+                            [_to_serializable_dict(k, seen), _to_serializable_dict(v, seen)]
+                            for k, v in x.items()
+                        ]
+                    }
             case Enum():
-                result = {_Markers.ENUM: x.name
-                    , _Markers.CLASS: x.__class__.__qualname__
-                    , _Markers.MODULE: x.__class__.__module__}
+                result = {
+                    _Markers.ENUM: x.name,
+                    _Markers.CLASS: x.__class__.__qualname__,
+                    _Markers.MODULE: x.__class__.__module__,
+                }
 
             case obj if hasattr(obj, "__getstate__"):
                 result = _process_state(obj.__getstate__(), obj, _Markers.STATE, seen)
+            case obj if isinstance(obj, (types.ModuleType, types.FunctionType, types.LambdaType, types.BuiltinFunctionType, types.MethodType, types.CodeType, type)):
+                raise TypeError(f"Unsupported type: {type(obj).__name__}")
             case obj if hasattr(obj, "__dict__") or hasattr(obj.__class__, "__slots__"):
                 result = _process_state(_collect_object_state(obj), obj, _Markers.STATE, seen)
             case _:
@@ -215,19 +231,57 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
     match x:
         case {_Markers.PARAMS: params_json}:
             return cls(**_from_serializable_dict(params_json))
+        case {_Markers.ENUM: member_name}:
+            if not issubclass(cls, Enum):
+                raise TypeError(f"Class {class_name} is not an Enum")
+            return cls[member_name]
         case {_Markers.STATE: state_json}:
             state = _from_serializable_dict(state_json)
             obj = cls.__new__(cls)
             if hasattr(obj, "__setstate__"):
                 obj.__setstate__(state)
+            elif isinstance(state, tuple):
+                # This branch handles tuple state, typically from __getstate__
+                # for classes with __slots__.
+                slots_to_fill = []
+                for base_cls in reversed(cls.__mro__):
+                    base_slots = getattr(base_cls, '__slots__', [])
+                    if isinstance(base_slots, str):
+                        base_slots = [base_slots]
+                    for slot_name in base_slots:
+                        if slot_name in ('__dict__', '__weakref__'):
+                            continue
+                        slots_to_fill.append(slot_name)
+
+                slot_values = None
+                dict_values = None
+
+                # For classes with __dict__ in __slots__, state can be a 2-tuple (slot_values, dict_values)
+                # where dict_values can be None if the dict is empty.
+                if len(state) == 2 and (state[1] is None or isinstance(state[1], dict)):
+                    slot_values = state[0]
+                    dict_values = state[1]
+                else:
+                    # Otherwise, state is just a tuple of slot values
+                    slot_values = state
+
+                if dict_values:
+                    for k, v in dict_values.items():
+                        setattr(obj, k, v)
+
+                # slot_values can be an empty tuple or None for some __getstate__ impls
+                if slot_values:
+                    if len(slot_values) != len(slots_to_fill):
+                        raise TypeError(
+                            f"Tuple state length {len(slot_values)} does not match "
+                            f"slots length {len(slots_to_fill)} for class {cls.__name__}")
+                    for value, name in zip(slot_values, slots_to_fill):
+                        setattr(obj, name, value)
+
             else: # Fallback reconstruction
                 for k, v in state.items():
                     setattr(obj, k, v)
             return obj
-        case {_Markers.ENUM: member_name}:
-            if not issubclass(cls, Enum):
-                raise TypeError(f"Class {class_name} is not an Enum")
-            return cls[member_name]
         case _:
             raise TypeError("Unable to recreate object from provided data")
 
@@ -270,8 +324,13 @@ def _from_serializable_dict(x: Any) -> Any:
                 raise TypeError("DICT marker must be the only key")
             if not isinstance(val, list):
                 raise TypeError("DICT marker must map to a list of lists")
+            pairs: list[tuple[Any, Any]] = []
+            for item in val:
+                if not (isinstance(item, (list, tuple)) and len(item) == 2):
+                    raise TypeError("DICT marker must map to a list of 2-item pairs")
+                pairs.append((item[0], item[1]))
             return {_from_serializable_dict(k): _from_serializable_dict(v)
-                    for k, v in val}
+                    for k, v in pairs}
         case {_Markers.MODULE: _, **__} | {_Markers.CLASS: _, **__} as d:
             return _recreate_object(d)
         case dict() as d:
