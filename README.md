@@ -12,10 +12,8 @@ are typically passed to the `.__init__()` method when an object is created.
 `parameterizable` allows to:
 * Get parameters of an object as a dictionary.
 * Get default parameters of a class as a dictionary.
-* Serialize an object's parameters to a 'portable' dictionary that 
-has sorted str keys and contains values with only basic (builtin) types 
-and portable sub-dictionaries. 
-* Recreate an object from its parameters, stored in a 'portable' dictionary.
+* Serialize an object's parameters to a JSON string. 
+* Recreate the object from its parameters, stored in a JSON string.
 
 ## Why Is It Useful?
 
@@ -37,9 +35,7 @@ By abstracting parameter handling, this library reduces boilerplate code
 and improves maintainability.
 
 ## Usage
-Inherit from `ParameterizableClass` class and define method `.get_params()`. 
-If the class has default parameters, and its `.__init__()` method 
-has side effects, you should also define method `.get_default_params()`.
+Inherit from `ParameterizableClass` class and/or define method `.get_params()`.
 
 ## Key Classes, Functions, and Constants
 
@@ -50,17 +46,6 @@ use the functionality of this package.
 returns the current parameters of an object as a regular dictionary.
 * `ParameterizableClass.get_default_params()` - returns the default parameters
 of the class as a regular dictionary.
-* `ParameterizableClass.get_portable_params()` - returns a 'portable'
-dictionary of the object's parameters.
-* `ParameterizableClass.get_portable_default_params()` - returns 
-a 'portable' dictionary of the class's default parameters.
-* `is_parameterizable(obj)` - checks if an object or a class is parameterizable.
-* `register_parameterizable_class(cls)` - registers a class as parameterizable.
-This is required for `get_object_from_portable_dict()` to work 
-with objects of the class.
-* `get_object_from_portable_params()` - recreates an object from
-a 'portable' dictionary. Only works for classes that were previously 
-registered with `register_parameterizable_class()`.
 
 ## Short Example
 
