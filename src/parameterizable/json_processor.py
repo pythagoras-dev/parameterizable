@@ -152,6 +152,13 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
             underlying import mechanism.)
         AttributeError: If the class does not exist in the target module.
     """
+    if not isinstance(x, Mapping):
+        raise TypeError(f"Object metadata must be a mapping, "
+                        f"got: {type(x).__name__}")
+    if _Markers.MODULE not in x or _Markers.CLASS not in x:
+        raise TypeError("Object metadata missing required markers "
+                        "'..module..' and '..class..'")
+
     module_name = x[_Markers.MODULE]
     class_name = x[_Markers.CLASS]
     try:
@@ -202,13 +209,23 @@ def _from_serializable_dict(x: Any) -> Any:
         case list():
             return [_from_serializable_dict(i) for i in x]
         case {_Markers.TUPLE: val}:
+            if not isinstance(val, list):
+                raise TypeError("Tuple marker must map to a list")
             return tuple(_from_serializable_dict(i) for i in val)
         case {_Markers.SET: val}:
+            if not isinstance(val, list):
+                raise TypeError("Set marker must map to a list")
             return set(_from_serializable_dict(i) for i in val)
         case {_Markers.MODULE: _, **__} as d:
             return _recreate_object(d)
         case dict() as d:
-            return {k: _from_serializable_dict(v) for k, v in d.items()}
+            result = {}
+            for k, v in d.items():
+                if not isinstance(k, str):
+                    raise TypeError(f"Dictionary key must be a string, "
+                                    f"but got: {type(k).__name__}")
+                result[k] = _from_serializable_dict(v)
+            return result
         case _:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
 
