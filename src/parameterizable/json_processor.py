@@ -78,7 +78,7 @@ def _collect_object_state(obj: Any) -> dict:
         state.update(obj.__dict__)
     return state
 
-def _to_serializable_dict(x: Any) -> Any:
+def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
     """Convert a Python object into a JSON-serializable structure.
 
     The transformation is recursive and supports primitives, lists, tuples,
@@ -88,6 +88,7 @@ def _to_serializable_dict(x: Any) -> Any:
 
     Args:
         x: The object to convert.
+        seen:  A set of visited object ids for cycle detection.
 
     Returns:
         A structure composed only of JSON-compatible types (dict, list, str,
@@ -113,27 +114,39 @@ def _to_serializable_dict(x: Any) -> Any:
           ...
           TypeError: Dictionary key must be a string, but got: int
     """
+
     match x:
         case None | bool() | int() | float() | str():
             return x
+
+    if seen is None:
+        seen = set()
+
+    obj_id = id(x)
+    if obj_id in seen:
+        raise RecursionError(
+            f"Cyclic reference detected while serializing object of type {type(obj).__name__}")
+    seen.add(x)
+
+    match x:
         case list():
-            return [_to_serializable_dict(i) for i in x]
+            return [_to_serializable_dict(i, seen) for i in x]
         case tuple():
-            return {_Markers.TUPLE: [_to_serializable_dict(i) for i in x]}
+            return {_Markers.TUPLE: [_to_serializable_dict(i, seen) for i in x]}
         case set():
-            return {_Markers.SET: [_to_serializable_dict(i) for i in x]}
+            return {_Markers.SET: [_to_serializable_dict(i, seen) for i in x]}
         case dict():
-            return _process_dict(x)
+            return _process_dict(x, seen)
         case obj if hasattr(obj, "get_params"):
-            return _process_state(obj.get_params(), obj, _Markers.PARAMS)
+            return _process_state(obj.get_params(), obj, _Markers.PARAMS, seen)
         case obj if hasattr(obj, "__getstate__"):
-            return _process_state(obj.__getstate__(), obj, _Markers.STATE)
+            return _process_state(obj.__getstate__(), obj, _Markers.STATE, seen)
         case obj if hasattr(obj, "__dict__") or hasattr(obj.__class__, "__slots__"):
-            return _process_state(_collect_object_state(obj), obj, _Markers.STATE)
+            return _process_state(_collect_object_state(obj), obj, _Markers.STATE, seen)
         case _:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
 
-def _process_dict(x:dict)->dict:
+def _process_dict(x: dict, seen: set[int]) -> dict:
     """Convert a dict ensuring string keys and recursively serializing values.
 
     Validates that all keys are strings (as required by JSON) and applies
@@ -141,6 +154,7 @@ def _process_dict(x:dict)->dict:
 
     Args:
         x: Mapping to convert. Keys must be strings.
+        seen:  A set of visited object ids for cycle detection.
 
     Returns:
         A new dict with JSON-serializable values.
@@ -153,10 +167,11 @@ def _process_dict(x:dict)->dict:
         if not isinstance(k, str):
             raise TypeError(f"Dictionary key must be a string, "
                             f"but got: {type(k).__name__}")
-        result[k] = _to_serializable_dict(v)
+        result[k] = _to_serializable_dict(v, seen)
     return result
 
-def _process_state(state:dict, obj:Any, marker:str) -> dict:
+
+def _process_state(state: dict, obj: Any, marker: str, seen: set[int]) -> dict:
     """Wrap object identity and state into a marker-bearing mapping.
 
     Produces a dictionary containing the object's class and module names along
@@ -167,6 +182,7 @@ def _process_state(state:dict, obj:Any, marker:str) -> dict:
         state: The attribute/parameter mapping representing the object's state.
         obj: The object being serialized (used to extract class/module names).
         marker: Which marker to use for the state payload.
+        seen: A set of visited object ids for cycle detection.
 
     Returns:
         A dictionary suitable for JSON encoding that can be used by
@@ -174,7 +190,7 @@ def _process_state(state:dict, obj:Any, marker:str) -> dict:
     """
     return {_Markers.CLASS: obj.__class__.__name__,
         _Markers.MODULE: obj.__class__.__module__,
-        marker: _to_serializable_dict(state)}
+        marker: _to_serializable_dict(state, seen)}
 
 
 def _recreate_object(x: Mapping[str,Any]) -> Any:
