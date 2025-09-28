@@ -24,7 +24,7 @@ object's behavior is defined by the object's parameters. It provides:
 
 * **Consistency**: Ensures a standardized way to handle parameters 
 across different classes.
-* **Serialization**: Simplifies saving and loading object configurations 
+* **Serialization**: Simplifies saving and loading configuration-defined objects
 using JSON.
 * **Reproducibility**: Facilitates recreating objects with the same configuration, 
 which is critical for debugging and sharing experiments.
@@ -45,11 +45,8 @@ use the functionality of this package.
 returns the current parameters of an object as a regular dictionary.
 * `ParameterizableClass.get_default_params()` - returns the default parameters
 of the class as a regular dictionary.
-
-## Short Example
-
-Visit this Colab notebook for a short demonstration of the package usage:
-[https://colab.research.google.com/drive/1myLzvM2g43_bLhEMazb4a4OZx8lsPrzd](https://colab.research.google.com/drive/1myLzvM2g43_bLhEMazb4a4OZx8lsPrzd)
+* `dumps()` - serializes an object's parameters into a JSON string representation.
+* `loads()` - deserializes a JSON string back into an object with the stored parameters.
 
 ## How To Get It?
 
