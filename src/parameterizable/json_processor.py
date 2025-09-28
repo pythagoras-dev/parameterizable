@@ -41,7 +41,32 @@ class _Markers(str, Enum):
     STATE = "..state.."
 
 
-def to_serializable_dict(x: Any) -> Any:
+def _collect_object_state(obj: Any) -> dict:
+    """Collect instance attributes from __dict__ and __slots__ recursively."""
+    state: dict[str, Any] = {}
+
+    # Collect from __slots__ across the MRO
+    for cls in type(obj).__mro__:
+        if not hasattr(cls, "__slots__"):
+            continue
+        slots = cls.__slots__
+        if isinstance(slots, str):
+            slots = [slots]
+        for name in slots:
+            if name in ("__dict__", "__weakref__"):
+                continue
+            try:
+                state[name] = getattr(obj, name)
+            except AttributeError:
+                # Slot not set on instance
+                pass
+
+    # Collect from __dict__ if available
+    if hasattr(obj, "__dict__"):
+        state.update(obj.__dict__)
+    return state
+
+def _to_serializable_dict(x: Any) -> Any:
     """Convert a Python object into a JSON-serializable structure.
 
     The transformation is recursive and supports primitives, lists, tuples,
@@ -64,14 +89,14 @@ def to_serializable_dict(x: Any) -> Any:
     Examples:
         - Tuples and sets are encoded with markers:
 
-          >>> to_serializable_dict((1, 2))
+          >>> _to_serializable_dict((1, 2))
           {'..tuple..': [1, 2]}
-          >>> to_serializable_dict({1, 2})
+          >>> _to_serializable_dict({1, 2})
           {'..set..': [1, 2]}
 
         - Dict keys must be strings:
 
-          >>> to_serializable_dict({1: 'a'})
+          >>> _to_serializable_dict({1: 'a'})
           Traceback (most recent call last):
           ...
           TypeError: Dictionary key must be a string, but got: int
@@ -80,55 +105,38 @@ def to_serializable_dict(x: Any) -> Any:
         case None | bool() | int() | float() | str():
             return x
         case list():
-            return [to_serializable_dict(i) for i in x]
+            return [_to_serializable_dict(i) for i in x]
         case tuple():
-            return {_Markers.TUPLE: [to_serializable_dict(i) for i in x]}
+            return {_Markers.TUPLE: [_to_serializable_dict(i) for i in x]}
         case set():
-            return {_Markers.SET: [to_serializable_dict(i) for i in x]}
+            return {_Markers.SET: [_to_serializable_dict(i) for i in x]}
         case dict():
-            result = {}
-            for k, v in x.items():
-                if not isinstance(k, str):
-                    raise TypeError(f"Dictionary key must be a string, "
-                                    f"but got: {type(k).__name__}")
-                result[k] = to_serializable_dict(v)
-            return result
+            return _process_dict(x)
         case obj if hasattr(obj, "get_params"):
-            return {_Markers.CLASS: obj.__class__.__name__,
-                    _Markers.MODULE: obj.__class__.__module__,
-                    _Markers.PARAMS: to_serializable_dict(obj.get_params()), }
+            return _process_state(obj.get_params(), obj, _Markers.PARAMS)
         case obj if hasattr(obj, "__getstate__"):
-            return {_Markers.CLASS: obj.__class__.__name__,
-                    _Markers.MODULE: obj.__class__.__module__,
-                    _Markers.STATE: to_serializable_dict(obj.__getstate__()), }
+            return _process_state(obj.__getstate__(), obj, _Markers.STATE)
         case obj if hasattr(obj, "__dict__") or hasattr(obj.__class__, "__slots__"):
-            # Fallback: capture instance attributes from __dict__ or __slots__
-            state = {}
-            for cls in type(obj).__mro__:
-                if not hasattr(cls, "__slots__"):
-                    continue
-
-                slots = cls.__slots__
-                if isinstance(slots, str):
-                    slots = [slots]
-
-                for name in slots:
-                    if name in ("__dict__", "__weakref__"):
-                        continue
-                    try:
-                        state[name] = getattr(obj, name)
-                    except AttributeError:
-                        pass  # Slot not set on instance.
-
-            if hasattr(obj, "__dict__"):
-                state.update(obj.__dict__)
-            return {
-                _Markers.CLASS: obj.__class__.__name__,
-                _Markers.MODULE: obj.__class__.__module__,
-                _Markers.STATE: to_serializable_dict(state),
-            }
+            return _process_state(_collect_object_state(obj), obj, _Markers.STATE)
         case _:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
+
+def _process_dict(x:dict)->dict:
+    result = {}
+    for k, v in x.items():
+        if not isinstance(k, str):
+            raise TypeError(f"Dictionary key must be a string, "
+                            f"but got: {type(k).__name__}")
+        result[k] = _to_serializable_dict(v)
+    return result
+
+def _process_state(state:dict, obj:Any, marker:str) -> dict:
+    return {
+        _Markers.CLASS: obj.__class__.__name__,
+        _Markers.MODULE: obj.__class__.__module__,
+        marker: _to_serializable_dict(state),
+    }
+
 
 
 def _recreate_object(x: Mapping[str,Any]) -> Any:
@@ -177,11 +185,8 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
             if hasattr(obj, "__setstate__"):
                 obj.__setstate__(state)
             else: # Fallback reconstruction
-                if hasattr(obj, "__dict__"):
-                    obj.__dict__.update(state)
-                else:
-                    for k, v in state.items():
-                        setattr(obj, k, v)
+                for k, v in state.items():
+                    setattr(obj, k, v)
             return obj
         case _:
             raise TypeError("Unable to recreate object from provided data")
@@ -219,13 +224,7 @@ def _from_serializable_dict(x: Any) -> Any:
         case {_Markers.MODULE: _, **__} as d:
             return _recreate_object(d)
         case dict() as d:
-            result = {}
-            for k, v in d.items():
-                if not isinstance(k, str):
-                    raise TypeError(f"Dictionary key must be a string, "
-                                    f"but got: {type(k).__name__}")
-                result[k] = _from_serializable_dict(v)
-            return result
+            return {k: _from_serializable_dict(v) for k, v in d.items()}
         case _:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
 
@@ -241,7 +240,7 @@ def dumps(obj: Any, **kwargs) -> str:
     Returns:
         The JSON string representing the object.
     """
-    return json.dumps(to_serializable_dict(obj), **kwargs)
+    return json.dumps(_to_serializable_dict(obj), **kwargs)
 
 
 def loads(s: str, **kwargs) -> Any:
