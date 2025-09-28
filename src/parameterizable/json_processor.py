@@ -42,7 +42,19 @@ class _Markers(str, Enum):
 
 
 def _collect_object_state(obj: Any) -> dict:
-    """Collect instance attributes from __dict__ and __slots__ recursively."""
+    """Collect attributes from __dict__ and __slots__ across the class hierarchy.
+
+    Traverses the method resolution order (MRO) to gather values defined in
+    ``__slots__`` for each class, and merges them with the instance ``__dict__``
+    when present. Missing slot attributes are ignored.
+
+    Args:
+        obj: The object whose state should be collected.
+
+    Returns:
+        A flat dictionary of attribute names to values representing the object's
+        state suitable for further serialization.
+    """
     state: dict[str, Any] = {}
 
     # Collect from __slots__ across the MRO
@@ -122,6 +134,20 @@ def _to_serializable_dict(x: Any) -> Any:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
 
 def _process_dict(x:dict)->dict:
+    """Convert a dict ensuring string keys and recursively serializing values.
+
+    Validates that all keys are strings (as required by JSON) and applies
+    _to_serializable_dict() to each value.
+
+    Args:
+        x: Mapping to convert. Keys must be strings.
+
+    Returns:
+        A new dict with JSON-serializable values.
+
+    Raises:
+        TypeError: If any key is not a string.
+    """
     result = {}
     for k, v in x.items():
         if not isinstance(k, str):
@@ -131,12 +157,24 @@ def _process_dict(x:dict)->dict:
     return result
 
 def _process_state(state:dict, obj:Any, marker:str) -> dict:
-    return {
-        _Markers.CLASS: obj.__class__.__name__,
-        _Markers.MODULE: obj.__class__.__module__,
-        marker: _to_serializable_dict(state),
-    }
+    """Wrap object identity and state into a marker-bearing mapping.
 
+    Produces a dictionary containing the object's class and module names along
+    with the provided state under the specified marker (e.g., ``PARAMS`` or
+    ``STATE``). The state is recursively converted to JSON-serializable types.
+
+    Args:
+        state: The attribute/parameter mapping representing the object's state.
+        obj: The object being serialized (used to extract class/module names).
+        marker: Which marker to use for the state payload.
+
+    Returns:
+        A dictionary suitable for JSON encoding that can be used by
+        _recreate_object() to rebuild the instance.
+    """
+    return {_Markers.CLASS: obj.__class__.__name__,
+        _Markers.MODULE: obj.__class__.__module__,
+        marker: _to_serializable_dict(state)}
 
 
 def _recreate_object(x: Mapping[str,Any]) -> Any:
