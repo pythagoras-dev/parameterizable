@@ -54,42 +54,42 @@ class _Markers:
     ENUM = "...ENUM..."
 
 
-def _collect_object_state(obj: Any) -> dict:
-    """Collect attributes from __dict__ and __slots__ across the class hierarchy.
-
-    Traverses the method resolution order (MRO) to gather values defined in
-    ``__slots__`` for each class, and merges them with the instance ``__dict__``
-    when present. Missing slot attributes are ignored.
-
-    Args:
-        obj: The object whose state should be collected.
-
-    Returns:
-        A flat dictionary of attribute names to values representing the object's
-        state suitable for further serialization.
-    """
-    state: dict[str, Any] = {}
-
-    # Collect from __slots__ across the MRO
-    for cls in type(obj).__mro__:
-        if not hasattr(cls, "__slots__"):
-            continue
-        slots = cls.__slots__
-        if isinstance(slots, str):
-            slots = [slots]
-        for name in slots:
-            if name in ("__dict__", "__weakref__"):
-                continue
-            try:
-                state[name] = getattr(obj, name)
-            except AttributeError:
-                # Slot not set on instance
-                pass
-
-    # Collect from __dict__ if available
-    if hasattr(obj, "__dict__"):
-        state.update(obj.__dict__)
-    return state
+# def _collect_object_state(obj: Any) -> dict:
+#     """Collect attributes from __dict__ and __slots__ across the class hierarchy.
+#
+#     Traverses the method resolution order (MRO) to gather values defined in
+#     ``__slots__`` for each class, and merges them with the instance ``__dict__``
+#     when present. Missing slot attributes are ignored.
+#
+#     Args:
+#         obj: The object whose state should be collected.
+#
+#     Returns:
+#         A flat dictionary of attribute names to values representing the object's
+#         state suitable for further serialization.
+#     """
+#     state: dict[str, Any] = {}
+#
+#     # Collect from __slots__ across the MRO
+#     for cls in reversed(type(obj).__mro__):
+#         if not hasattr(cls, "__slots__"):
+#             continue
+#         slots = cls.__slots__
+#         if isinstance(slots, str):
+#             slots = [slots]
+#         for name in slots:
+#             if name in ("__dict__", "__weakref__"):
+#                 continue
+#             try:
+#                 state[name] = getattr(obj, name)
+#             except AttributeError:
+#                 # Slot not set on instance
+#                 pass
+#
+#     # Collect from __dict__ if available
+#     if hasattr(obj, "__dict__"):
+#         state.update(obj.__dict__)
+#     return state
 
 def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
     """Convert a Python object into a JSON-serializable structure.
@@ -134,40 +134,43 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
     seen.add(obj_id)
 
     try:
-        match x:
-            case obj if hasattr(obj, "get_params"):
-                result = _process_state(obj.get_params(), obj, _Markers.PARAMS, seen)
+        if hasattr(x, "get_params"):
+            result = _process_state(x.get_params(), x, _Markers.PARAMS, seen)
+        elif isinstance(x, list):
+            result = [_to_serializable_dict(i, seen) for i in x]
+        elif isinstance(x, tuple):
+            result = {_Markers.TUPLE: [_to_serializable_dict(i, seen) for i in x]}
+        elif isinstance(x, set):
+            result = {_Markers.SET: [_to_serializable_dict(i, seen) for i in x]}
+        elif isinstance(x, dict):
+            result = {_Markers.DICT: [
+                    [_to_serializable_dict(k, seen), _to_serializable_dict(v, seen)]
+                    for k, v in x.items()]}
+        elif isinstance(x, Enum):
+            result = {_Markers.ENUM: x.name,
+                _Markers.CLASS: x.__class__.__qualname__,
+                _Markers.MODULE: x.__class__.__module__,}
+        elif hasattr(x, "__getstate__"):
+            result = _process_state(x.__getstate__(), x, _Markers.STATE, seen)
+        elif hasattr(x.__class__, "__slots__"):
+            # For slotted objects, create a pickle-style state tuple.
+            slots = _get_all_slots(type(x))
+            # This will raise AttributeError if a slot is not initialized,
+            # which is safer than ignoring it.
+            slot_state = tuple(getattr(x, name) for name in slots)
 
-            case list():
-                result = [_to_serializable_dict(i, seen) for i in x]
-            case tuple():
-                result = {_Markers.TUPLE: [_to_serializable_dict(i, seen) for i in x]}
-            case set():
-                result = {_Markers.SET: [_to_serializable_dict(i, seen) for i in x]}
-            case dict():
-                # Keep plain dict when keys are strings; use DICT marker otherwise
-                if all(isinstance(k, str) for k in x.keys()):
-                    result = {k: _to_serializable_dict(v, seen) for k, v in x.items()}
-                else:
-                    result = {
-                        _Markers.DICT: [
-                            [_to_serializable_dict(k, seen), _to_serializable_dict(v, seen)]
-                            for k, v in x.items()
-                        ]
-                    }
-            case Enum():
-                result = {
-                    _Markers.ENUM: x.name,
-                    _Markers.CLASS: x.__class__.__qualname__,
-                    _Markers.MODULE: x.__class__.__module__,
-                }
-
-            case obj if hasattr(obj, "__getstate__"):
-                result = _process_state(obj.__getstate__(), obj, _Markers.STATE, seen)
-            case obj if hasattr(obj, "__dict__") or hasattr(obj.__class__, "__slots__"):
-                result = _process_state(_collect_object_state(obj), obj, _Markers.STATE, seen)
-            case _:
-                raise TypeError(f"Unsupported type: {type(x).__name__}")
+            if hasattr(x, "__dict__"):
+                # Hybrid object with slots and dict
+                final_state = (slot_state, x.__dict__)
+            else:
+                # Slots-only object: use a (slots, None) tuple for consistency
+                # in the reconstruction logic.
+                final_state = (slot_state, None)
+            result = _process_state(final_state, x, _Markers.STATE, seen)
+        elif hasattr(x, "__dict__"):
+            result = _process_state(x.__dict__, x, _Markers.STATE, seen)
+        else:
+            raise TypeError(f"Unsupported type: {type(x).__name__}")
     finally:
         seen.remove(obj_id)
     return result
@@ -265,26 +268,54 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
                 # for classes with __slots__.
                 slots_to_fill = _get_all_slots(cls)
 
-                # For classes with __dict__ in __slots__, state can be a 2-tuple (slot_values, dict_values)
-                # where dict_values can be None if the dict is empty.
-                if len(state) == 2 and (state[1] is None or isinstance(state[1], dict)):
-                    slot_values, dict_values = state
+                # Support multiple tuple state formats:
+                # 1) (slot_values_seq, dict_values) where slot_values_seq is a sequence of values
+                # 2) (dict_values, slot_mapping) as produced by CPython's built-in __getstate__ for slotted classes
+                # 3) A plain tuple of slot values
+                slot_values_seq = None
+                slot_mapping = None
+                dict_values = None
+
+                if len(state) == 2:
+                    a, b = state
+                    if isinstance(a, dict) and isinstance(b, dict):
+                        # CPython default: (dict_values, slot_mapping)
+                        dict_values = a
+                        slot_mapping = b
+                    elif isinstance(a, (list, tuple)) and (b is None or isinstance(b, dict)):
+                        # Our encoder format: (slot_values_seq, dict_values)
+                        slot_values_seq = list(a)
+                        dict_values = b
+                    elif isinstance(a, dict) and isinstance(b, (list, tuple)):
+                        # Be tolerant if components are swapped
+                        dict_values = a
+                        slot_values_seq = list(b)
+                    elif a is None and isinstance(b, dict):
+                        # No slots, only dict
+                        dict_values = b
+                    else:
+                        # Fallback: treat entire state as slot values
+                        slot_values_seq = list(state)
                 else:
                     # Otherwise, state is just a tuple of slot values
-                    slot_values, dict_values = state, None
+                    slot_values_seq = list(state)
 
+                # Apply slots
+                if slot_mapping is not None:
+                    for name, value in slot_mapping.items():
+                        setattr(obj, name, value)
+                elif slot_values_seq is not None and len(slot_values_seq) > 0:
+                    if len(slot_values_seq) != len(slots_to_fill):
+                        raise TypeError(
+                            f"Tuple state length {len(slot_values_seq)} does not match "
+                            f"slots length {len(slots_to_fill)} for class {cls.__name__}")
+                    for value, name in zip(slot_values_seq, slots_to_fill):
+                        setattr(obj, name, value)
+
+                # Apply dict attributes, if any
                 if dict_values:
                     for k, v in dict_values.items():
                         setattr(obj, k, v)
-
-                # slot_values can be an empty tuple or None for some __getstate__ impls
-                if slot_values:
-                    if len(slot_values) != len(slots_to_fill):
-                        raise TypeError(
-                            f"Tuple state length {len(slot_values)} does not match "
-                            f"slots length {len(slots_to_fill)} for class {cls.__name__}")
-                    for value, name in zip(slot_values, slots_to_fill):
-                        setattr(obj, name, value)
 
             else: # Fallback reconstruction
                 for k, v in state.items():
@@ -341,8 +372,6 @@ def _from_serializable_dict(x: Any) -> Any:
                     for k, v in pairs}
         case {_Markers.MODULE: _, **__} | {_Markers.CLASS: _, **__} as d:
             return _recreate_object(d)
-        case dict() as d:
-            return {k: _from_serializable_dict(v) for k, v in d.items()}
         case _:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
 

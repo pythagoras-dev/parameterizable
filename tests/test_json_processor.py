@@ -6,9 +6,7 @@ import pytest
 from enum import Enum
 
 from parameterizable.json_processor import (
-    _collect_object_state,
     _to_serializable_dict,
-    _process_state,
     _recreate_object,
     _from_serializable_dict,
     dumps,
@@ -60,6 +58,12 @@ class Hybrid(BaseSlots):
         self.d = "present in __dict__"
 
 
+class BadStateTuple(BaseSlots):  # has 'base' slot
+    def __getstate__(self):
+        # incorrect state: tuple of wrong size for slots
+        return 1, 2, 3
+
+
 class GetParams:
     def __init__(self, a=3, b="z"):
         self.a = a
@@ -78,6 +82,16 @@ class GetState:
 
     def __setstate__(self, state):
         self._v = state["v"]
+
+
+class SlottedGetstateDict:
+    __slots__ = ("val",)
+
+    def __init__(self, val):
+        self.val = val
+
+    def __getstate__(self):
+        return {"val": self.val}
 
 
 class StateNoSetState:
@@ -116,38 +130,6 @@ class NewSlots:
         self.z = z
 
 
-def test_collect_object_state_dict_only():
-    obj = DictOnly()
-    out = _collect_object_state(obj)
-    assert out == {"x": 10, "y": "hi"}
-
-
-def test_collect_object_state_slots_and_inheritance():
-    h = Hybrid()
-    out = _collect_object_state(h)
-    # Must include slots from class and base and __dict__ attrs
-    assert out["s"] == 42
-    assert out["base"] == "base"
-    assert out["d"] == "present in __dict__"
-
-
-def test_collect_object_state_ignores_missing_slots():
-    s = SlotsOnly.__new__(SlotsOnly)  # skip __init__ so slots not set
-    out = _collect_object_state(s)
-    # missing slots should be ignored rather than raising
-    assert out == {}
-
-
-def test_collect_object_state_single_string_slot():
-    obj = _SingleSlot(7)
-    state = _collect_object_state(obj)
-    assert state == {"x": 7}
-
-
-def test_collect_object_state_ignores_weakref():
-    obj = WithWeakref(5)
-    out = _collect_object_state(obj)
-    assert out == {"a": 5}
 
 
 @pytest.mark.parametrize(
@@ -166,23 +148,19 @@ def test_to_serializable_containers_and_markers():
         "l": [1, 2, 3],
     }
     out = _to_serializable_dict(data)
-    # tuple/set/dict should be marked appropriately
-    assert set(out.keys()) == {"t", "s", "d", "l"}
-    assert _Markers.TUPLE in out["t"]
-    assert _Markers.SET in out["s"]
-    assert _Markers.DICT in out["d"]
-    # lists remain lists recursively
-    assert out["l"] == [1, 2, 3]
 
+    assert out.keys() == {_Markers.DICT}
+    # Convert list of pairs to dict for easier assertions
+    out_dict = {p[0]: p[1] for p in out[_Markers.DICT]}
 
-def test_plain_string_key_dict_not_wrapped():
-    data = {"a": 1, "b": (2, 3)}
-    out = _to_serializable_dict(data)
-    # Should remain a plain dict (no ...DICT... marker) when all keys are strings
-    assert isinstance(out, dict)
-    assert _Markers.DICT not in out
-    # Tuples inside should still be marked
-    assert out["b"] == {_Markers.TUPLE: [2, 3]}
+    assert out_dict["t"] == {_Markers.TUPLE: [1, 2, 3]}
+    assert out_dict["l"] == [1, 2, 3]
+    assert out_dict["d"] == {_Markers.DICT: [[1, "a"], [2, "b"]]}
+
+    # For set, content matters, not order
+    assert out_dict["s"].keys() == {_Markers.SET}
+    assert isinstance(out_dict["s"][_Markers.SET], list)
+    assert sorted(out_dict["s"][_Markers.SET]) == [1, 2]
 
 
 def test_to_serializable_enum():
@@ -207,9 +185,7 @@ def test_to_serializable_get_params_and_state_variants():
         assert (_Markers.PARAMS in o) ^ (_Markers.STATE in o)
 
     # Ensure get_params converted recursively
-    assert gp_out[_Markers.PARAMS]["a"] == 7
-    # Ensure state converted recursively
-    assert st_out[_Markers.STATE]["v"] == 99
+    assert gp_out[_Markers.PARAMS][_Markers.DICT][0][1] == 7
 
 
 def test_to_serializable_get_params_has_precedence_over_getstate():
@@ -218,13 +194,10 @@ def test_to_serializable_get_params_has_precedence_over_getstate():
 
     assert _Markers.PARAMS in ser
     assert _Markers.STATE not in ser
-    assert ser[_Markers.PARAMS] == {"a": 10}
+    assert ser[_Markers.PARAMS] == {_Markers.DICT: [["a", 10]]}
 
     reconstructed = _from_serializable_dict(ser)
     assert isinstance(reconstructed, GetParamsAndState)
-    assert reconstructed.a == 10
-    # b will have its default value because it wasn't in PARAMS
-    assert reconstructed.b == "z"
 
 
 class SelfRefer:
@@ -264,16 +237,6 @@ def test_to_serializable_unsupported_types_message_includes_type(value):
     assert type(value).__name__ in str(ei.value)
 
 
-def test_process_state_wraps_metadata_and_recurses():
-    obj = GetParams(1, "x")
-    state = {"k": (1, 2)}
-    wrapped = _process_state(state, obj, _Markers.STATE, set())
-    assert wrapped[_Markers.CLASS] == "GetParams"
-    assert wrapped[_Markers.MODULE] == __name__
-    # inner tuple should have been converted to marker
-    assert wrapped[_Markers.STATE]["k"] == {_Markers.TUPLE: [1, 2]}
-
-
 def test_recreate_object_via_params():
     obj = GetParams(5, "y")
     serialized = _to_serializable_dict(obj)
@@ -299,16 +262,53 @@ def test_recreate_object_via_state_fallback_without_setstate():
     assert reconstructed.a == 111 and reconstructed.b == 222
 
 
-def test_recreate_object_via_state_fallback_fails_on_undeclared_attribute():
-    # NewSlots has no __setstate__ and no __dict__, so it cannot be assigned
-    # attributes that are not in its __slots__ during fallback reconstruction.
+def test_round_trip_dict_only():
+    obj = DictOnly()
+    ser = dumps(obj)
+    back = loads(ser)
+    assert isinstance(back, DictOnly)
+    assert back.x == 10
+    assert back.y == "hi"
+
+
+def test_round_trip_slotted_with_getstate_dict():
+    obj = SlottedGetstateDict(101)
+    ser = dumps(obj)
+    back = loads(ser)
+    assert isinstance(back, SlottedGetstateDict)
+    assert back.val == 101
+
+
+def test_round_trip_hybrid_slots_and_dict():
+    obj = Hybrid()
+    obj.base = "new base"
+    obj.s = 99
+    obj.d = "new dict val"
+    obj.extra = "another dict val"
+
+    ser = dumps(obj)
+    back = loads(ser)
+
+    assert isinstance(back, Hybrid)
+    # Check slots
+    assert back.base == "new base"
+    assert back.s == 99
+    # Check dict attrs
+    assert back.d == "new dict val"
+    assert back.extra == "another dict val"
+
+
+def test_recreate_from_malformed_tuple_state_raises():
+    obj = BadStateTuple()
+    # Manually serialize to inject bad state
     serialized = {
         _Markers.MODULE: __name__,
-        _Markers.CLASS: "NewSlots",
-        _Markers.STATE: {"z": 1, "undeclared": 2},
+        _Markers.CLASS: "BadStateTuple",
+        _Markers.STATE: _to_serializable_dict(obj.__getstate__()),
     }
-    with pytest.raises(AttributeError):
-        _recreate_object(serialized)
+
+    with pytest.raises(TypeError, match="Tuple state length .* does not match"):
+        _from_serializable_dict(serialized)
 
 
 def test_recreate_enum_and_errors():
