@@ -119,11 +119,9 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
           {'...SET...': [1, 2]}
     """
 
-    match x:
-        case None | bool() | int() | float() | str():
-            return x
-
-    if isinstance(x, _UNSUPPORTED_TYPES):
+    if isinstance(x,(int, float, bool, str, type(None))):
+        return x
+    elif isinstance(x, _UNSUPPORTED_TYPES):
         raise TypeError(f"Unsupported type: {type(x).__name__}")
 
     if seen is None:
@@ -267,15 +265,13 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
                 # for classes with __slots__.
                 slots_to_fill = _get_all_slots(cls)
 
-                slot_values, dict_values = (None, None)
-
                 # For classes with __dict__ in __slots__, state can be a 2-tuple (slot_values, dict_values)
                 # where dict_values can be None if the dict is empty.
                 if len(state) == 2 and (state[1] is None or isinstance(state[1], dict)):
                     slot_values, dict_values = state
                 else:
                     # Otherwise, state is just a tuple of slot values
-                    slot_values = state
+                    slot_values, dict_values = state, None
 
                 if dict_values:
                     for k, v in dict_values.items():
