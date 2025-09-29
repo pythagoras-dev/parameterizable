@@ -191,6 +191,21 @@ def _process_state(state: Any, obj: Any, marker: str, seen: set[int]) -> dict:
         marker: _to_serializable_dict(state, seen)}
 
 
+def _get_all_slots(cls: type) -> list[str]:
+    """Collect all slot names from a class hierarchy, excluding special ones."""
+    slots_to_fill = []
+    # Traverse in reverse MRO to maintain parent-to-child slot order
+    for base_cls in reversed(cls.__mro__):
+        base_slots = getattr(base_cls, "__slots__", [])
+        if isinstance(base_slots, str):
+            base_slots = [base_slots]
+        for slot_name in base_slots:
+            if slot_name in ("__dict__", "__weakref__"):
+                continue
+            slots_to_fill.append(slot_name)
+    return slots_to_fill
+
+
 def _recreate_object(x: Mapping[str,Any]) -> Any:
     """Recreate an object instance from its serialized metadata.
 
@@ -243,15 +258,7 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
             elif isinstance(state, tuple):
                 # This branch handles tuple state, typically from __getstate__
                 # for classes with __slots__.
-                slots_to_fill = []
-                for base_cls in reversed(cls.__mro__):
-                    base_slots = getattr(base_cls, '__slots__', [])
-                    if isinstance(base_slots, str):
-                        base_slots = [base_slots]
-                    for slot_name in base_slots:
-                        if slot_name in ('__dict__', '__weakref__'):
-                            continue
-                        slots_to_fill.append(slot_name)
+                slots_to_fill = _get_all_slots(cls)
 
                 slot_values = None
                 dict_values = None
