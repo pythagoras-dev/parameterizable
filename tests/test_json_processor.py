@@ -35,13 +35,6 @@ class SlotsOnly:
         self.b = b
 
 
-class _SingleSlot:
-    __slots__ = "x"
-
-    def __init__(self, x=5):
-        self.x = x
-
-
 class BaseSlots:
     __slots__ = ("base",)
 
@@ -123,13 +116,8 @@ class GetParamsAndState:
         return {"b": self.b}
 
 
-class NewSlots:
-    __slots__ = ("z",)
-
-    def __init__(self, z=1):
-        self.z = z
-
-
+class SelfRefer:
+    pass
 
 
 @pytest.mark.parametrize(
@@ -198,10 +186,6 @@ def test_to_serializable_get_params_has_precedence_over_getstate():
 
     reconstructed = _from_serializable_dict(ser)
     assert isinstance(reconstructed, GetParamsAndState)
-
-
-class SelfRefer:
-    pass
 
 
 @pytest.mark.parametrize(
@@ -298,6 +282,14 @@ def test_round_trip_hybrid_slots_and_dict():
     assert back.extra == "another dict val"
 
 
+def test_round_trip_with_weakref():
+    obj = WithWeakref(a=10)
+    ser = dumps(obj)
+    back = loads(ser)
+    assert isinstance(back, WithWeakref)
+    assert back.a == 10
+
+
 def test_recreate_from_malformed_tuple_state_raises():
     obj = BadStateTuple()
     # Manually serialize to inject bad state
@@ -309,6 +301,30 @@ def test_recreate_from_malformed_tuple_state_raises():
 
     with pytest.raises(TypeError, match="Tuple state length .* does not match"):
         _from_serializable_dict(serialized)
+
+
+def test_recreate_from_cpython_getstate_tuple_format():
+    obj = Hybrid()
+    obj.base = "b"
+    obj.s = 1
+    obj.d = 2  # this goes into __dict__
+
+    # This is what obj.__getstate__() would return for a hybrid object
+    # The first element is the __dict__, second is a dict of slot values
+    state_tuple = ({"d": 2}, {"base": "b", "s": 1})
+
+    serialized_payload = {
+        _Markers.MODULE: __name__,
+        _Markers.CLASS: "Hybrid",
+        _Markers.STATE: _to_serializable_dict(state_tuple),
+    }
+
+    reconstructed = _from_serializable_dict(serialized_payload)
+
+    assert isinstance(reconstructed, Hybrid)
+    assert reconstructed.base == "b"
+    assert reconstructed.s == 1
+    assert reconstructed.d == 2
 
 
 def test_recreate_enum_and_errors():
