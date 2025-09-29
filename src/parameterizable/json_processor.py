@@ -17,6 +17,16 @@ from enum import Enum
 from typing import Any, Mapping
 
 
+_UNSUPPORTED_TYPES = (
+    types.ModuleType,
+    types.FunctionType,
+    types.LambdaType,
+    types.BuiltinFunctionType,
+    types.MethodType,
+    types.CodeType,
+    type,
+)
+
 class _Markers:
     """Internal keys used to tag non-JSON-native constructs.
 
@@ -113,6 +123,9 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
         case None | bool() | int() | float() | str():
             return x
 
+    if isinstance(x, _UNSUPPORTED_TYPES):
+        raise TypeError(f"Unsupported type: {type(x).__name__}")
+
     if seen is None:
         seen = set()
 
@@ -121,10 +134,6 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
         raise RecursionError(
             f"Cyclic reference detected while serializing object of type {type(x).__name__}")
     seen.add(obj_id)
-
-    # Reject certain unsupported reflective/builtin types early
-    if isinstance(x, (types.ModuleType, types.FunctionType, types.LambdaType, types.BuiltinFunctionType, types.MethodType, types.CodeType, type)):
-        raise TypeError(f"Unsupported type: {type(x).__name__}")
 
     try:
         match x:
@@ -258,14 +267,12 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
                 # for classes with __slots__.
                 slots_to_fill = _get_all_slots(cls)
 
-                slot_values = None
-                dict_values = None
+                slot_values, dict_values = (None, None)
 
                 # For classes with __dict__ in __slots__, state can be a 2-tuple (slot_values, dict_values)
                 # where dict_values can be None if the dict is empty.
                 if len(state) == 2 and (state[1] is None or isinstance(state[1], dict)):
-                    slot_values = state[0]
-                    dict_values = state[1]
+                    slot_values, dict_values = state
                 else:
                     # Otherwise, state is just a tuple of slot values
                     slot_values = state
