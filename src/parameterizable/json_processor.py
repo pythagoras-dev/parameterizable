@@ -157,8 +157,6 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
 
             case obj if hasattr(obj, "__getstate__"):
                 result = _process_state(obj.__getstate__(), obj, _Markers.STATE, seen)
-            case obj if isinstance(obj, (types.ModuleType, types.FunctionType, types.LambdaType, types.BuiltinFunctionType, types.MethodType, types.CodeType, type)):
-                raise TypeError(f"Unsupported type: {type(obj).__name__}")
             case obj if hasattr(obj, "__dict__") or hasattr(obj.__class__, "__slots__"):
                 result = _process_state(_collect_object_state(obj), obj, _Markers.STATE, seen)
             case _:
