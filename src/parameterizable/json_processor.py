@@ -143,9 +143,8 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
         elif isinstance(x, set):
             result = {_Markers.SET: [_to_serializable_dict(i, seen) for i in x]}
         elif isinstance(x, dict):
-            result = {_Markers.DICT: [
-                    [_to_serializable_dict(k, seen), _to_serializable_dict(v, seen)]
-                    for k, v in x.items()]}
+            result = {_Markers.DICT: { k: _to_serializable_dict(v, seen)
+                for k, v in x.items()}}
         elif isinstance(x, Enum):
             result = {_Markers.ENUM: x.name,
                 _Markers.CLASS: x.__class__.__qualname__,
@@ -361,15 +360,9 @@ def _from_serializable_dict(x: Any) -> Any:
         case {_Markers.DICT: val}:
             if not len(x) == 1:
                 raise TypeError("DICT marker must be the only key")
-            if not isinstance(val, list):
-                raise TypeError("DICT marker must map to a list of lists")
-            pairs: list[tuple[Any, Any]] = []
-            for item in val:
-                if not (isinstance(item, (list, tuple)) and len(item) == 2):
-                    raise TypeError("DICT marker must map to a list of 2-item pairs")
-                pairs.append((item[0], item[1]))
-            return {_from_serializable_dict(k): _from_serializable_dict(v)
-                    for k, v in pairs}
+            if not isinstance(val, dict):
+                raise TypeError("DICT marker must map to a dict")
+            return {k: _from_serializable_dict(v) for k, v in val.items()}
         case {_Markers.MODULE: _, **__} | {_Markers.CLASS: _, **__} as d:
             return _recreate_object(d)
         case _:

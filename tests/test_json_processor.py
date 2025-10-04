@@ -139,16 +139,16 @@ def test_to_serializable_containers_and_markers():
 
     assert out.keys() == {_Markers.DICT}
     # Convert list of pairs to dict for easier assertions
-    out_dict = {p[0]: p[1] for p in out[_Markers.DICT]}
+    out_dict = {k: v for k,v in out[_Markers.DICT].items()}
 
     assert out_dict["t"] == {_Markers.TUPLE: [1, 2, 3]}
     assert out_dict["l"] == [1, 2, 3]
-    assert out_dict["d"] == {_Markers.DICT: [[1, "a"], [2, "b"]]}
+    assert out_dict["d"] == {_Markers.DICT: {1: "a", 2: "b"}}
 
     # For set, content matters, not order
     assert out_dict["s"].keys() == {_Markers.SET}
     assert isinstance(out_dict["s"][_Markers.SET], list)
-    assert sorted(out_dict["s"][_Markers.SET]) == [1, 2]
+    assert sorted(out_dict["s"][_Markers.SET]) == [1,2]
 
 
 def test_to_serializable_enum():
@@ -173,7 +173,7 @@ def test_to_serializable_get_params_and_state_variants():
         assert (_Markers.PARAMS in o) ^ (_Markers.STATE in o)
 
     # Ensure get_params converted recursively
-    assert gp_out[_Markers.PARAMS][_Markers.DICT][0][1] == 7
+    assert gp_out[_Markers.PARAMS][_Markers.DICT]["a"] == 7
 
 
 def test_to_serializable_get_params_has_precedence_over_getstate():
@@ -182,7 +182,7 @@ def test_to_serializable_get_params_has_precedence_over_getstate():
 
     assert _Markers.PARAMS in ser
     assert _Markers.STATE not in ser
-    assert ser[_Markers.PARAMS] == {_Markers.DICT: [["a", 10]]}
+    assert ser[_Markers.PARAMS] == {_Markers.DICT: {"a": 10}}
 
     reconstructed = _from_serializable_dict(ser)
     assert isinstance(reconstructed, GetParamsAndState)
