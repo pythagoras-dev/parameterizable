@@ -27,18 +27,9 @@ Constants:
 
 from .parameterizable import (
     # Classes
-    ParameterizableClass,
+    ParameterizableClass
+    )
 
-    # Functions
-    get_object_from_portable_params,
-    is_parameterizable,
-    register_parameterizable_class,
-    is_registered,
-    smoketest_parameterizable_class,
-
-    # Constants
-    CLASSNAME_PARAM_KEY
-)
 
 from .dict_sorter import sort_dict_by_keys
 
@@ -54,12 +45,6 @@ __all__ = [
     'ParameterizableClass',
     "loads",
     "dumps",
-    'get_object_from_portable_params',
-    'is_parameterizable',
-    'is_registered',
-    'register_parameterizable_class',
-    'smoketest_parameterizable_class',
-    'CLASSNAME_PARAM_KEY',
     'JsonSerializedParams',
     'update_jsparams',
     'access_jsparams'
