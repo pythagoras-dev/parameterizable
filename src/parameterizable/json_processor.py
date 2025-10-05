@@ -47,15 +47,14 @@ class _Markers:
             reconstruction.
     """
 
-    DICT = "..DICT.."
-    TUPLE = "..TUPLE.."
-    SET = "..SET.."
-    CLASS = "..CLASS.."
-    MODULE = "..MODULE.."
-    PARAMS = "..PARAMETERS.."
-    STATE = "..STATE.."
-    ENUM = "..ENUM.."
-
+    DICT = "..dict.."
+    TUPLE = "..tuple.."
+    SET = "..set.."
+    CLASS = "..class.."
+    MODULE = "..module.."
+    PARAMS = "..params.."
+    STATE = "..state.."
+    ENUM = "..enum.."
 
 
 def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
