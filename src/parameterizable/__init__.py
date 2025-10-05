@@ -46,7 +46,8 @@ from .json_processor import (
     JsonSerializedParams,
     loads,
     dumps,
-    update_jsparams)
+    update_jsparams,
+    access_jsparams)
 
 __all__ = [
     'sort_dict_by_keys',
@@ -60,5 +61,6 @@ __all__ = [
     'smoketest_parameterizable_class',
     'CLASSNAME_PARAM_KEY',
     'JsonSerializedParams',
-    'update_jsparams'
+    'update_jsparams',
+    'access_jsparams'
 ]

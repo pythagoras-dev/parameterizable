@@ -374,3 +374,8 @@ def update_jsparams(jsparams:JsonSerializedParams, **kwargs):
     params = sort_dict_by_keys(params)
     params_json = json.dumps(params)
     return params_json
+
+
+def access_jsparams(jsparams:JsonSerializedParams, *args):
+    params = json.loads(jsparams)
+    return {k:params[_Markers.PARAMS][_Markers.DICT][k] for k in args}
