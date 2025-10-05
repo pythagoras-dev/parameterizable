@@ -14,7 +14,7 @@ import inspect
 from typing import Any
 
 from .dict_sorter import sort_dict_by_keys
-from .json_processor import loads,dumps, JsonSerializedParams
+from .json_processor import loadjs,dumpjs, JsonSerializedObject
 
 
 class ParameterizableClass:
@@ -51,20 +51,10 @@ class ParameterizableClass:
         return params
 
 
-    def get_jsparams(self) -> JsonSerializedParams:
+    def get_jsparams(self) -> JsonSerializedObject:
         """Get the parameters of the object as a JSON string."""
-        # Serialize the whole object so that class/module metadata is included,
-        # allowing from_jsparams() to reconstruct the instance.
-        return dumps(self)
+        return dumpjs(self.get_params())
 
-
-    @staticmethod
-    def from_jsparams(jsparams: JsonSerializedParams) -> "ParameterizableClass":
-        """Create an object from a JSON string produced by get_jsparams()."""
-        result =  loads(jsparams)
-        if not isinstance(result, ParameterizableClass):
-            raise TypeError(f"Expected a ParameterizableClass, got {type(result)}")
-        return result
 
     @classmethod
     def get_default_params(cls) -> dict[str, Any]:
@@ -97,9 +87,9 @@ class ParameterizableClass:
 
 
     @classmethod
-    def get_default_jsparams(cls) -> JsonSerializedParams:
+    def get_default_jsparams(cls) -> JsonSerializedObject:
         """Get the default parameters of the class as a JSON string."""
-        return dumps(cls.get_default_params())
+        return dumpjs(cls.get_default_params())
 
 
     @property
@@ -109,6 +99,9 @@ class ParameterizableClass:
         Essential parameters are the parameters that define the substance of
         the object's behavior and/or identity, e.g. the max number of
         decision trees in a forest or max depth of a tree.
+
+        In most cases, the essential parameters are immutable (do not
+        change during the lifetime of the object).
         """
         return set(self.get_default_params().keys())
 
@@ -130,9 +123,9 @@ class ParameterizableClass:
                 if k in self.essential_param_names}
 
 
-    def get_essential_jsparams(self) -> JsonSerializedParams:
+    def get_essential_jsparams(self) -> JsonSerializedObject:
         """Get the essential parameters of the object as a JSON string."""
-        return dumps(self.get_essential_params())
+        return dumpjs(self.get_essential_params())
 
 
     def get_auxiliary_params(self) -> dict[str,Any]:
@@ -141,6 +134,6 @@ class ParameterizableClass:
             if k in self.auxiliary_param_names}
 
 
-    def get_auxiliary_jsparams(self) -> JsonSerializedParams:
+    def get_auxiliary_jsparams(self) -> JsonSerializedObject:
         """Get the auxiliary parameters of the object as a JSON string."""
-        return dumps(self.get_auxiliary_params())
+        return dumpjs(self.get_auxiliary_params())

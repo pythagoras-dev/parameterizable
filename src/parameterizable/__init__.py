@@ -31,18 +31,18 @@ from .parameterizable import (
 from .dict_sorter import sort_dict_by_keys
 
 from .json_processor import (
-    JsonSerializedParams,
-    loads,
-    dumps,
+    JsonSerializedObject,
+    loadjs,
+    dumpjs,
     update_jsparams,
     access_jsparams)
 
 __all__ = [
     'sort_dict_by_keys',
     'ParameterizableClass',
-    "loads",
-    "dumps",
-    'JsonSerializedParams',
+    "loadjs",
+    "dumpjs",
+    'JsonSerializedObject',
     'update_jsparams',
     'access_jsparams'
 ]

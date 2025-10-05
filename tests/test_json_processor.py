@@ -9,8 +9,8 @@ from parameterizable.json_processor import (
     _to_serializable_dict,
     _recreate_object,
     _from_serializable_dict,
-    dumps,
-    loads,
+    dumpjs,
+    loadjs,
     _Markers,
 )
 
@@ -248,8 +248,8 @@ def test_recreate_object_via_state_fallback_without_setstate():
 
 def test_round_trip_dict_only():
     obj = DictOnly()
-    ser = dumps(obj)
-    back = loads(ser)
+    ser = dumpjs(obj)
+    back = loadjs(ser)
     assert isinstance(back, DictOnly)
     assert back.x == 10
     assert back.y == "hi"
@@ -257,8 +257,8 @@ def test_round_trip_dict_only():
 
 def test_round_trip_slotted_with_getstate_dict():
     obj = SlottedGetstateDict(101)
-    ser = dumps(obj)
-    back = loads(ser)
+    ser = dumpjs(obj)
+    back = loadjs(ser)
     assert isinstance(back, SlottedGetstateDict)
     assert back.val == 101
 
@@ -270,8 +270,8 @@ def test_round_trip_hybrid_slots_and_dict():
     obj.d = "new dict val"
     obj.extra = "another dict val"
 
-    ser = dumps(obj)
-    back = loads(ser)
+    ser = dumpjs(obj)
+    back = loadjs(ser)
 
     assert isinstance(back, Hybrid)
     # Check slots
@@ -284,8 +284,8 @@ def test_round_trip_hybrid_slots_and_dict():
 
 def test_round_trip_with_weakref():
     obj = WithWeakref(a=10)
-    ser = dumps(obj)
-    back = loads(ser)
+    ser = dumpjs(obj)
+    back = loadjs(ser)
     assert isinstance(back, WithWeakref)
     assert back.a == 10
 
@@ -421,8 +421,8 @@ def test_round_trip_custom_objects_both_variants():
 
 def test_round_trip_slots_only():
     obj = SlotsOnly(a=10, b=20)
-    ser = dumps(obj)
-    back = loads(ser)
+    ser = dumpjs(obj)
+    back = loadjs(ser)
     assert isinstance(back, SlotsOnly)
     assert back.a == 10
     assert back.b == 20
@@ -470,11 +470,11 @@ def test_dumps_and_loads_round_trip_json_string_with_kwargs():
         "enum": Color.GREEN,
         "inner": GetParams(2, "ok"),
     }
-    s = dumps(obj, indent=2, sort_keys=True)
+    s = dumpjs(obj, indent=2, sort_keys=True)
     # should be valid JSON with newlines/indentation due to indent
     assert isinstance(s, str) and "\n" in s and "  " in s
 
-    loaded = loads(s)
+    loaded = loadjs(s)
     assert loaded["msg"] == "hello"
     assert loaded["nums"] == (1, 2, 3)
     assert loaded["enum"] is Color.GREEN
@@ -485,6 +485,6 @@ def test_dumps_and_loads_round_trip_json_string_with_kwargs():
 
 def test_loads_forbids_object_hook_and_invalid_json():
     with pytest.raises(ValueError):
-        loads("{}", object_hook=lambda d: d)
+        loadjs("{}", object_hook=lambda d: d)
     with pytest.raises(json.JSONDecodeError):
-        loads("not a json")
+        loadjs("not a json")

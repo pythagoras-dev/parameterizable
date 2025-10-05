@@ -1,6 +1,6 @@
 import pytest
 
-from parameterizable.json_processor import dumps, loads, access_jsparams
+from parameterizable.json_processor import dumpjs, loadjs, access_jsparams
 
 
 class ParamObj:
@@ -17,7 +17,7 @@ class ParamObj:
 
 def test_access_jsparams_returns_selected_params():
     o = ParamObj(x=10, y="foo", z=3)
-    js = dumps(o)
+    js = dumpjs(o)
 
     result = access_jsparams(js, "x", "y")
 
@@ -27,7 +27,7 @@ def test_access_jsparams_returns_selected_params():
 def test_access_jsparams_with_nested_values():
     nested_list = [1, 2, [3, 4], "ok"]
     o = ParamObj(x=1, y="a", cfg=nested_list)
-    js = dumps(o)
+    js = dumpjs(o)
 
     result = access_jsparams(js, "cfg")
 
@@ -37,7 +37,7 @@ def test_access_jsparams_with_nested_values():
 
 def test_access_jsparams_missing_key_raises_keyerror():
     o = ParamObj(x=2, y="b")
-    js = dumps(o)
+    js = dumpjs(o)
 
     with pytest.raises(KeyError):
         access_jsparams(js, "missing")
@@ -45,7 +45,7 @@ def test_access_jsparams_missing_key_raises_keyerror():
 
 def test_access_jsparams_invalid_structure_raises_keyerror():
     # Use dumps on a plain dict — it won't contain PARAMS->DICT structure
-    js = dumps({"plain": 1})
+    js = dumpjs({"plain": 1})
 
     with pytest.raises(KeyError):
         access_jsparams(js, "x")

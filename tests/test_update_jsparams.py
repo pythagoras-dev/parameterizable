@@ -1,6 +1,6 @@
 import pytest
 
-from parameterizable.json_processor import dumps, loads, update_jsparams
+from parameterizable.json_processor import dumpjs, loadjs, update_jsparams
 
 
 class ParamObj:
@@ -17,10 +17,10 @@ class ParamObj:
 
 def test_update_jsparams_replaces_existing_param():
     o = ParamObj(x=1, y="a")
-    js = dumps(o)
+    js = dumpjs(o)
 
     js_updated = update_jsparams(js, x=5)
-    o2 = loads(js_updated)
+    o2 = loadjs(js_updated)
 
     assert isinstance(o2, ParamObj)
     assert o2.x == 5  # replaced
@@ -31,10 +31,10 @@ def test_update_jsparams_replaces_existing_param():
 def test_update_jsparams_adds_new_param():
     # Start with object missing z (None); then add z via update
     o = ParamObj(x=2, y="b")
-    js = dumps(o)
+    js = dumpjs(o)
 
     js_updated = update_jsparams(js, z=99)
-    o2 = loads(js_updated)
+    o2 = loadjs(js_updated)
 
     assert o2.z == 99
     assert o2.x == 2 and o2.y == "b"
@@ -42,12 +42,12 @@ def test_update_jsparams_adds_new_param():
 
 def test_update_jsparams_nested_values_roundtrip():
     o = ParamObj(x=3, y="c")
-    js = dumps(o)
+    js = dumpjs(o)
 
     # nested list is supported directly by the loader; nested dicts would require internal DICT markers
     nested_list = [1, 2, [3, 4], "ok"]
     js_updated = update_jsparams(js, cfg=nested_list)
-    o2 = loads(js_updated)
+    o2 = loadjs(js_updated)
 
     assert o2.cfg == nested_list
 

@@ -18,7 +18,7 @@ from typing import Any, Mapping, NewType
 
 from .dict_sorter import sort_dict_by_keys
 
-JsonSerializedParams = NewType("JsonSerializedParams", str)
+JsonSerializedObject = NewType("JsonSerializedParams", str)
 
 _UNSUPPORTED_TYPES = (
     types.ModuleType,
@@ -335,13 +335,13 @@ def _from_serializable_dict(x: Any) -> Any:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
 
 
-def dumps(obj: Any, **kwargs) -> JsonSerializedParams:
+def dumpjs(obj: Any, **kwargs) -> JsonSerializedObject:
     """Dump an object to a JSON string using the custom serialization rules.
 
     Args:
         obj: The object to serialize.
         **kwargs: Additional keyword arguments forwarded to
-            `json.dumps` (e.g., ``indent=2``, ``sort_keys=True``).
+            `json.dumpjs` (e.g., ``indent=2``, ``sort_keys=True``).
 
     Returns:
         The JSON string representing the object.
@@ -349,7 +349,7 @@ def dumps(obj: Any, **kwargs) -> JsonSerializedParams:
     return json.dumps(_to_serializable_dict(obj), **kwargs)
 
 
-def loads(s: JsonSerializedParams, **kwargs) -> Any:
+def loadjs(s: JsonSerializedObject, **kwargs) -> Any:
     """Load an object from a JSON string produced by dumps().
 
     Args:
@@ -366,7 +366,7 @@ def loads(s: JsonSerializedParams, **kwargs) -> Any:
     return _from_serializable_dict(json.loads(s, **kwargs))
 
 
-def update_jsparams(jsparams: JsonSerializedParams, **kwargs) -> JsonSerializedParams:
+def update_jsparams(jsparams: JsonSerializedObject, **kwargs) -> JsonSerializedObject:
     """Update constructor parameters inside a serialized JSON blob.
 
     This helper takes a JSON string produced by ``dumps()`` for an object that
@@ -399,7 +399,7 @@ def update_jsparams(jsparams: JsonSerializedParams, **kwargs) -> JsonSerializedP
     return params_json
 
 
-def access_jsparams(jsparams: JsonSerializedParams, *args: str) -> dict[str, Any]:
+def access_jsparams(jsparams: JsonSerializedObject, *args: str) -> dict[str, Any]:
     """Access selected constructor parameters from a serialized JSON blob.
 
     Args:
