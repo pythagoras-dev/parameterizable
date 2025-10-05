@@ -367,15 +367,51 @@ def loads(s: JsonSerializedParams, **kwargs) -> Any:
     return _from_serializable_dict(json.loads(s, **kwargs))
 
 
-def update_jsparams(jsparams:JsonSerializedParams, **kwargs):
+def update_jsparams(jsparams: JsonSerializedParams, **kwargs) -> JsonSerializedParams:
+    """Update constructor parameters inside a serialized JSON blob.
+
+    This helper takes a JSON string produced by ``dumps()`` for an object that
+    was serialized via its ``get_params()`` method and returns a new JSON string
+    with the provided parameters updated or added under the internal
+    ``PARAMS -> DICT`` mapping.
+
+    Args:
+        jsparams: The JSON string returned by ``dumps()``.
+        **kwargs: Key-value pairs to merge into the serialized parameters.
+            Existing keys are overwritten; new keys are added.
+
+    Returns:
+        JsonSerializedParams: A new JSON string with updated parameters.
+
+    Raises:
+        KeyError: If ``jsparams`` does not contain the expected
+            ``PARAMS -> DICT`` structure (i.e., the input is not a serialized
+            parameterizable object).
+    """
     params = json.loads(jsparams)
-    for k,v in kwargs.items():
+    for k, v in kwargs.items():
         params[_Markers.PARAMS][_Markers.DICT][k] = v
     params = sort_dict_by_keys(params)
     params_json = json.dumps(params)
     return params_json
 
 
-def access_jsparams(jsparams:JsonSerializedParams, *args):
+def access_jsparams(jsparams: JsonSerializedParams, *args: str) -> dict[str, Any]:
+    """Access selected constructor parameters from a serialized JSON blob.
+
+    Args:
+        jsparams: The JSON string produced by ``dumps()``.
+        *args: Parameter names to extract from the internal ``PARAMS -> DICT``
+            mapping.
+
+    Returns:
+        dict[str, Any]: A mapping of requested parameter names to their values
+        as stored in the JSON parameters block. The values are JSON-native
+        Python types (e.g., lists, dicts, numbers, strings, booleans, None).
+
+    Raises:
+        KeyError: If a requested key is not present, or if the JSON string does
+            not contain the expected ``PARAMS -> DICT`` structure.
+    """
     params = json.loads(jsparams)
-    return {k:params[_Markers.PARAMS][_Markers.DICT][k] for k in args}
+    return {k: params[_Markers.PARAMS][_Markers.DICT][k] for k in args}
