@@ -109,10 +109,22 @@ class ParameterizableClass:
 
 
     def get_essential_params(self) -> dict[str, Any]:
+        """Get the essential parameters of the object."""
         return {k:v for k,v in self.get_params().items()
             if k in self.essential_param_mames}
 
 
+    def get_essential_jsparams(self) -> JsonSerializedParams:
+        """Get the essential parameters of the object as a JSON string."""
+        return dumps(self.get_essential_params())
+
+
     def get_auxiliary_params(self) -> dict[str,Any]:
+        """Get the auxiliary parameters of the object."""
         return {k:v for k,v in self.get_params().items()
             if k in self.auxiliary_param_names}
+
+
+    def get_auxiliary_jsparams(self) -> JsonSerializedParams:
+        """Get the auxiliary parameters of the object as a JSON string."""
+        return dumps(self.get_auxiliary_params())
