@@ -33,20 +33,23 @@ By abstracting parameter handling, this library reduces boilerplate code
 and improves maintainability.
 
 ## Usage
-Inherit from `ParameterizableClass` class and/or define method `.get_params()`
-in your class.
+
+Most users will:
+- Inherit from `ParameterizableClass` in their own classes, and
+- Implement the `.get_params()` method to expose the configuration needed to recreate the object.
+
 
 ## Key Classes, Functions, and Constants
 
-* `ParameterizableClass` - a base class for parameterizable objects. 
-You should derive your class from it if you want to 
-use the functionality of this package.
-* `ParameterizableClass.get_params()` - a method to be defined in a subclass,
-returns the current parameters of an object as a regular dictionary.
-* `ParameterizableClass.get_default_params()` - returns the default parameters
-of the class as a regular dictionary.
-* `dumps()` - serializes an object's parameters into a JSON string representation.
-* `loads()` - deserializes a JSON string back into an object with the stored parameters.
+- ParameterizableClass: Base class for parameterizable objects. Derive your class from it to enable the library’s features.
+- ParameterizableClass.get_params(): Implement in your subclass to return the configuration dictionary needed to recreate the object.
+- ParameterizableClass.get_default_params(): Class method returning default parameters for the class as a dictionary.
+- dumps(obj): Serialize an object's parameters to a JSON string (portable format with sorted keys).
+- loads(js): Deserialize a JSON string back into an object of the original class.
+- update_jsparams(js, updates): Return a new JSON string with selected parameters updated without full deserialization.
+- access_jsparams(js): Provide a JsonSerializedParams (dict-like) view to inspect parameters inside the JSON string.
+- JsonSerializedParams: A string containing JSON-serialized parameters.
+- sort_dict_by_keys(d): Utility to produce a new dict whose keys are sorted alphabetically.
 
 ## How To Get It?
 
@@ -66,9 +69,13 @@ Using pip (legacy alternative to uv):
 pip install parameterizable
 ```
 
-## Dependencies
+## Requirements
 
-* [pytest](https://pytest.org)
+- Python >= 3.10
+- Runtime dependencies: none
+
+For development:
+- pytest (optional)
 
 ## Key Contacts
 
