@@ -104,13 +104,23 @@ class ParameterizableClass:
 
     @property
     def essential_param_names(self) -> set[str]:
-        """Get the names of the essential parameters of the object."""
+        """Get the names of the object's essential parameters.
+
+        Essential parameters are the parameters that define the substance of
+        the object's behavior and/or identity, e.g. the max number of
+        decision trees in a forest or max depth of a tree.
+        """
         return set(self.get_default_params().keys())
 
 
     @property
     def auxiliary_param_names(self) -> set[str]:
-        """Get the names of the auxiliary parameters of the object."""
+        """Get the names of the object's auxiliary parameters.
+
+        Auxiliary parameters are the parameters that do not impact the substance
+        of the object's behavior and/or identity, e.g. logging verbosity
+        or probability of random consistency checks.
+        """
         return set(self.get_params().keys()) - self.essential_param_names
 
 
