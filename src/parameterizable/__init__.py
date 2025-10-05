@@ -12,17 +12,14 @@ only basic types and portable sub-dictionaries).
 
 Classes:
     ParameterizableClass: Base class for parameterizable objects.
+    JsonSerializedParams: A dictionary-like object for accessing serialized parameters.
 
 Functions:
-    get_object_from_portable_params: Create objects from portable parameter dictionaries.
-    is_parameterizable: Check if a class implements the parameterizable interface.
-    register_parameterizable_class: Register a class for use with portable parameters.
-    is_registered: Check if a class is registered in the parameterizable registry.
-    smoketest_parameterizable_class: Run validation tests on a parameterizable class.
     sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
-
-Constants:
-    CLASSNAME_PARAM_KEY: Key used to store class name in portable dictionaries.
+    dumps: Serialize an object's parameters into a JSON string.
+    loads: Deserialize a JSON string back into an object.
+    update_jsparams: Update parameters in a JSON-serialized string.
+    access_jsparams: Access parameters in a JSON-serialized string.
 """
 
 from .parameterizable import (
