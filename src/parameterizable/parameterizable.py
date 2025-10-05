@@ -96,6 +96,12 @@ class ParameterizableClass:
         return sorted_params
 
 
+    @classmethod
+    def get_default_jsparams(cls) -> JsonSerializedParams:
+        """Get the default parameters of the class as a JSON string."""
+        return dumps(cls.get_default_params())
+
+
     @property
     def essential_param_names(self) -> set[str]:
         """Get the names of the essential parameters of the object."""
