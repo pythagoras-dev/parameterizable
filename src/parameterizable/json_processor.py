@@ -414,4 +414,7 @@ def access_jsparams(jsparams: JsonSerializedParams, *args: str) -> dict[str, Any
             not contain the expected ``PARAMS -> DICT`` structure.
     """
     params = json.loads(jsparams)
-    return {k: params[_Markers.PARAMS][_Markers.DICT][k] for k in args}
+    if _Markers.PARAMS in params:
+        return {k: params[_Markers.PARAMS][_Markers.DICT][k] for k in args}
+    else:
+        return {k: params[_Markers.DICT][k] for k in args}
