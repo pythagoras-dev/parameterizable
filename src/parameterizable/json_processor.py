@@ -389,8 +389,12 @@ def update_jsparams(jsparams: JsonSerializedParams, **kwargs) -> JsonSerializedP
             parameterizable object).
     """
     params = json.loads(jsparams)
-    for k, v in kwargs.items():
-        params[_Markers.PARAMS][_Markers.DICT][k] = v
+    if _Markers.PARAMS in params:
+        for k, v in kwargs.items():
+            params[_Markers.PARAMS][_Markers.DICT][k] = v
+    else:
+        for k, v in kwargs.items():
+            params[_Markers.DICT][k] = v
     params = sort_dict_by_keys(params)
     params_json = json.dumps(params)
     return params_json
