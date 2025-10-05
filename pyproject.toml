@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "parameterizable"
-version = "0.13.0"
+version = "0.14.0"
 description = "Library for work with parameterizable classes."
 readme = "README.md"
 requires-python = ">=3.10"
