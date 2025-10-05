@@ -47,14 +47,14 @@ class _Markers:
             reconstruction.
     """
 
-    DICT = "...DICT..."
-    TUPLE = "...TUPLE..."
-    SET = "...SET..."
-    CLASS = "...CLASS..."
-    MODULE = "...MODULE..."
-    PARAMS = "...PARAMETERS..."
-    STATE = "...STATE..."
-    ENUM = "...ENUM..."
+    DICT = "..DICT.."
+    TUPLE = "..TUPLE.."
+    SET = "..SET.."
+    CLASS = "..CLASS.."
+    MODULE = "..MODULE.."
+    PARAMS = "..PARAMETERS.."
+    STATE = "..STATE.."
+    ENUM = "..ENUM.."
 
 
 
