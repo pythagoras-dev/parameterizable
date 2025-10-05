@@ -14,6 +14,7 @@ import inspect
 from typing import Any
 
 from .dict_sorter import sort_dict_by_keys
+from .json_processor import loads,dumps, JsonSerializedParams
 
 
 class ParameterizableClass:
@@ -48,6 +49,22 @@ class ParameterizableClass:
         """
         params = dict()
         return params
+
+
+    def get_jsparams(self) -> JsonSerializedParams:
+        """Get the parameters of the object as a JSON string."""
+        # Serialize the whole object so that class/module metadata is included,
+        # allowing from_jsparams() to reconstruct the instance.
+        return dumps(self)
+
+
+    @staticmethod
+    def from_jsparams(jsparams: JsonSerializedParams) -> "ParameterizableClass":
+        """Create an object from a JSON string produced by get_jsparams()."""
+        result =  loads(jsparams)
+        if not isinstance(result, ParameterizableClass):
+            raise TypeError(f"Expected a ParameterizableClass, got {type(result)}")
+        return result
 
     @classmethod
     def get_default_params(cls) -> dict[str, Any]:

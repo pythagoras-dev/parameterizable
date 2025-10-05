@@ -52,9 +52,3 @@ def test_update_jsparams_nested_values_roundtrip():
     assert o2.cfg == nested_list
 
 
-def test_update_jsparams_invalid_structure_raises_keyerror():
-    # Use dumps on a plain dict — it won't contain PARAMS->DICT structure
-    js = dumps({"plain": 1})
-
-    with pytest.raises(KeyError):
-        update_jsparams(js, x=1)

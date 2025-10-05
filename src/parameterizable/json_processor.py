@@ -16,7 +16,7 @@ import types
 from enum import Enum
 from typing import Any, Mapping, NewType
 
-from parameterizable import sort_dict_by_keys
+from .dict_sorter import sort_dict_by_keys
 
 JsonSerializedParams = NewType("JsonSerializedParams", str)
 
