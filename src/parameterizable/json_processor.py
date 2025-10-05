@@ -14,8 +14,9 @@ import importlib
 import json
 import types
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any, Mapping, NewType
 
+JsonSerializedParams = NewType("JsonSerializedParams", str)
 
 _UNSUPPORTED_TYPES = (
     types.ModuleType,
@@ -54,42 +55,6 @@ class _Markers:
     ENUM = "...ENUM..."
 
 
-# def _collect_object_state(obj: Any) -> dict:
-#     """Collect attributes from __dict__ and __slots__ across the class hierarchy.
-#
-#     Traverses the method resolution order (MRO) to gather values defined in
-#     ``__slots__`` for each class, and merges them with the instance ``__dict__``
-#     when present. Missing slot attributes are ignored.
-#
-#     Args:
-#         obj: The object whose state should be collected.
-#
-#     Returns:
-#         A flat dictionary of attribute names to values representing the object's
-#         state suitable for further serialization.
-#     """
-#     state: dict[str, Any] = {}
-#
-#     # Collect from __slots__ across the MRO
-#     for cls in reversed(type(obj).__mro__):
-#         if not hasattr(cls, "__slots__"):
-#             continue
-#         slots = cls.__slots__
-#         if isinstance(slots, str):
-#             slots = [slots]
-#         for name in slots:
-#             if name in ("__dict__", "__weakref__"):
-#                 continue
-#             try:
-#                 state[name] = getattr(obj, name)
-#             except AttributeError:
-#                 # Slot not set on instance
-#                 pass
-#
-#     # Collect from __dict__ if available
-#     if hasattr(obj, "__dict__"):
-#         state.update(obj.__dict__)
-#     return state
 
 def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
     """Convert a Python object into a JSON-serializable structure.
@@ -369,7 +334,7 @@ def _from_serializable_dict(x: Any) -> Any:
             raise TypeError(f"Unsupported type: {type(x).__name__}")
 
 
-def dumps(obj: Any, **kwargs) -> str:
+def dumps(obj: Any, **kwargs) -> JsonSerializedParams:
     """Dump an object to a JSON string using the custom serialization rules.
 
     Args:
@@ -383,7 +348,7 @@ def dumps(obj: Any, **kwargs) -> str:
     return json.dumps(_to_serializable_dict(obj), **kwargs)
 
 
-def loads(s: str, **kwargs) -> Any:
+def loads(s: JsonSerializedParams, **kwargs) -> Any:
     """Load an object from a JSON string produced by dumps().
 
     Args:
@@ -398,3 +363,11 @@ def loads(s: str, **kwargs) -> Any:
         raise ValueError("object_hook cannot be used with "
                          "parametetizable.loads()")
     return _from_serializable_dict(json.loads(s, **kwargs))
+
+
+def update_jsparams(jsparams:JsonSerializedParams, **kwargs):
+    params = json.loads(jsparams)
+    for k,v in kwargs.items():
+        params[_Markers.PARAMS][_Markers.DICT][k] = v
+    params_json = json.dumps(params)
+    return params_json
