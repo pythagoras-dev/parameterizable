@@ -35,21 +35,30 @@ and improves maintainability.
 ## Usage
 
 Most users will:
-- Inherit from `ParameterizableClass` in their own classes, and
-- Implement the `.get_params()` method to expose the configuration needed to recreate the object.
+- Inherit from `ParameterizableClass` in their own classes, 
+- Implement the `.get_params()` method to expose the configuration needed to recreate the object, and (sometimes)
+- Implement the `.essential_param_names` property to expose the core parameters which determine the object's behavior.
 
 
 ## Key Classes, Functions, and Constants
 
-- ParameterizableClass: Base class for parameterizable objects. Derive your class from it to enable the library’s features.
-- ParameterizableClass.get_params(): Implement in your subclass to return the configuration dictionary needed to recreate the object.
-- ParameterizableClass.get_default_params(): Class method returning default parameters for the class as a dictionary.
-- dumps(obj): Serialize an object's parameters to a JSON string (portable format with sorted keys).
-- loads(js): Deserialize a JSON string back into an object of the original class.
-- update_jsparams(js, updates): Return a new JSON string with selected parameters updated without full deserialization.
-- access_jsparams(js): Provide a JsonSerializedParams (dict-like) view to inspect parameters inside the JSON string.
-- JsonSerializedParams: A string containing JSON-serialized parameters.
-- sort_dict_by_keys(d): Utility to produce a new dict whose keys are sorted alphabetically.
+- `ParameterizableClass`: Base class for parameterizable objects. Derive your class from it to enable the library’s features.
+- `JsonSerializedParams`: A string containing JSON-serialized parameters.
+- `ParameterizableClass.get_params()`: Implement in your subclass to return the configuration dictionary 
+needed to recreate the object.
+- `ParameterizableClass.essential_param_names`: Implement in your subclass to return the names of the core parameters
+which determine the object's behavior. If not implemented, all parameters are considered essential.
+- `ParameterizableClass.auxiliary_param_names`: A property that returns the names of the auxiliary parameters.
+- `ParameterizableClass.get_jsparams()`: A method that serializes an object's parameters 
+to a JSON string (JsonSerializedParams).
+- `ParameterizableClass.get_essential_jsparams()`: A method that returns a JSON string with essential parameters only.
+- `ParameterizableClass.get_auxiliary_jsparams()`: A method that returns a JSON string with auxiliary parameters only.
+- `ParameterizableClass.get_default_params()`: Class method returning default parameters for the class as a dictionary.
+- `ParameterizableClass.get_default_jsparams()`: Class method returning default parameters for the class as a JSON string.
+- `ParameterizableClass.from_jsparams(js)`: Class method to recreate an object from its parameters, stored in a JSON string.
+- `update_jsparams(js, updates)`: Return a new JSON string with selected parameters updated without full deserialization.
+- `access_jsparams(js, names)`: Return a dict with a subset of params, stored inside a JSON string.
+- `sort_dict_by_keys(d)`: Utility to produce a new dict whose keys are sorted alphabetically.
 
 ## How To Get It?
 
