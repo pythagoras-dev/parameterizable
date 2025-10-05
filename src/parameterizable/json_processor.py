@@ -16,6 +16,8 @@ import types
 from enum import Enum
 from typing import Any, Mapping, NewType
 
+from parameterizable import sort_dict_by_keys
+
 JsonSerializedParams = NewType("JsonSerializedParams", str)
 
 _UNSUPPORTED_TYPES = (
@@ -369,5 +371,6 @@ def update_jsparams(jsparams:JsonSerializedParams, **kwargs):
     params = json.loads(jsparams)
     for k,v in kwargs.items():
         params[_Markers.PARAMS][_Markers.DICT][k] = v
+    params = sort_dict_by_keys(params)
     params_json = json.dumps(params)
     return params_json
