@@ -94,3 +94,25 @@ class ParameterizableClass:
         }
         sorted_params = sort_dict_by_keys(params)
         return sorted_params
+
+
+    @property
+    def essential_param_mames(self) -> set[str]:
+        """Get the names of the essential parameters of the object."""
+        return set(self.get_default_params().keys())
+
+
+    @property
+    def auxiliary_param_names(self) -> set[str]:
+        """Get the names of the auxiliary parameters of the object."""
+        return set(self.get_params().keys()) - self.essential_param_mames
+
+
+    def get_essential_params(self) -> dict[str, Any]:
+        return {k:v for k,v in self.get_params().items()
+            if k in self.essential_param_mames}
+
+
+    def get_auxiliary_params(self) -> dict[str,Any]:
+        return {k:v for k,v in self.get_params().items()
+            if k in self.auxiliary_param_names}
