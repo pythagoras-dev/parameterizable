@@ -58,5 +58,5 @@ def test_sort_dict_by_keys_assert_on_non_dict():
     Test that the function raises an AssertionError
     when a non-dict is passed.
     """
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         sort_dict_by_keys(["not", "a", "dict"])

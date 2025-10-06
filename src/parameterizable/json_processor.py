@@ -341,46 +341,48 @@ def dumpjs(obj: Any, **kwargs) -> JsonSerializedObject:
     Args:
         obj: The object to serialize.
         **kwargs: Additional keyword arguments forwarded to
-            `json.dumpjs` (e.g., ``indent=2``, ``sort_keys=True``).
+            json.dumps (e.g., ``indent=2``, ``sort_keys=True``).
 
     Returns:
-        The JSON string representing the object.
+        JsonSerializedObject: The JSON string representing the object.
     """
     return json.dumps(_to_serializable_dict(obj), **kwargs)
 
 
 def loadjs(s: JsonSerializedObject, **kwargs) -> Any:
-    """Load an object from a JSON string produced by dumps().
+    """Load an object from a JSON string produced by dumpjs().
 
     Args:
         s: The JSON string to parse.
         **kwargs: Additional keyword arguments forwarded to
-            `json.loads` (``object_hook`` is not allowed here).
+            json.loads (``object_hook`` is not allowed here).
 
     Returns:
         The Python object reconstructed from the JSON string.
+
+    Raises:
+        ValueError: If ``object_hook`` is provided in ``kwargs``.
     """
     if "object_hook" in kwargs:
-        raise ValueError("object_hook cannot be used with "
-                         "parametetizable.loads()")
+        raise ValueError("object_hook cannot be used with parameterizable.loadjs()")
     return _from_serializable_dict(json.loads(s, **kwargs))
 
 
 def update_jsparams(jsparams: JsonSerializedObject, **kwargs) -> JsonSerializedObject:
     """Update constructor parameters inside a serialized JSON blob.
 
-    This helper takes a JSON string produced by ``dumps()`` for an object that
+    This helper takes a JSON string produced by ``dumpjs()`` for an object that
     was serialized via its ``get_params()`` method and returns a new JSON string
     with the provided parameters updated or added under the internal
     ``PARAMS -> DICT`` mapping.
 
     Args:
-        jsparams: The JSON string returned by ``dumps()``.
+        jsparams: The JSON string returned by ``dumpjs()``.
         **kwargs: Key-value pairs to merge into the serialized parameters.
             Existing keys are overwritten; new keys are added.
 
     Returns:
-        JsonSerializedParams: A new JSON string with updated parameters.
+        JsonSerializedObject: A new JSON string with updated parameters.
 
     Raises:
         KeyError: If ``jsparams`` does not contain the expected

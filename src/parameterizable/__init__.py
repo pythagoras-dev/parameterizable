@@ -1,25 +1,18 @@
-"""Package for working with parameterizable classes.
+"""Tools for working with parameterizable classes.
 
-This package provides functionality for working with parameterizable classes:
-classes that have (hyper) parameters which define an object's configuration,
-but not its internal contents or data. Such parameters are typically
-passed to the .__init__() method.
+This package provides infrastructure for classes whose behavior is configured
+by (hyper)parameters, typically passed to their ``__init__`` method. It offers
+helpers to retrieve parameters from objects and to convert parameters to and
+from a portable, JSON-serializable dictionary.
 
-The package provides an API for getting parameters' values from an object,
-and for converting the parameters to and from a portable dictionary
-(a dictionary with sorted str keys that contains values with
-only basic types and portable sub-dictionaries).
-
-Classes:
-    ParameterizableClass: Base class for parameterizable objects.
-    JsonSerializedParams: A dictionary-like object for accessing serialized parameters.
-
-Functions:
-    sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
-    dumps: Serialize an object's parameters into a JSON string.
-    loads: Deserialize a JSON string back into an object.
-    update_jsparams: Update parameters in a JSON-serialized string.
-    access_jsparams: Access parameters in a JSON-serialized string.
+Public API:
+- ParameterizableClass: Base class for parameterizable objects.
+- sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
+- dumpjs: Serialize an object (or parameters) into a JSON string.
+- loadjs: Deserialize a JSON string produced by ``dumpjs`` back into a Python object.
+- update_jsparams: Update parameters in a JSON-serialized string.
+- access_jsparams: Access parameters in a JSON-serialized string.
+- JsonSerializedObject: NewType alias for JSON strings produced by ``dumpjs``.
 """
 
 from .parameterizable import (
