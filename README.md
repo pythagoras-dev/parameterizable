@@ -87,6 +87,89 @@ pip install parameterizable
 For development:
 - pytest (optional)
 
+## Quick Start
+
+Here's a minimal example showing how to make your class parameterizable and serialize/deserialize it:
+
+```python
+from parameterizable.parameterizable import ParameterizableClass
+from parameterizable.json_processor import dumpjs, loadjs
+
+class MyModel(ParameterizableClass):
+    def __init__(self, n_trees=10, depth=3, verbose=False):
+        self.n_trees = n_trees
+        self.depth = depth
+        self.verbose = verbose
+
+    def get_params(self) -> dict:
+        # Only values returned here are considered this object's "parameters"
+        return {"n_trees": self.n_trees, "depth": self.depth, "verbose": self.verbose}
+
+    # Optional: list the parameters that define identity/behavior
+    @property
+    def essential_param_names(self) -> set[str]:
+        return {"n_trees", "depth"}
+
+m = MyModel(n_trees=50, depth=5, verbose=True)
+
+# Serialize parameters to JSON
+js = dumpjs(m)
+
+# Recreate an equivalent object from JSON
+m2 = loadjs(js)
+assert isinstance(m2, MyModel)
+assert m2.get_params() == m.get_params()
+```
+
+## API Examples
+
+- Update parameters in JSON without full deserialization:
+
+```python
+from parameterizable.json_processor import update_jsparams, dumpjs, loadjs
+
+js2 = update_jsparams(js, n_trees=100)  # returns a new JSON string
+m3 = loadjs(js2)
+assert m3.n_trees == 100
+```
+
+- Access a subset of parameters directly from JSON:
+
+```python
+from parameterizable.json_processor import access_jsparams
+
+subset = access_jsparams(js2, "n_trees", "depth")
+assert subset == {"n_trees": 100, "depth": 5}
+```
+
+- Work with essential/auxiliary parameters:
+
+```python
+m.get_essential_params()      # {"n_trees": 50, "depth": 5}
+m.get_essential_jsparams()    # JSON string with only essential params
+m.get_auxiliary_params()      # {"verbose": True}
+m.get_auxiliary_jsparams()    # JSON string with only auxiliary params
+```
+
+- Sort dictionaries by keys (utility):
+
+```python
+from parameterizable.dict_sorter import sort_dict_by_keys
+sort_dict_by_keys({"b": 2, "a": 1})  # {"a": 1, "b": 2}
+```
+
+## Development
+
+- Run tests:
+  - With pytest: `pytest`
+  - Or via Python: `python -m pytest`
+- Supported Python versions: 3.10+
+- See contributing guidelines: [contributing.md](contributing.md)
+
+## License
+
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
 ## Key Contacts
 
 * [Vlad (Volodymyr) Pavlov](https://www.linkedin.com/in/vlpavlov/)
