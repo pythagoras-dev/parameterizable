@@ -15,12 +15,6 @@ Public API:
 - JsonSerializedObject: NewType alias for JSON strings produced by ``dumpjs``.
 """
 
-from .parameterizable import (
-    # Classes
-    ParameterizableClass
-    )
-
-
 from .dict_sorter import sort_dict_by_keys
 
 from .json_processor import (
@@ -29,6 +23,8 @@ from .json_processor import (
     dumpjs,
     update_jsparams,
     access_jsparams)
+
+from .parameterizable import ParameterizableClass
 
 __all__ = [
     'sort_dict_by_keys',
