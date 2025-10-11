@@ -2,12 +2,11 @@
 
 This module provides functions to convert rich Python data structures into a
 JSON-serializable representation and back. It supports primitive types as well
-as containers (list, tuple, set, dict) and certain custom objects.
+as containers (list, tuple, set, dict), Enums, and certain custom objects.
 
 The serialized form is a pure-JSON structure containing only dicts, lists,
 strings, numbers, booleans, and null. Special container and object types are
 encoded using internal marker keys.
-
 """
 
 import importlib
@@ -37,13 +36,16 @@ class _Markers:
     types and object metadata while still producing a JSON-compatible structure.
 
     Attributes:
+        DICT: Marker for dictionaries to ensure all keys are strings and values
+            are JSON-serializable.
         TUPLE: Marker key for tuple values. The value is a list of items.
         SET: Marker key for set values. The value is a list of items.
+        ENUM: Marker key for Enum members. The value is the member name.
         CLASS: Name of the object's class used during reconstruction.
         MODULE: Name of the module where the object's class is defined.
-        PARAMS: Serialized mapping of constructor parameters for ``get_params``
+        PARAMS: Serialized mapping of constructor parameters for ``get_params``-
             based reconstruction.
-        STATE: Serialized state for ``__getstate__``/``__setstate__`` based
+        STATE: Serialized state for ``__getstate__``/``__setstate__``-based
             reconstruction.
     """
 
@@ -80,9 +82,9 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
         - Tuples and sets are encoded with markers:
 
           >>> _to_serializable_dict((1, 2))
-          {'...TUPLE...': [1, 2]}
+          {'..tuple..': [1, 2]}
           >>> _to_serializable_dict({1, 2})
-          {'...SET...': [1, 2]}
+          {'..set..': [1, 2]}
     """
 
     if isinstance(x,(int, float, bool, str, type(None))):
@@ -183,15 +185,16 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
     """Recreate an object instance from its serialized metadata.
 
     The input mapping must include ``MODULE`` and ``CLASS`` markers and either
-    ``PARAMS`` (constructor parameters) or ``STATE`` (instance state).
+    ``PARAMS`` (constructor parameters), ``STATE`` (instance state), or ``ENUM``
+    (Enum member name).
 
     Args:
         x: Marker-bearing mapping produced by _to_serializable_dict() for
            custom objects.
 
     Returns:
-        A new instance of the referenced class reconstructed from parameters or
-        state.
+        A new instance of the referenced class reconstructed from parameters,
+        state, or Enum membership.
 
     Raises:
         TypeError: If the mapping does not contain sufficient information to
@@ -291,7 +294,7 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
 
 
 def _from_serializable_dict(x: Any) -> Any:
-    """Inverse of function _to_serializable_dict()
+    """Inverse of _to_serializable_dict.
 
     Recursively convert a JSON-compatible structure that may contain internal
     markers back into native Python types and reconstruct supported custom
@@ -405,7 +408,7 @@ def access_jsparams(jsparams: JsonSerializedObject, *args: str) -> dict[str, Any
     """Access selected constructor parameters from a serialized JSON blob.
 
     Args:
-        jsparams: The JSON string produced by ``dumps()``.
+        jsparams: The JSON string produced by ``dumpjs()``.
         *args: Parameter names to extract from the internal ``PARAMS -> DICT``
             mapping.
 

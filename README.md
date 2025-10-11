@@ -43,6 +43,7 @@ Most users will:
 ## Key Classes, Methods and Functions,
 
 - `ParameterizableClass`: Base class for parameterizable objects. Derive your class from it to enable the library’s features.
+- `NotPicklableClass`: Mixin that prevents pickling/unpickling; inherit from it to make your class explicitly non-picklable.
 - `JsonSerializedObject`: A string containing JSON-serialized object.
 - `ParameterizableClass.get_params()`: Implement in your subclass to return the configuration dictionary 
 needed to recreate the object.
@@ -156,6 +157,24 @@ m.get_auxiliary_jsparams()    # JSON string with only auxiliary params
 ```python
 from parameterizable.dict_sorter import sort_dict_by_keys
 sort_dict_by_keys({"b": 2, "a": 1})  # {"a": 1, "b": 2}
+```
+
+- Prevent pickling/unpickling using NotPicklableClass:
+
+```python
+import pickle
+from parameterizable import NotPicklableClass
+
+class Connection(NotPicklableClass):
+    pass
+
+conn = Connection()
+
+# Any attempt to pickle or unpickle will raise TypeError
+try:
+    pickle.dumps(conn)
+except TypeError:
+    print("Connection cannot be pickled")
 ```
 
 ## Development

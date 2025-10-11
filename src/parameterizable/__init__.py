@@ -7,6 +7,7 @@ from a portable, JSON-serializable dictionary.
 
 Public API:
 - ParameterizableClass: Base class for parameterizable objects.
+- NotPicklableClass: Mixin that prevents pickling/unpickling.
 - sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
 - dumpjs: Serialize an object (or parameters) into a JSON string.
 - loadjs: Deserialize a JSON string produced by ``dumpjs`` back into a Python object.
@@ -17,21 +18,25 @@ Public API:
 
 from .dict_sorter import sort_dict_by_keys
 
+from .not_picklable import NotPicklableClass
+
 from .json_processor import (
     JsonSerializedObject,
     loadjs,
     dumpjs,
     update_jsparams,
-    access_jsparams)
+    access_jsparams
+)
 
 from .parameterizable import ParameterizableClass
 
 __all__ = [
     'sort_dict_by_keys',
     'ParameterizableClass',
-    "loadjs",
-    "dumpjs",
+    'NotPicklableClass',
+    'loadjs',
+    'dumpjs',
     'JsonSerializedObject',
     'update_jsparams',
-    'access_jsparams'
+    'access_jsparams',
 ]
