@@ -16,6 +16,9 @@ Public API:
 - JsonSerializedObject: NewType alias for JSON strings produced by ``dumpjs``.
 """
 
+from importlib import metadata as _md
+__version__ = _md.version("parameterizable")
+
 from .dict_sorter import sort_dict_by_keys
 
 from .not_picklable import NotPicklableClass
@@ -39,4 +42,5 @@ __all__ = [
     'JsonSerializedObject',
     'update_jsparams',
     'access_jsparams',
+    '__version__'
 ]
