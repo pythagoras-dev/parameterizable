@@ -1,4 +1,8 @@
 # parameterizable
+[![PyPI version](https://img.shields.io/pypi/v/parameterizable.svg)](https://pypi.org/project/parameterizable/)
+[![Python versions](https://img.shields.io/pypi/pyversions/parameterizable.svg)](https://pypi.org/project/parameterizable/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Downloads](https://static.pepy.tech/badge/parameterizable)](https://pepy.tech/project/parameterizable)
 
 Parameter manipulation for Python classes.
 
