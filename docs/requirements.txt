@@ -1,0 +1,6 @@
+sphinx
+sphinx-rtd-theme
+pydata_sphinx_theme
+sphinx-book-theme
+furo
+

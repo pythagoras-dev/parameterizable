@@ -32,12 +32,21 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
+    "sphinx-book-theme>=1.1.4",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "pydata_sphinx_theme",
+    "sphinx-book-theme"
+    "furo",
+]
 dev = [
     "pytest"
 ]
 
 [project.urls]
-Homepage = "https://github.com/pythagoras-dev/parameterizable"
+Home = "https://github.com/pythagoras-dev/parameterizable"
+Docs = "https://parameterizable.readthedocs.io/"
