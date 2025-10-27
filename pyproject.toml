@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "parameterizable"
-version = "0.103.1"
+version = "0.103.2"
 description = "Library for work with parameterizable classes."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -40,7 +40,7 @@ docs = [
     "sphinx",
     "sphinx-rtd-theme",
     "pydata_sphinx_theme",
-    "sphinx-book-theme"
+    "sphinx-book-theme",
     "furo",
 ]
 dev = [
