@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "parameterizable"
-version = "0.103.2"
+version = "0.103.3"
 description = "Library for work with parameterizable classes."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,7 +32,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
-    "sphinx-book-theme>=1.1.4",
 ]
 
 [dependency-groups]
