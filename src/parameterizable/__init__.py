@@ -17,7 +17,10 @@ Public API:
 """
 
 from importlib import metadata as _md
-__version__ = _md.version("parameterizable")
+try:
+    __version__ = _md.version("parameterizable")
+except _md.PackageNotFoundError:
+    __version__ = "unknown"
 
 from .dict_sorter import sort_dict_by_keys
 
