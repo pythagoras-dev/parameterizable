@@ -5,7 +5,7 @@
 [![Downloads](https://static.pepy.tech/badge/parameterizable)](https://pepy.tech/project/parameterizable)
 [![Documentation Status](https://app.readthedocs.org/projects/parameterizable/badge/?version=latest)](https://parameterizable.readthedocs.io/en/latest/)
 [![Code style: pep8](https://img.shields.io/badge/code_style-pep8-blue.svg)](https://peps.python.org/pep-0008/)
-![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)
+[![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
 
 Parameter manipulation for Python classes.
 
