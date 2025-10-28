@@ -9,7 +9,7 @@ parameterizable
    :target: https://pypi.org/project/parameterizable/
    :alt: Python versions
 
-.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+.. image:: https://img.shields.io/badge/License-MIT-blue.svg
    :target: https://github.com/pythagoras-dev/parameterizable/blob/master/LICENSE
    :alt: License: MIT
 
@@ -20,6 +20,15 @@ parameterizable
 .. image:: https://app.readthedocs.org/projects/parameterizable/badge/?version=latest
    :target: https://parameterizable.readthedocs.io/en/latest/
    :alt: Documentation Status
+
+.. image:: https://img.shields.io/badge/code_style-pep8-blue.svg
+   :target: https://peps.python.org/pep-0008/
+   :alt: Code style: pep8
+
+.. image:: https://img.shields.io/badge/docstrings_style-Google-blue
+   :target: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+   :alt: Docstring Style: Google
+
 
 Parameter manipulation for Python classes.
 
