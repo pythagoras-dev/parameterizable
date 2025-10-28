@@ -1,4 +1,4 @@
-persidict package
+parameterizable package
 =================
 
 .. automodule:: parameterizable

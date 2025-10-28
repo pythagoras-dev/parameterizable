@@ -1,7 +1,7 @@
-persidict
+parameterizable
 =========
 
 .. toctree::
    :maxdepth: 4
 
-   persidict
+   parameterizable
