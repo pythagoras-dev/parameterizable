@@ -1,9 +1,11 @@
 # parameterizable
 [![PyPI version](https://img.shields.io/pypi/v/parameterizable.svg)](https://pypi.org/project/parameterizable/)
 [![Python versions](https://img.shields.io/pypi/pyversions/parameterizable.svg)](https://pypi.org/project/parameterizable/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Downloads](https://static.pepy.tech/badge/parameterizable)](https://pepy.tech/project/parameterizable)
 [![Documentation Status](https://app.readthedocs.org/projects/parameterizable/badge/?version=latest)](https://parameterizable.readthedocs.io/en/latest/)
+[![Code style: pep8](https://img.shields.io/badge/code_style-pep8-blue.svg)](https://peps.python.org/pep-0008/)
+![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)
 
 Parameter manipulation for Python classes.
 
