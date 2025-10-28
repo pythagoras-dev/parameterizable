@@ -31,10 +31,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
+
 dependencies = [
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 docs = [
     "sphinx",
     "sphinx-rtd-theme",
@@ -43,7 +44,12 @@ docs = [
     "furo",
 ]
 dev = [
-    "pytest"
+    "pytest",
+    "sphinx",
+    "sphinx-rtd-theme",
+    "pydata_sphinx_theme",
+    "sphinx-book-theme",
+    "furo",
 ]
 
 [project.urls]
