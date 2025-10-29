@@ -8,7 +8,7 @@ from parameterizable.parameterizable import *
 
 from abc import ABC
 
-class GoodPameterizable(ABC, ParameterizableClass):
+class GoodParameterizable(ABC, ParameterizableClass):
     """A well-implemented parameterizable class for testing."""
     def __init__(self, a: int = 10, b: str = "hello", c:type=int):
         ParameterizableClass.__init__(self)
@@ -22,10 +22,10 @@ class GoodPameterizable(ABC, ParameterizableClass):
         return params
 
 
-class EvenBetterOne(GoodPameterizable):
-    """A subclass of GoodPameterizable that adds another parameter."""
+class EvenBetterOne(GoodParameterizable):
+    """A subclass of GoodParameterizable that adds another parameter."""
     def __init__(self, a: int = 10, b: str = "hello", c=int, d: float = 3.14):
-        GoodPameterizable.__init__(self, a, b, c)
+        GoodParameterizable.__init__(self, a, b, c)
         self.d = d
 
     def get_params(self) -> dict[str, Any]:
