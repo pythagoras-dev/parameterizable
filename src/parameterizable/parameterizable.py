@@ -92,14 +92,20 @@ class ParameterizableClass:
 
     @property
     def essential_param_names(self) -> set[str]:
-        """Names of parameters that define the object's identity/behavior.
-
-        Essential parameters are the parameters that define the substance of
-        the object's behavior and/or identity, e.g. the max number of
-        decision trees in a forest or max depth of a tree.
-
-        In most cases, the essential parameters are immutable (do not
-        change during the lifetime of the object).
+        """Names of parameters that define the object's core identity and behavior.
+        
+        Essential parameters are those that fundamentally define an object's behavior
+        or identity - for example, the maximum number of trees in a random forest
+        or the maximum depth of a decision tree.
+        
+        These parameters are typically immutable throughout the object's lifetime.
+        
+        Note:
+            Subclasses should override this property to specify which parameters are
+            essential. The default implementation considers all parameters essential.
+        
+        Returns:
+            set[str]: Names of essential parameters.
         """
         return set(self.get_params().keys())
 
@@ -108,9 +114,12 @@ class ParameterizableClass:
     def auxiliary_param_names(self) -> set[str]:
         """Get the names of the object's auxiliary parameters.
 
-        Auxiliary parameters are the parameters that do not impact the substance
-        of the object's behavior and/or identity, e.g. logging verbosity
-        or probability of random consistency checks.
+        Auxiliary parameters are parameters that do not fundamentally impact the
+        object's behavior or identity. These might include settings like logging
+        verbosity, debug flags, or probability thresholds for consistency checks.
+
+        Returns:
+            set[str]: Set of auxiliary parameter names.
         """
         return set(self.get_params().keys()) - self.essential_param_names
 
