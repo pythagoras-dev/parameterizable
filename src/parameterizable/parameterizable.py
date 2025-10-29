@@ -101,7 +101,7 @@ class ParameterizableClass:
         In most cases, the essential parameters are immutable (do not
         change during the lifetime of the object).
         """
-        return set(self.get_default_params().keys())
+        return set(self.get_params().keys())
 
 
     @property

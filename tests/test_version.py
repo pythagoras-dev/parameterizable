@@ -51,16 +51,21 @@ def test_version_format_compatibility():
     """
     Test that __version__ can be compared and parsed as a version string.
     """
-    from packaging import version
-    
-    # This should not raise an exception
-    parsed_version = version.parse(parameterizable.__version__)
-    assert parsed_version is not None
-    
-    # Should be a valid version object
-    assert hasattr(parsed_version, 'major')
-    assert hasattr(parsed_version, 'minor')
-    assert hasattr(parsed_version, 'micro')
+    # Split version into components
+    parts = parameterizable.__version__.split('.')
+
+    # Verify we can parse major, minor, patch version numbers
+    assert len(parts) >= 3
+    assert all(p.isdigit() for p in parts[:3])
+
+    major = int(parts[0])
+    minor = int(parts[1])
+    patch = int(parts[2])
+
+    # Test that version components are integers >= 0
+    assert major >= 0
+    assert minor >= 0
+    assert patch >= 0
 
 
 def test_version_in_all():

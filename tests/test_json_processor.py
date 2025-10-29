@@ -138,7 +138,6 @@ def test_to_serializable_containers_and_markers():
     out = _to_serializable_dict(data)
 
     assert out.keys() == {_Markers.DICT}
-    # Convert list of pairs to dict for easier assertions
     out_dict = {k: v for k,v in out[_Markers.DICT].items()}
 
     assert out_dict["t"] == {_Markers.TUPLE: [1, 2, 3]}

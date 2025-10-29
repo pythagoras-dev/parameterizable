@@ -10,7 +10,7 @@ from abc import ABC
 
 class GoodPameterizable(ABC, ParameterizableClass):
     """A well-implemented parameterizable class for testing."""
-    def __init__(self, a: int = 10, b: str = "hello", c=int):
+    def __init__(self, a: int = 10, b: str = "hello", c:type=int):
         ParameterizableClass.__init__(self)
         self.a = a
         self.b = b
