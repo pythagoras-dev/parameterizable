@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "parameterizable"
-version = "0.103.7"
+version = "0.103.8"
 description = "Library for work with parameterizable classes."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -47,12 +47,14 @@ docs = [
 
 dev = [
     "pytest",
+    "coverage",
     "sphinx",
     "sphinx-rtd-theme",
     "pydata_sphinx_theme",
     "sphinx-book-theme",
     "furo",
 ]
+
 
 [project.urls]
 Home = "https://github.com/pythagoras-dev/parameterizable"
