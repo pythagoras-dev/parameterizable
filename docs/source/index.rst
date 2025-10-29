@@ -13,8 +13,8 @@ parameterizable
    :target: https://github.com/pythagoras-dev/parameterizable/blob/master/LICENSE
    :alt: License: MIT
 
-.. image:: https://static.pepy.tech/badge/parameterizable
-   :target: https://pepy.tech/project/parameterizable
+.. image:: https://img.shields.io/pypi/dm/parameterizable?color=blue
+   :target: https://pypistats.org/packages/parameterizable
    :alt: Downloads
 
 .. image:: https://app.readthedocs.org/projects/parameterizable/badge/?version=latest
