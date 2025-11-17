@@ -17,7 +17,7 @@ from typing import Any, Mapping, NewType
 
 from .dict_sorter import sort_dict_by_keys
 
-JsonSerializedObject = NewType("JsonSerializedParams", str)
+JsonSerializedObject = NewType("JsonSerializedObject", str)
 
 _UNSUPPORTED_TYPES = (
     types.ModuleType,
