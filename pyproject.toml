@@ -1,10 +1,10 @@
 [build-system]
-requires = ["uv_build"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "parameterizable"
-version = "0.104.1"
+version = "0.104.2"
 description = "Library for work with parameterizable classes."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -39,20 +39,14 @@ dependencies = [
 
 docs = [
     "sphinx",
-    "sphinx-rtd-theme",
-    "pydata_sphinx_theme",
-    "sphinx-book-theme",
-    "furo",
+    "pydata_sphinx_theme"
 ]
 
 dev = [
     "pytest",
     "coverage",
     "sphinx",
-    "sphinx-rtd-theme",
-    "pydata_sphinx_theme",
-    "sphinx-book-theme",
-    "furo",
+    "pydata_sphinx_theme"
 ]
 
 
