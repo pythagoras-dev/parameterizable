@@ -371,6 +371,27 @@ def loadjs(s: JsonSerializedObject, **kwargs) -> Any:
     return _from_serializable_dict(json.loads(s, **kwargs))
 
 
+def _extract_params_dict(container: dict) -> dict:
+    """Return the DICT payload from PARAMS->DICT or top-level DICT, or raise KeyError."""
+    def pick(block: Any) -> dict | None:
+        if isinstance(block, dict):
+            candidate = block.get(_Markers.DICT)
+            if isinstance(candidate, dict):
+                return candidate
+        return None
+
+    if _Markers.PARAMS in container:
+        candidate = pick(container[_Markers.PARAMS])
+        if candidate is None:
+            raise KeyError(f"Invalid structure: {_Markers.PARAMS} missing {_Markers.DICT} mapping")
+        return candidate
+
+    candidate = pick(container)
+    if candidate is None:
+        raise KeyError(f"Invalid structure: missing {_Markers.DICT} mapping in JSON object")
+    return candidate
+
+
 def update_jsparams(jsparams: JsonSerializedObject, **kwargs) -> JsonSerializedObject:
     """Update constructor parameters inside a serialized JSON blob.
 
@@ -393,36 +414,47 @@ def update_jsparams(jsparams: JsonSerializedObject, **kwargs) -> JsonSerializedO
             parameterizable object).
     """
     params = json.loads(jsparams)
-    if _Markers.PARAMS in params:
-        for k, v in kwargs.items():
-            params[_Markers.PARAMS][_Markers.DICT][k] = v
-    else:
-        for k, v in kwargs.items():
-            params[_Markers.DICT][k] = v
+
+    if not isinstance(params, dict):
+        raise KeyError("Invalid structure: JSON root must be a dictionary")
+
+    target_dict = _extract_params_dict(params)
+
+    for k, v in kwargs.items():
+        target_dict[k] = _to_serializable_dict(v)
+
     params = sort_dict_by_keys(params)
     params_json = json.dumps(params)
-    return params_json
+    return JsonSerializedObject(params_json)
 
 
 def access_jsparams(jsparams: JsonSerializedObject, *args: str) -> dict[str, Any]:
     """Access selected constructor parameters from a serialized JSON blob.
 
-    Args:
-        jsparams: The JSON string produced by ``dumpjs()``.
-        *args: Parameter names to extract from the internal ``PARAMS -> DICT``
-            mapping.
+     Args:
+         jsparams: The JSON string produced by ``dumpjs()``.
+         *args: Parameter names to extract from the internal ``PARAMS -> DICT``
+             mapping.
 
-    Returns:
-        dict[str, Any]: A mapping of requested parameter names to their values
-        as stored in the JSON parameters block. The values are JSON-native
-        Python types (e.g., lists, dicts, numbers, strings, booleans, None).
+     Returns:
+         dict[str, Any]: A mapping of requested parameter names to their deserialized
+         values. The values are reconstructed Python objects (e.g., tuples, sets,
+         dicts) rather than the raw internal JSON representation.
 
-    Raises:
-        KeyError: If a requested key is not present, or if the JSON string does
-            not contain the expected ``PARAMS -> DICT`` structure.
-    """
+     Raises:
+         KeyError: If a requested key is not present, or if the JSON string does
+             not contain the expected ``PARAMS -> DICT`` structure.
+     """
     params = json.loads(jsparams)
-    if _Markers.PARAMS in params:
-        return {k: params[_Markers.PARAMS][_Markers.DICT][k] for k in args}
-    else:
-        return {k: params[_Markers.DICT][k] for k in args}
+
+    if not isinstance(params, dict):
+        raise KeyError("Invalid structure: JSON root must be a dictionary")
+
+    source_dict = _extract_params_dict(params)
+
+    result = {}
+    for k in args:
+        if k not in source_dict:
+            raise KeyError(f"Parameter '{k}' not found in serialized object")
+        result[k] = _from_serializable_dict(source_dict[k])
+    return result
