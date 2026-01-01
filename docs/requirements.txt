@@ -1,5 +1,3 @@
 sphinx
-sphinx-rtd-theme
-pydata_sphinx_theme
-sphinx-book-theme
+pydata-sphinx-theme
 

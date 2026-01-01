@@ -1,13 +1,13 @@
-# Contributing to parameterizable
+# Contributing to mixinforge
 
-Thank you for your interest in contributing to `parameterizable`! 
+Thank you for your interest in contributing to `mixinforge`! 
 Your help is greatly appreciated. These guidelines will help you get started.
 
 ## Getting Started
 
 1.  **Fork and Clone:**
     ```bash
-    git clone https://github.com/your-username/parameterizable.git
+    git clone https://github.com/your-username/mixinforge.git
     cd mixinforge
     ```
 
