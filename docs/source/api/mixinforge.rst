@@ -1,7 +1,7 @@
-parameterizable package
-=================
+mixinforge package
+==================
 
-.. automodule:: parameterizable
+.. automodule:: mixinforge
    :members:
    :undoc-members:
    :show-inheritance:

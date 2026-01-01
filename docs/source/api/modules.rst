@@ -1,7 +1,7 @@
-parameterizable
-=========
+mixinforge
+==========
 
 .. toctree::
    :maxdepth: 4
 
-   parameterizable
+   mixinforge
