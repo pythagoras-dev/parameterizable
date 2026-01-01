@@ -1,15 +1,5 @@
-"""Single-thread enforcement for Pythagoras portal access.
+"""Single-thread code execution enforcement.
 
-This module ensures that portals and portal-aware objects are accessed
-only from the thread that first initialized the portal system. Pythagoras
-supports multi-process parallelism (swarming) but not multi-threading
-within a single process.
-
-Design Rationale:
-    Single-threaded portal access simplifies concurrency management and avoids
-    the complexity of locks, race conditions, and thread-safety guarantees.
-    Multi-process parallelism (via swarming) provides scalability without the
-    overhead and complexity of thread synchronization.
 """
 
 from __future__ import annotations
@@ -24,10 +14,10 @@ _owner_pid: int | None = None
 
 
 def ensure_single_thread() -> None:
-    """Ensure current thread is the portal owner thread.
+    """Ensure current thread is the original thread.
 
     Validates that the calling thread is the same thread that first initialized
-    the portal system. Automatically resets ownership after process forks to
+    the program. Automatically resets ownership after process forks to
     support multi-process parallelism.
 
     Raises:
