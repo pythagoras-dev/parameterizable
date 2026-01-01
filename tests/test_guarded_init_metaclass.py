@@ -275,3 +275,33 @@ def test_dataclass_definition_rejection():
     with pytest.raises(TypeError, match="GuardedInitMeta cannot be used with dataclass"):
         class Child(BaseDataclass, metaclass=GuardedInitMeta):
             pass
+
+
+def test_multiple_guarded_bases_rejected():
+    """Test that multiple GuardedInitMeta bases are rejected."""
+    class FirstGuarded(metaclass=GuardedInitMeta):
+        def __init__(self):
+            self._init_finished = False
+
+    class SecondGuarded(metaclass=GuardedInitMeta):
+        def __init__(self):
+            self._init_finished = False
+
+    with pytest.raises(TypeError, match="has 2 GuardedInitMeta bases, but only 1 is allowed"):
+        class MultipleGuardedBases(FirstGuarded, SecondGuarded):
+            pass
+
+
+def test_inherited_setstate_already_wrapped():
+    """Test that inherited wrapped __setstate__ is not wrapped again."""
+    # Use the module-level classes that are already defined
+    # ChildInheritsSetState should share the same __setstate__ as ParentWithSetState
+    assert ChildInheritsSetState.__setstate__ is ParentWithSetState.__setstate__
+
+    # Verify functionality
+    obj = ChildInheritsSetState()
+    data = pickle.dumps(obj)
+    restored = pickle.loads(data)
+
+    assert restored._init_finished is True
+    assert getattr(restored, 'setstate_called', False) is True

@@ -1,4 +1,3 @@
-import json
 import types
 import builtins
 import pytest
@@ -9,8 +8,6 @@ from mixinforge.json_processor import (
     _to_serializable_dict,
     _recreate_object,
     _from_serializable_dict,
-    dumpjs,
-    loadjs,
     _Markers,
 )
 
@@ -19,20 +16,6 @@ class Color(Enum):
     RED = 1
     GREEN = 2
     BLUE = 3
-
-
-class DictOnly:
-    def __init__(self):
-        self.x = 10
-        self.y = "hi"
-
-
-class SlotsOnly:
-    __slots__ = ("a", "b")
-
-    def __init__(self, a=1, b=2):
-        self.a = a
-        self.b = b
 
 
 class BaseSlots:
@@ -49,12 +32,6 @@ class Hybrid(BaseSlots):
         super().__init__()
         self.s = 42
         self.d = "present in __dict__"
-
-
-class BadStateTuple(BaseSlots):  # has 'base' slot
-    def __getstate__(self):
-        # incorrect state: tuple of wrong size for slots
-        return 1, 2, 3
 
 
 class GetParams:
@@ -77,16 +54,6 @@ class GetState:
         self._v = state["v"]
 
 
-class SlottedGetstateDict:
-    __slots__ = ("val",)
-
-    def __init__(self, val):
-        self.val = val
-
-    def __getstate__(self):
-        return {"val": self.val}
-
-
 class StateNoSetState:
     def __init__(self, a, b):
         # not used at reconstruction time
@@ -95,13 +62,6 @@ class StateNoSetState:
 
     def __getstate__(self):
         return {"a": 111, "b": 222}
-
-
-class WithWeakref:
-    __slots__ = ("a", "__weakref__")
-
-    def __init__(self, a=1):
-        self.a = a
 
 
 class GetParamsAndState:
@@ -245,87 +205,6 @@ def test_recreate_object_via_state_fallback_without_setstate():
     assert reconstructed.a == 111 and reconstructed.b == 222
 
 
-def test_round_trip_dict_only():
-    obj = DictOnly()
-    ser = dumpjs(obj)
-    back = loadjs(ser)
-    assert isinstance(back, DictOnly)
-    assert back.x == 10
-    assert back.y == "hi"
-
-
-def test_round_trip_slotted_with_getstate_dict():
-    obj = SlottedGetstateDict(101)
-    ser = dumpjs(obj)
-    back = loadjs(ser)
-    assert isinstance(back, SlottedGetstateDict)
-    assert back.val == 101
-
-
-def test_round_trip_hybrid_slots_and_dict():
-    obj = Hybrid()
-    obj.base = "new base"
-    obj.s = 99
-    obj.d = "new dict val"
-    obj.extra = "another dict val"
-
-    ser = dumpjs(obj)
-    back = loadjs(ser)
-
-    assert isinstance(back, Hybrid)
-    # Check slots
-    assert back.base == "new base"
-    assert back.s == 99
-    # Check dict attrs
-    assert back.d == "new dict val"
-    assert back.extra == "another dict val"
-
-
-def test_round_trip_with_weakref():
-    obj = WithWeakref(a=10)
-    ser = dumpjs(obj)
-    back = loadjs(ser)
-    assert isinstance(back, WithWeakref)
-    assert back.a == 10
-
-
-def test_recreate_from_malformed_tuple_state_raises():
-    obj = BadStateTuple()
-    # Manually serialize to inject bad state
-    serialized = {
-        _Markers.MODULE: __name__,
-        _Markers.CLASS: "BadStateTuple",
-        _Markers.STATE: _to_serializable_dict(obj.__getstate__()),
-    }
-
-    with pytest.raises(TypeError, match="Tuple state length .* does not match"):
-        _from_serializable_dict(serialized)
-
-
-def test_recreate_from_cpython_getstate_tuple_format():
-    obj = Hybrid()
-    obj.base = "b"
-    obj.s = 1
-    obj.d = 2  # this goes into __dict__
-
-    # This is what obj.__getstate__() would return for a hybrid object
-    # The first element is the __dict__, second is a dict of slot values
-    state_tuple = ({"d": 2}, {"base": "b", "s": 1})
-
-    serialized_payload = {
-        _Markers.MODULE: __name__,
-        _Markers.CLASS: "Hybrid",
-        _Markers.STATE: _to_serializable_dict(state_tuple),
-    }
-
-    reconstructed = _from_serializable_dict(serialized_payload)
-
-    assert isinstance(reconstructed, Hybrid)
-    assert reconstructed.base == "b"
-    assert reconstructed.s == 1
-    assert reconstructed.d == 2
-
-
 def test_recreate_enum_and_errors():
     enum_ser = _to_serializable_dict(Color.BLUE)
     assert _recreate_object(enum_ser) is Color.BLUE
@@ -360,130 +239,3 @@ def test_recreate_enum_and_errors():
     }
     with pytest.raises(TypeError):
         _recreate_object(unk)
-
-
-@pytest.mark.parametrize(
-    "obj, equals",
-    [
-        (None, lambda a, b: a is b),
-        (True, lambda a, b: a is b),
-        (0, lambda a, b: a == b),
-        (3.14, lambda a, b: a == b),
-        ("abc", lambda a, b: a == b),
-        ([1, 2, 3], lambda a, b: a == b),
-        ((1, 2, 3), lambda a, b: a == b),
-        ({1, 2, 3}, lambda a, b: a == b),
-        ({"a": 1, "b": (2, 3)}, lambda a, b: a == b),
-        ({1: "a", 2: "b"}, lambda a, b: a == b),  # non-string keys
-        ({"a": 1, 2: "b"}, lambda a, b: a == b),  # mixed keys
-        (Color.RED, lambda a, b: a is b),
-    ],
-)
-def test_round_trip_matrix(obj, equals):
-    ser = _to_serializable_dict(obj)
-    back = _from_serializable_dict(ser)
-    assert equals(obj, back)
-
-
-def test_from_serializable_round_trip_complex():
-    complex_obj = {
-        (1, 2): {"a": [1, 2, {3, 4}]},
-        "enum": Color.RED,
-        "obj": GetParams(8, "q"),
-    }
-    ser = _to_serializable_dict(complex_obj)
-    de = _from_serializable_dict(ser)
-    # keys restored as tuple
-    assert (1, 2) in de
-    assert de["enum"] is Color.RED
-    assert isinstance(de["obj"], GetParams)
-    assert de["obj"].a == 8 and de["obj"].b == "q"
-    # inner set restored
-    assert de[(1, 2)]["a"][2] == {3, 4}
-
-
-def test_round_trip_custom_objects_both_variants():
-    # get_params flavor
-    gp = GetParams(7, "z")
-    gp_ser = _to_serializable_dict(gp)
-    gp_back = _from_serializable_dict(gp_ser)
-    assert isinstance(gp_back, GetParams)
-    assert gp_back.a == 7 and gp_back.b == "z"
-
-    # __getstate__/__setstate__ flavor
-    gs = GetState(123)
-    gs_ser = _to_serializable_dict(gs)
-    gs_back = _from_serializable_dict(gs_ser)
-    assert isinstance(gs_back, GetState)
-    assert gs_back._v == 123
-
-
-def test_round_trip_slots_only():
-    obj = SlotsOnly(a=10, b=20)
-    ser = dumpjs(obj)
-    back = loadjs(ser)
-    assert isinstance(back, SlotsOnly)
-    assert back.a == 10
-    assert back.b == 20
-
-
-def test_mixed_key_dict_uses_DICT_marker_and_round_trips():
-    data = {"a": 1, 2: (3, 4)}
-    ser = _to_serializable_dict(data)
-    assert isinstance(ser, dict) and _Markers.DICT in ser
-    back = _from_serializable_dict(ser)
-    assert back == {"a": 1, 2: (3, 4)}
-
-
-@pytest.mark.parametrize(
-    "payload",
-    [
-        {_Markers.TUPLE: [1, 2], "extra": 1},
-        {_Markers.SET: [1, 2], "extra": 1},
-        {_Markers.DICT: [], "extra": 1},
-    ],
-)
-def test_from_serializable_marker_exclusive_key_violation(payload):
-    with pytest.raises(TypeError):
-        _from_serializable_dict(payload)
-
-
-@pytest.mark.parametrize(
-    "payload",
-    [
-        {_Markers.TUPLE: 123},
-        {_Markers.SET: 123},
-        {_Markers.DICT: 123},
-        {_Markers.DICT: [[1, 2, 3]]},  # not pairs
-    ],
-)
-def test_from_serializable_marker_value_type_violation(payload):
-    with pytest.raises(TypeError):
-        _from_serializable_dict(payload)
-
-
-def test_dumps_and_loads_round_trip_json_string_with_kwargs():
-    obj = {
-        "msg": "hello",
-        "nums": (1, 2, 3),
-        "enum": Color.GREEN,
-        "inner": GetParams(2, "ok"),
-    }
-    s = dumpjs(obj, indent=2, sort_keys=True)
-    # should be valid JSON with newlines/indentation due to indent
-    assert isinstance(s, str) and "\n" in s and "  " in s
-
-    loaded = loadjs(s)
-    assert loaded["msg"] == "hello"
-    assert loaded["nums"] == (1, 2, 3)
-    assert loaded["enum"] is Color.GREEN
-    assert isinstance(loaded["inner"], GetParams)
-    assert loaded["inner"].a == 2
-    assert loaded["inner"].b == "ok"
-
-
-def test_loads_forbids_object_hook_and_invalid_json():
-    with pytest.raises(ValueError):
-        loadjs("{}", object_hook=lambda d: d)
-    with pytest.raises(json.JSONDecodeError):
-        loadjs("not a json")

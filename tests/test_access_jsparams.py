@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from mixinforge.json_processor import dumpjs, loadjs, access_jsparams
@@ -49,3 +50,12 @@ def test_access_jsparams_invalid_structure_raises_keyerror():
 
     with pytest.raises(KeyError):
         access_jsparams(js, "x")
+
+
+def test_access_jsparams_invalid_json_root():
+    """Test that access_jsparams raises KeyError when JSON root is not a dict."""
+    # Create invalid JSON (a list at root level)
+    invalid_js = json.dumps([1, 2, 3])
+
+    with pytest.raises(KeyError, match="Invalid structure: JSON root must be a dictionary"):
+        access_jsparams(invalid_js, "x")

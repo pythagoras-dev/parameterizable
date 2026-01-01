@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from mixinforge.json_processor import dumpjs, loadjs, update_jsparams
@@ -50,5 +51,14 @@ def test_update_jsparams_nested_values_roundtrip():
     o2 = loadjs(js_updated)
 
     assert o2.cfg == nested_list
+
+
+def test_update_jsparams_invalid_json_root():
+    """Test that update_jsparams raises KeyError when JSON root is not a dict."""
+    # Create invalid JSON (a list at root level)
+    invalid_js = json.dumps([1, 2, 3])
+
+    with pytest.raises(KeyError, match="Invalid structure: JSON root must be a dictionary"):
+        update_jsparams(invalid_js, x=5)
 
 
