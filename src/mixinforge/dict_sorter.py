@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any
 
 
 def sort_dict_by_keys(d: dict[str, Any]) -> dict[str, Any]:
@@ -8,11 +8,11 @@ def sort_dict_by_keys(d: dict[str, Any]) -> dict[str, Any]:
         d: The input mapping to sort by keys.
 
     Returns:
-        Dict[str, Any]: A new dictionary containing the same key-value pairs as
-        ``d``, but with keys in ascending alphabetical order.
+        A new dictionary containing the same key-value pairs as
+        d, but with keys in ascending alphabetical order.
 
     Raises:
-        TypeError: If ``d`` is not a dictionary.
+        TypeError: If d is not a dictionary.
     """
     if not isinstance(d, dict):
         raise TypeError(

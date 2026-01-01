@@ -1,11 +1,11 @@
-"""Package with basic infrastructure for parameterizable classes.
+"""Basic infrastructure for parameterizable classes.
 
-This package provides the functionality for work with parameterizable classes:
-classes that have (hyper) parameters which define an object's configuration,
+This module provides functionality for working with parameterizable classes:
+classes that have (hyper)parameters which define an object's configuration,
 but not its internal contents or data. Such parameters are typically
-passed to the .__init__() method.
+passed to the __init__ method.
 
-The package provides an API for getting parameters' values from an object,
+The module provides an API for getting parameter values from an object,
 and for converting the parameters to and from a portable dictionary
 (a dictionary with sorted str keys that only contains
 basic types and portable sub-dictionaries).
@@ -21,13 +21,13 @@ class ParameterizableMixin:
     """Base class for parameterizable classes.
 
     Classes deriving from this base expose a stable set of configuration
-    parameters that define their behavior. Subclasses implement ``get_params()``
+    parameters that define their behavior. Subclasses implement get_params
     to return these parameters, which can then be serialized to and from
     a portable JSON representation.
 
     Note:
         This class is intended to be subclassed. The default implementation of
-        ``get_params()`` returns an empty mapping.
+        get_params returns an empty mapping.
     """
 
 
@@ -38,10 +38,10 @@ class ParameterizableMixin:
 
         These parameters define the object's configuration,
         but not its internal contents or data. They are typically passed
-        to the .__init__() method of the object at the time of its creation.
+        to the __init__ method of the object at the time of its creation.
 
         Returns:
-            dict[str, Any]: A mapping of parameter names to values.
+            A mapping of parameter names to values.
         """
         params = dict()
         return params
@@ -51,7 +51,7 @@ class ParameterizableMixin:
         """Return this instance's parameters encoded as JSON.
 
         Returns:
-            JsonSerializedObject: JSON string produced by ``dumpjs``.
+            JSON string produced by dumpjs.
         """
         return dumpjs(self.get_params())
 
@@ -60,12 +60,12 @@ class ParameterizableMixin:
     def get_default_params(cls) -> dict[str, Any]:
         """Get the default parameters of the class as a dictionary.
 
-        Default values are taken from keyword parameters of ``__init__`` and
+        Default values are taken from keyword parameters of __init__ and
         returned as a key-sorted dictionary. Subclasses may override if default
         computation requires custom logic.
 
         Returns:
-            dict[str, Any]: The class's default parameters sorted by key.
+            The class's default parameters sorted by key.
         """
         signature = inspect.signature(cls.__init__)
         # The first parameter of __init__ is the instance itself (e.g. 'self')
@@ -85,7 +85,7 @@ class ParameterizableMixin:
         """Return default constructor parameters encoded as JSON.
 
         Returns:
-            JsonSerializedObject: JSON string with default parameters.
+            JSON string with default parameters.
         """
         return dumpjs(cls.get_default_params())
 
@@ -112,14 +112,14 @@ class ParameterizableMixin:
 
     @property
     def auxiliary_param_names(self) -> set[str]:
-        """Get the names of the object's auxiliary parameters.
+        """Names of the object's auxiliary parameters.
 
         Auxiliary parameters are parameters that do not fundamentally impact the
         object's behavior or identity. These might include settings like logging
         verbosity, debug flags, or probability thresholds for consistency checks.
 
         Returns:
-            set[str]: Set of auxiliary parameter names.
+            Set of auxiliary parameter names.
         """
         return set(self.get_params().keys()) - self.essential_param_names
 
@@ -128,7 +128,7 @@ class ParameterizableMixin:
         """Return only the essential parameters.
 
         Returns:
-            dict[str, Any]: Mapping of essential parameter names to values.
+            Mapping of essential parameter names to values.
         """
         return {k: v for k, v in self.get_params().items()
                 if k in self.essential_param_names}
@@ -138,7 +138,7 @@ class ParameterizableMixin:
         """Return essential parameters encoded as JSON.
 
         Returns:
-            JsonSerializedObject: JSON string with essential parameters.
+            JSON string with essential parameters.
         """
         return dumpjs(self.get_essential_params())
 
@@ -147,7 +147,7 @@ class ParameterizableMixin:
         """Return only the auxiliary parameters.
 
         Returns:
-            dict[str, Any]: Mapping of auxiliary parameter names to values.
+            Mapping of auxiliary parameter names to values.
         """
         return {k: v for k, v in self.get_params().items()
                 if k in self.auxiliary_param_names}
@@ -157,6 +157,6 @@ class ParameterizableMixin:
         """Return auxiliary parameters encoded as JSON.
 
         Returns:
-            JsonSerializedObject: JSON string with auxiliary parameters.
+            JSON string with auxiliary parameters.
         """
         return dumpjs(self.get_auxiliary_params())

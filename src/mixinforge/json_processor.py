@@ -43,9 +43,9 @@ class _Markers:
         ENUM: Marker key for Enum members. The value is the member name.
         CLASS: Name of the object's class used during reconstruction.
         MODULE: Name of the module where the object's class is defined.
-        PARAMS: Serialized mapping of constructor parameters for ``get_params``-
+        PARAMS: Serialized mapping of constructor parameters for get_params-
             based reconstruction.
-        STATE: Serialized state for ``__getstate__``/``__setstate__``-based
+        STATE: Serialized state for __getstate__/__setstate__-based
             reconstruction.
     """
 
@@ -64,7 +64,7 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
 
     The transformation is recursive and supports primitives, lists, tuples,
     sets, and dicts. Certain custom objects are supported either through
-    a ``get_params()`` method or the pickle protocol ``__getstate__()``.
+    a get_params method or the pickle protocol __getstate__.
 
     Args:
         x: The object to convert.
@@ -76,7 +76,7 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
         keys to represent tuples, sets, and reconstructable objects.
 
     Raises:
-        TypeError: If ``x`` (or any nested value) contains an unsupported type.
+        TypeError: If x (or any nested value) contains an unsupported type.
 
     Examples:
         - Tuples and sets are encoded with markers:
@@ -147,18 +147,18 @@ def _process_state(state: Any, obj: Any, marker: str, seen: set[int]) -> dict:
     """Wrap object identity and state into a marker-bearing mapping.
 
     Produces a dictionary containing the object's class and module names along
-    with the provided state under the specified marker (e.g., ``PARAMS`` or
-    ``STATE``). The state is recursively converted to JSON-serializable types.
+    with the provided state under the specified marker (e.g., PARAMS or
+    STATE). The state is recursively converted to JSON-serializable types.
 
     Args:
-        state: The object's state, e.g. from `__getstate__()`.
+        state: The object's state, e.g. from __getstate__.
         obj: The object being serialized (used to extract class/module names).
         marker: Which marker to use for the state payload.
         seen: A set of visited object ids for cycle detection.
 
     Returns:
         A dictionary suitable for JSON encoding that can be used by
-        _recreate_object() to rebuild the instance.
+        _recreate_object to rebuild the instance.
     """
 
     return {_Markers.CLASS: obj.__class__.__qualname__,
@@ -184,12 +184,12 @@ def _get_all_slots(cls: type) -> list[str]:
 def _recreate_object(x: Mapping[str,Any]) -> Any:
     """Recreate an object instance from its serialized metadata.
 
-    The input mapping must include ``MODULE`` and ``CLASS`` markers and either
-    ``PARAMS`` (constructor parameters), ``STATE`` (instance state), or ``ENUM``
+    The input mapping must include MODULE and CLASS markers and either
+    PARAMS (constructor parameters), STATE (instance state), or ENUM
     (Enum member name).
 
     Args:
-        x: Marker-bearing mapping produced by _to_serializable_dict() for
+        x: Marker-bearing mapping produced by _to_serializable_dict for
            custom objects.
 
     Returns:
@@ -344,27 +344,27 @@ def dumpjs(obj: Any, **kwargs) -> JsonSerializedObject:
     Args:
         obj: The object to serialize.
         **kwargs: Additional keyword arguments forwarded to
-            json.dumps (e.g., ``indent=2``, ``sort_keys=True``).
+            json.dumps (e.g., indent=2, sort_keys=True).
 
     Returns:
-        JsonSerializedObject: The JSON string representing the object.
+        The JSON string representing the object.
     """
     return json.dumps(_to_serializable_dict(obj), **kwargs)
 
 
 def loadjs(s: JsonSerializedObject, **kwargs) -> Any:
-    """Load an object from a JSON string produced by dumpjs().
+    """Load an object from a JSON string produced by dumpjs.
 
     Args:
         s: The JSON string to parse.
         **kwargs: Additional keyword arguments forwarded to
-            json.loads (``object_hook`` is not allowed here).
+            json.loads (object_hook is not allowed here).
 
     Returns:
         The Python object reconstructed from the JSON string.
 
     Raises:
-        ValueError: If ``object_hook`` is provided in ``kwargs``.
+        ValueError: If object_hook is provided in kwargs.
     """
     if "object_hook" in kwargs:
         raise ValueError("object_hook cannot be used with mixinforge.loadjs()")
@@ -395,22 +395,22 @@ def _extract_params_dict(container: dict) -> dict:
 def update_jsparams(jsparams: JsonSerializedObject, **kwargs) -> JsonSerializedObject:
     """Update constructor parameters inside a serialized JSON blob.
 
-    This helper takes a JSON string produced by ``dumpjs()`` for an object that
-    was serialized via its ``get_params()`` method and returns a new JSON string
+    This helper takes a JSON string produced by dumpjs for an object that
+    was serialized via its get_params method and returns a new JSON string
     with the provided parameters updated or added under the internal
-    ``PARAMS -> DICT`` mapping.
+    PARAMS -> DICT mapping.
 
     Args:
-        jsparams: The JSON string returned by ``dumpjs()``.
+        jsparams: The JSON string returned by dumpjs.
         **kwargs: Key-value pairs to merge into the serialized parameters.
             Existing keys are overwritten; new keys are added.
 
     Returns:
-        JsonSerializedObject: A new JSON string with updated parameters.
+        A new JSON string with updated parameters.
 
     Raises:
-        KeyError: If ``jsparams`` does not contain the expected
-            ``PARAMS -> DICT`` structure (i.e., the input is not a serialized
+        KeyError: If jsparams does not contain the expected
+            PARAMS -> DICT structure (i.e., the input is not a serialized
             mixinforge object).
     """
     params = json.loads(jsparams)
@@ -432,18 +432,18 @@ def access_jsparams(jsparams: JsonSerializedObject, *args: str) -> dict[str, Any
     """Access selected constructor parameters from a serialized JSON blob.
 
      Args:
-         jsparams: The JSON string produced by ``dumpjs()``.
-         *args: Parameter names to extract from the internal ``PARAMS -> DICT``
+         jsparams: The JSON string produced by dumpjs.
+         *args: Parameter names to extract from the internal PARAMS -> DICT
              mapping.
 
      Returns:
-         dict[str, Any]: A mapping of requested parameter names to their deserialized
+         A mapping of requested parameter names to their deserialized
          values. The values are reconstructed Python objects (e.g., tuples, sets,
          dicts) rather than the raw internal JSON representation.
 
      Raises:
          KeyError: If a requested key is not present, or if the JSON string does
-             not contain the expected ``PARAMS -> DICT`` structure.
+             not contain the expected PARAMS -> DICT structure.
      """
     params = json.loads(jsparams)
 
