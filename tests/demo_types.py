@@ -8,10 +8,10 @@ from mixinforge.parameterizable import *
 
 from abc import ABC
 
-class GoodParameterizable(ABC, ParameterizableClass):
+class GoodParameterizable(ABC, ParameterizableMixin):
     """A well-implemented mixinforge class for testing."""
     def __init__(self, a: int = 10, b: str = "hello", c:type=int):
-        ParameterizableClass.__init__(self)
+        ParameterizableMixin.__init__(self)
         self.a = a
         self.b = b
         self.c = c

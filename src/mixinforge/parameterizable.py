@@ -1,6 +1,6 @@
-"""Package with basic infrastructure for mixinforge classes.
+"""Package with basic infrastructure for parameterizable classes.
 
-This package provides the functionality for work with mixinforge classes:
+This package provides the functionality for work with parameterizable classes:
 classes that have (hyper) parameters which define an object's configuration,
 but not its internal contents or data. Such parameters are typically
 passed to the .__init__() method.
@@ -17,8 +17,8 @@ from .dict_sorter import sort_dict_by_keys
 from .json_processor import loadjs,dumpjs, JsonSerializedObject
 
 
-class ParameterizableClass:
-    """Base class for mixinforge classes.
+class ParameterizableMixin:
+    """Base class for parameterizable classes.
 
     Classes deriving from this base expose a stable set of configuration
     parameters that define their behavior. Subclasses implement ``get_params()``
@@ -105,7 +105,7 @@ class ParameterizableClass:
             essential. The default implementation considers all parameters essential.
         
         Returns:
-            set[str]: Names of essential parameters.
+            Names of essential parameters.
         """
         return set(self.get_params().keys())
 

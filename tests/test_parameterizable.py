@@ -3,11 +3,11 @@ from typing import Any
 
 import pytest
 
-from mixinforge.parameterizable import ParameterizableClass
+from mixinforge.parameterizable import ParameterizableMixin
 from mixinforge.json_processor import dumpjs, loadjs
 
 
-class MyParam(ParameterizableClass):
+class MyParam(ParameterizableMixin):
     def __init__(
         self,
         a: int,
@@ -43,7 +43,7 @@ class MyParam(ParameterizableClass):
 
 def test_base_class_defaults_and_jsparams_are_empty():
     # Base class returns empty params dict
-    base = ParameterizableClass()
+    base = ParameterizableMixin()
     assert base.get_params() == {}
 
     js = base.get_jsparams()

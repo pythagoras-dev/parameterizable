@@ -1,10 +1,10 @@
 from typing import Any
 
-from mixinforge.parameterizable import ParameterizableClass
+from mixinforge.parameterizable import ParameterizableMixin
 from mixinforge.json_processor import loadjs
 
 
-class BasicParam(ParameterizableClass):
+class BasicParam(ParameterizableMixin):
     def __init__(self, a: int, b: int = 2, c: str = "x") -> None:
         self.a = a
         self.b = b

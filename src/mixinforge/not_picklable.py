@@ -1,4 +1,4 @@
-class NotPicklableClass:
+class NotPicklableMixin:
     """A mixin class that prevents objects from being pickled or unpickled.
 
     This class provides a mechanism to explicitly prevent instances from being

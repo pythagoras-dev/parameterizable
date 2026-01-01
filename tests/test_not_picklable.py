@@ -1,11 +1,11 @@
 import pickle
 
-from mixinforge import NotPicklableClass
+from mixinforge import NotPicklableMixin
 
 import pytest
 
 def test_not_picklable():
-    npo = NotPicklableClass()
+    npo = NotPicklableMixin()
 
     # Test dunder methods directly
     with pytest.raises(TypeError):
@@ -20,8 +20,8 @@ def test_not_picklable():
         pickle.dumps(npo)
 
     # Test that a subclass is also not picklable
-    class MyNotPicklableClass(NotPicklableClass):
+    class MyNotPicklableMixin(NotPicklableMixin):
         pass
-    mnpo = MyNotPicklableClass()
+    mnpo = MyNotPicklableMixin()
     with pytest.raises(TypeError):
         pickle.dumps(mnpo)

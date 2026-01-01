@@ -24,7 +24,7 @@ except _md.PackageNotFoundError:
 
 from .dict_sorter import sort_dict_by_keys
 
-from .not_picklable import NotPicklableClass
+from .not_picklable import NotPicklableMixin
 
 from .json_processor import (
     JsonSerializedObject,
@@ -34,12 +34,12 @@ from .json_processor import (
     access_jsparams
 )
 
-from .parameterizable import ParameterizableClass
+from .parameterizable import ParameterizableMixin
 
 __all__ = [
     'sort_dict_by_keys',
-    'ParameterizableClass',
-    'NotPicklableClass',
+    'ParameterizableMixin',
+    'NotPicklableMixin',
     'loadjs',
     'dumpjs',
     'JsonSerializedObject',

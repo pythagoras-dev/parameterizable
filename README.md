@@ -100,11 +100,11 @@ For development:
 Here's a minimal example showing how to make your class parameterizable and serialize/deserialize it:
 
 ```python
-from mixinforge.parameterizable import ParameterizableClass
+from mixinforge.parameterizable import ParameterizableMixin
 from mixinforge.json_processor import dumpjs, loadjs
 
 
-class MyModel(ParameterizableClass):
+class MyModel(ParameterizableMixin):
   def __init__(self, n_trees=10, depth=3, verbose=False):
     self.n_trees = n_trees
     self.depth = depth
@@ -173,10 +173,10 @@ sort_dict_by_keys({"b": 2, "a": 1})  # {"a": 1, "b": 2}
 
 ```python
 import pickle
-from mixinforge import NotPicklableClass
+from mixinforge import NotPicklableMixin
 
 
-class Connection(NotPicklableClass):
+class Connection(NotPicklableMixin):
   pass
 
 
