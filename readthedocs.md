@@ -216,16 +216,16 @@ pytest --doctest-modules
 - [ ] Refresh examples
 - [ ] Review documentation issues
 
-## Mixin Documentation Template
+## Component Documentation Templates
 
-### Template for Each Mixin
+### Template for Mixins and Metaclasses
 
-Copy this template when creating documentation for a new mixin:
+Copy this template when creating documentation for a new mixin or metaclass:
 ```rst
-MixinName
-=========
+ComponentName
+=============
 
-.. autoclass:: mixinforge.MixinName
+.. autoclass:: mixinforge.ComponentName
    :members:
    :special-members: __init__
 
@@ -238,9 +238,9 @@ When to use:
 
 Example::
 
-    from mixinforge import MixinName
+    from mixinforge import ComponentName
 
-    class MyClass(MixinName):
+    class MyClass(ComponentName):
         def __init__(self):
             super().__init__()
 
@@ -250,10 +250,40 @@ Thread Safety / Caveats
 See :ref:`thread-safety` for considerations.
 ```
 
+### Template for Utility Functions
+
+Copy this template when creating documentation for a new utility function:
+```rst
+function_name
+=============
+
+.. autofunction:: mixinforge.function_name
+
+Use Cases
+---------
+
+When to use:
+* Specific scenario 1
+* Specific scenario 2
+
+Example::
+
+    from mixinforge import function_name
+
+    result = function_name(input_data)
+    # Expected output...
+
+Notes
+-----
+
+Performance considerations, edge cases, or related functions.
+```
+
 ### Key Areas
 1. **ParameterizableMixin**: Parameter management, JSON serialization
 2. **CacheablePropertiesMixin**: Cache discovery and invalidation
 3. **SingleThreadEnforcerMixin**: Thread safety patterns
-4. **GuardedInitMeta**: Initialization lifecycle
+4. **GuardedInitMeta**: Initialization lifecycle (metaclass)
 5. **SingletonMixin**: Single-instance pattern enforcement
 6. **NotPicklableMixin**: Serialization constraints
+7. **Utility functions**: `dumpjs`, `loadjs`, `update_jsparams`, `access_jsparams`, `sort_dict_by_keys`
