@@ -228,6 +228,17 @@ pytest --doctest-modules
 
 ## Maintenance Checklist
 
+### After Any Documentation Changes
+- [ ] **Rebuild docs locally** to validate the build process works:
+  ```bash
+  cd docs && make clean && make html
+  ```
+- [ ] Test docs build without warnings:
+  ```bash
+  sphinx-build -b html -W --keep-going docs/source docs/build
+  ```
+- [ ] Verify the output in `docs/build/html/index.html` renders correctly
+
 ### Each Release
 - [ ] Update version (auto from `__version__`)
 - [ ] Keep README.md and readthedocs documentation in sync

@@ -29,7 +29,6 @@ mixinforge
    :target: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
    :alt: Docstring Style: Google
 
-
 A collection of Python mixins and utilities for building robust, configurable classes.
 
 What Is It?
@@ -45,6 +44,33 @@ functions that help you build well-structured Python classes. It offers tools fo
 * **Pickle prevention** — Explicitly prevent objects from being pickled when serialization is unsafe
 * **JSON serialization** — Convert objects and parameters to/from portable JSON representations
 * **Dictionary utilities** — Helper functions for consistent dictionary handling
+
+Quick Example
+-------------
+
+Here's a quick example demonstrating parameter management and JSON serialization:
+
+.. code-block:: python
+
+   from mixinforge import ParameterizableMixin, dumpjs, loadjs
+
+   class MyModel(ParameterizableMixin):
+       def __init__(self, n_trees=10, depth=3):
+           self.n_trees = n_trees
+           self.depth = depth
+
+       def get_params(self) -> dict:
+           return {"n_trees": self.n_trees, "depth": self.depth}
+
+   # Create and configure
+   model = MyModel(n_trees=50, depth=5)
+
+   # Serialize to JSON
+   js = dumpjs(model)
+
+   # Recreate from JSON
+   model2 = loadjs(js)
+   assert model2.get_params() == model.get_params()
 
 Installation
 ------------
@@ -75,6 +101,13 @@ Requirements
 For development:
 
 * pytest (optional)
+
+Table of Contents
+-----------------
+
+.. contents::
+   :local:
+   :depth: 2
 
 Available Mixins and Metaclasses
 --------------------------------
