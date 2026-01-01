@@ -20,11 +20,7 @@ Public API:
 - JsonSerializedObject: NewType alias for JSON strings produced by dumpjs.
 """
 
-from importlib import metadata as _md
-try:
-    __version__ = _md.version("mixinforge")
-except _md.PackageNotFoundError:
-    __version__ = "unknown"
+from ._version_info import __version__
 
 from .dict_sorter import *
 from .not_picklable_mixin import *

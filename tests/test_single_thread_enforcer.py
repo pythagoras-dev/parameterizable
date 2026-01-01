@@ -36,7 +36,7 @@ def test_multi_thread_failure():
         try:
             _restrict_to_single_thread()
         except RuntimeError as e:
-            if "Pythagoras portals are single-threaded by design" in str(e):
+            if "This object is restricted to single-threaded execution" in str(e):
                 exception_caught = True
 
     t = threading.Thread(target=intruder_thread, name="Intruder")
@@ -81,7 +81,7 @@ def test_reset_allows_new_owner():
     with pytest.raises(RuntimeError) as excinfo:
         _restrict_to_single_thread()
 
-    assert "Pythagoras portals are single-threaded by design" in str(excinfo.value)
+    assert "This object is restricted to single-threaded execution" in str(excinfo.value)
 
 def test_pid_change_resets_ownership():
     """Test that PID change (simulating fork) resets ownership."""
