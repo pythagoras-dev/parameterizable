@@ -1,5 +1,19 @@
-"""Single-thread code execution enforcement.
+"""Single-thread execution enforcement for multi-process parallelism.
 
+This module provides utilities to ensure that code runs only on the thread
+that first initialized it, while automatically supporting process-based
+parallelism through fork detection. After a fork, the child process
+automatically becomes the new owner thread for that process.
+
+Classes:
+    SingleThreadEnforcerMixin: Mixin to add single-thread enforcement to
+        any class.
+
+Functions:
+    _enforce_single_thread_access: Validates that the current thread is the owner
+        thread.
+    _reset_thread_ownership: Resets thread ownership tracking for
+        testing.
 """
 
 from __future__ import annotations
@@ -8,12 +22,12 @@ import inspect
 import os
 import threading
 
-_portal_native_id: int | None = None
-_portal_thread_name: str | None = None
-_owner_pid: int | None = None
+_owner_thread_native_id: int | None = None
+_owner_thread_name: str | None = None
+_owner_process_id: int | None = None
 
 
-def ensure_single_thread() -> None:
+def _enforce_single_thread_access() -> None:
     """Ensure current thread is the original thread.
 
     Validates that the calling thread is the same thread that first initialized
@@ -23,39 +37,75 @@ def ensure_single_thread() -> None:
     Raises:
         RuntimeError: If called from a different thread than the owner thread.
     """
-    global _portal_native_id, _portal_thread_name, _owner_pid
+    global _owner_thread_native_id, _owner_thread_name, _owner_process_id
 
-    curr_pid = os.getpid()
-    curr_native_id = threading.get_native_id()
-    curr_name = threading.current_thread().name
+    current_process_id = os.getpid()
+    current_thread_native_id = threading.get_native_id()
+    current_thread_name = threading.current_thread().name
 
-    if _owner_pid is not None and curr_pid != _owner_pid:
-        _portal_native_id = None
-        _portal_thread_name = None
-        _owner_pid = None
+    if _owner_process_id is not None and current_process_id != _owner_process_id:
+        _owner_thread_native_id = None
+        _owner_thread_name = None
+        _owner_process_id = None
 
-    if _portal_native_id is None:
-        _portal_native_id = curr_native_id
-        _portal_thread_name = curr_name
-        _owner_pid = curr_pid
+    if _owner_thread_native_id is None:
+        _owner_thread_native_id = current_thread_native_id
+        _owner_thread_name = current_thread_name
+        _owner_process_id = current_process_id
         return
 
-    if curr_native_id != _portal_native_id:
+    if current_thread_native_id != _owner_thread_native_id:
         caller = inspect.stack()[1]
         raise RuntimeError(
             "Pythagoras portals are single-threaded by design.\n"
-            f"Owner thread : {_portal_native_id} ({_portal_thread_name})\n"
-            f"Current thread: {curr_native_id} ({curr_name}) at "
+            f"Owner thread : {_owner_thread_native_id} ({_owner_thread_name})\n"
+            f"Current thread: {current_thread_native_id} ({current_thread_name}) at "
             f"{caller.filename}:{caller.lineno}\n"
             "For parallelism use swarming (multi-process).")
 
 
-def _reset_single_thread_enforcer() -> None:
+def _reset_thread_ownership() -> None:
     """Reset the thread ownership for the current process.
 
     For unit tests only.
     """
-    global _portal_native_id, _portal_thread_name, _owner_pid
-    _portal_native_id = None
-    _portal_thread_name = None
-    _owner_pid = None
+    global _owner_thread_native_id, _owner_thread_name, _owner_process_id
+    _owner_thread_native_id = None
+    _owner_thread_name = None
+    _owner_process_id = None
+
+
+class SingleThreadEnforcerMixin:
+    """Mixin to enforce single-threaded execution with multi-process support.
+
+    Add this mixin to any class to ensure its methods are called only from
+    the thread that first instantiated it. Automatically resets ownership
+    after process forks to support multi-process parallelism while preventing
+    concurrent threading issues.
+
+    The enforcement happens at instantiation and can be manually triggered
+    via the enforce_single_thread_access method.
+
+    Raises:
+        RuntimeError: If instantiated or if enforce_single_thread_access is called
+            from a different thread than the owner thread.
+
+    Example:
+        >>> class MyClass(SingleThreadEnforcerMixin):
+        ...     def process(self):
+        ...         self.enforce_single_thread_access()
+        ...         # Process safely on owner thread
+    """
+
+    def enforce_single_thread_access(self):
+        """Validate that the current thread is the owner thread.
+
+        Raises:
+            RuntimeError: If called from a different thread than the owner
+                thread.
+        """
+        _enforce_single_thread_access()
+
+    def __init__(self):
+        """Initialize and register the current thread as the owner."""
+        _enforce_single_thread_access()
