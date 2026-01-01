@@ -7,82 +7,162 @@
 [![Code style: pep8](https://img.shields.io/badge/code_style-pep8-blue.svg)](https://peps.python.org/pep-0008/)
 [![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
 
-Parameter manipulation for Python classes.
+A collection of Python mixins and utilities for building robust, configurable classes.
 
 ## What Is It?
 
-`mixinforge` provides functionality for work with parameterizable 
-classes: those that have (hyper) parameters which define object's configuration,
-that is different from the object's internal contents or data. Such parameters 
-are typically passed to the `.__init__()` method when an object is created.
+`mixinforge` is a lightweight library providing reusable mixins and utility functions that help you build well-structured Python classes. It offers tools for:
 
-`mixinforge` allows to:
-* Get parameters of an object as a dictionary.
-* Get default parameters of a class as a dictionary.
-* Serialize an object's parameters to a JSON string. 
-* Recreate the object from its parameters, stored in a JSON string.
+- **Parameter management** — Track, serialize, and deserialize class configuration parameters
+- **Cache management** — Automatically discover and invalidate `cached_property` attributes
+- **Pickle prevention** — Explicitly prevent objects from being pickled when serialization is unsafe
+- **JSON serialization** — Convert objects and parameters to/from portable JSON representations
+- **Dictionary utilities** — Helper functions for consistent dictionary handling
 
-## Why Is It Useful?
+## Available Mixins
 
-`mixinforge` is useful for developers working with 
-configurable Python objects, especially in scenarios involving 
-machine learning, scientific computing, or any domain where 
-object's behavior is defined by the object's parameters. It provides:
+### ParameterizableMixin
 
-* **Consistency**: Ensures a standardized way to handle parameters 
-across different classes.
-* **Serialization**: Simplifies saving and loading configuration-defined objects
-using JSON.
-* **Reproducibility**: Facilitates recreating objects with the same configuration, 
-which is critical for debugging and sharing experiments.
+A base class for objects with configuration parameters. Enables standardized parameter access, JSON serialization, and distinguishes between essential and auxiliary parameters.
 
-By abstracting parameter handling, this library reduces boilerplate code 
-and improves maintainability.
-
-## Usage
-
-Most users will:
-- Inherit from `ParameterizableClass` in their own classes, 
-- Implement the `.get_params()` method to expose the configuration needed to recreate the object, and (sometimes)
-- Implement the `.essential_param_names` property to expose the core parameters which determine the object's behavior.
+```python
+from mixinforge import ParameterizableMixin, dumpjs, loadjs
 
 
-## Key Classes, Methods and Functions,
+class MyModel(ParameterizableMixin):
+    def __init__(self, n_trees=10, depth=3, verbose=False):
+        self.n_trees = n_trees
+        self.depth = depth
+        self.verbose = verbose
 
-- `ParameterizableClass`: Base class for parameterizable objects. Derive your class from it to enable the library’s features.
-- `NotPicklableClass`: Mixin that prevents pickling/unpickling; inherit from it to make your class explicitly non-picklable.
-- `JsonSerializedObject`: A string containing JSON-serialized object.
-- `ParameterizableClass.get_params()`: Implement in your subclass to return the configuration dictionary 
-needed to recreate the object.
-- `ParameterizableClass.get_default_params()`: Class method returning default parameters for the class as a dictionary.
-- `ParameterizableClass.essential_param_names`: Implement in your subclass to return the names of the core parameters
-which determine the object's behavior. If not implemented, all parameters are considered essential.
-- `ParameterizableClass.auxiliary_param_names`: A property that returns the names of the auxiliary parameters.
-- `ParameterizableClass.get_jsparams()`: A method that serializes an object's parameters 
-to a JSON string (`JsonSerializedObject`).
-- `ParameterizableClass.get_essential_jsparams()`: A method that returns a JSON string with essential parameters only.
-- `ParameterizableClass.get_auxiliary_jsparams()`: A method that returns a JSON string with auxiliary parameters only.
-- `ParameterizableClass.get_default_jsparams()`: Class method returning default parameters for the class as a JSON string.
-- `dumpjs(obj)`: Return a JSON string representation of an object.
-- `loadjs(js)`: Return an object from a JSON string.
-- `update_jsparams(js, updates)`: Return a new JSON string with selected parameters updated without full deserialization.
-- `access_jsparams(js, names)`: Return a dict with a subset of params, stored inside a JSON string.
-- `sort_dict_by_keys(d)`: Utility to produce a new dict whose keys are sorted alphabetically.
+    def get_params(self) -> dict:
+        return {"n_trees": self.n_trees, "depth": self.depth, "verbose": self.verbose}
 
-## How To Get It?
+    @property
+    def essential_param_names(self) -> set[str]:
+        return {"n_trees", "depth"}  # verbose is auxiliary
+
+
+model = MyModel(n_trees=50, depth=5, verbose=True)
+
+# Get parameters
+model.get_params()              # {"n_trees": 50, "depth": 5, "verbose": True}
+model.get_essential_params()    # {"n_trees": 50, "depth": 5}
+model.get_auxiliary_params()    # {"verbose": True}
+
+# Serialize to JSON
+js = dumpjs(model)
+
+# Recreate from JSON
+model2 = loadjs(js)
+assert model2.get_params() == model.get_params()
+```
+
+### CacheablePropertiesMixin
+
+A mixin for managing `functools.cached_property` attributes with automatic discovery and invalidation across the class hierarchy.
+
+```python
+from functools import cached_property
+from mixinforge import CacheablePropertiesMixin
+
+
+class DataProcessor(CacheablePropertiesMixin):
+    def __init__(self, data):
+        self._data = data
+
+    @cached_property
+    def processed(self):
+        print("Processing...")
+        return [x * 2 for x in self._data]
+
+    @cached_property
+    def summary(self):
+        return sum(self.processed)
+
+
+processor = DataProcessor([1, 2, 3])
+
+# Check cache status
+processor._get_all_cached_properties_status()  # {"processed": False, "summary": False}
+
+# Access triggers caching
+_ = processor.processed  # prints "Processing..."
+processor._get_all_cached_properties_status()  # {"processed": True, "summary": False}
+
+# Invalidate all caches
+processor._invalidate_cache()
+processor._get_all_cached_properties_status()  # {"processed": False, "summary": False}
+```
+
+### NotPicklableMixin
+
+A mixin that explicitly prevents objects from being pickled or unpickled. Useful for objects that hold non-serializable resources like database connections, file handles, or network sockets.
+
+```python
+import pickle
+from mixinforge import NotPicklableMixin
+
+
+class DatabaseConnection(NotPicklableMixin):
+    def __init__(self, connection_string):
+        self.connection_string = connection_string
+        # ... establish connection
+
+
+conn = DatabaseConnection("postgresql://localhost/mydb")
+
+# Any attempt to pickle raises TypeError
+try:
+    pickle.dumps(conn)
+except TypeError as e:
+    print(e)  # "Pickling is not allowed for DatabaseConnection objects"
+```
+
+## Utility Functions
+
+### JSON Serialization
+
+```python
+from mixinforge import dumpjs, loadjs, update_jsparams, access_jsparams
+
+# Serialize an object to JSON
+js = dumpjs(model)
+
+# Deserialize back to an object
+model2 = loadjs(js)
+
+# Update parameters in JSON without full deserialization
+js_updated = update_jsparams(js, n_trees=100)
+
+# Access specific parameters from JSON
+subset = access_jsparams(js, "n_trees", "depth")  # {"n_trees": 50, "depth": 5}
+```
+
+### Dictionary Sorting
+
+```python
+from mixinforge import sort_dict_by_keys
+
+# Sort dictionary keys alphabetically
+sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
+# {"apple": 2, "mango": 3, "zebra": 1}
+```
+
+## Installation
 
 The source code is hosted on GitHub at:
-[https://github.com/pythagoras-dev/mixinforge](https://github.com/pythagoras-dev/mixinforge) 
+[https://github.com/pythagoras-dev/mixinforge](https://github.com/pythagoras-dev/mixinforge)
 
 Binary installers for the latest released version are available at the Python package index at:
 [https://pypi.org/project/mixinforge](https://pypi.org/project/mixinforge)
 
-Using uv :
+Using uv:
 ```
 uv add mixinforge
 ```
 
-Using pip (legacy alternative to uv):
+Using pip:
 ```
 pip install mixinforge
 ```
@@ -95,99 +175,31 @@ pip install mixinforge
 For development:
 - pytest (optional)
 
-## Quick Start
+## API Reference
 
-Here's a minimal example showing how to make your class parameterizable and serialize/deserialize it:
+### Mixins
 
-```python
-from mixinforge.parameterizable import ParameterizableMixin
-from mixinforge.json_processor import dumpjs, loadjs
+| Mixin | Description |
+|-------|-------------|
+| `ParameterizableMixin` | Base class for parameterizable objects with JSON serialization support |
+| `CacheablePropertiesMixin` | Automatic discovery and invalidation of `cached_property` attributes |
+| `NotPicklableMixin` | Prevents pickling/unpickling of objects |
 
+### Functions
 
-class MyModel(ParameterizableMixin):
-  def __init__(self, n_trees=10, depth=3, verbose=False):
-    self.n_trees = n_trees
-    self.depth = depth
-    self.verbose = verbose
+| Function | Description |
+|----------|-------------|
+| `dumpjs(obj)` | Serialize an object to a JSON string |
+| `loadjs(js)` | Deserialize a JSON string back to an object |
+| `update_jsparams(js, **updates)` | Update parameters in a JSON string without full deserialization |
+| `access_jsparams(js, *names)` | Extract specific parameters from a JSON string |
+| `sort_dict_by_keys(d)` | Return a new dictionary with keys sorted alphabetically |
 
-  def get_params(self) -> dict:
-    # Only values returned here are considered this object's "parameters"
-    return {"n_trees": self.n_trees, "depth": self.depth, "verbose": self.verbose}
+### Types
 
-  # Optional: list the parameters that define identity/behavior
-  @property
-  def essential_param_names(self) -> set[str]:
-    return {"n_trees", "depth"}
-
-
-m = MyModel(n_trees=50, depth=5, verbose=True)
-
-# Serialize parameters to JSON
-js = dumpjs(m)
-
-# Recreate an equivalent object from JSON
-m2 = loadjs(js)
-assert isinstance(m2, MyModel)
-assert m2.get_params() == m.get_params()
-```
-
-## API Examples
-
-- Update parameters in JSON without full deserialization:
-
-```python
-from mixinforge.json_processor import update_jsparams, dumpjs, loadjs
-
-js2 = update_jsparams(js, n_trees=100)  # returns a new JSON string
-m3 = loadjs(js2)
-assert m3.n_trees == 100
-```
-
-- Access a subset of parameters directly from JSON:
-
-```python
-from mixinforge.json_processor import access_jsparams
-
-subset = access_jsparams(js2, "n_trees", "depth")
-assert subset == {"n_trees": 100, "depth": 5}
-```
-
-- Work with essential/auxiliary parameters:
-
-```python
-m.get_essential_params()      # {"n_trees": 50, "depth": 5}
-m.get_essential_jsparams()    # JSON string with only essential params
-m.get_auxiliary_params()      # {"verbose": True}
-m.get_auxiliary_jsparams()    # JSON string with only auxiliary params
-```
-
-- Sort dictionaries by keys (utility):
-
-```python
-from mixinforge.dict_sorter import sort_dict_by_keys
-
-sort_dict_by_keys({"b": 2, "a": 1})  # {"a": 1, "b": 2}
-```
-
-- Prevent pickling/unpickling using NotPicklableClass:
-
-```python
-import pickle
-from mixinforge import NotPicklableMixin
-
-
-class Connection(NotPicklableMixin):
-  pass
-
-
-conn = Connection()
-
-# Any attempt to pickle or unpickle will raise TypeError
-try:
-  pickle.dumps(conn)
-except TypeError:
-  print("Connection cannot be pickled")
-```
+| Type | Description |
+|------|-------------|
+| `JsonSerializedObject` | Type alias for JSON strings produced by `dumpjs` |
 
 ## Development
 
