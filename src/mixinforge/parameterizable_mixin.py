@@ -34,14 +34,15 @@ class ParameterizableMixin:
     def get_params(self) -> dict[str, Any]:
         """Return this instance's configuration parameters.
 
-        This method must be implemented by subclasses.
-
-        These parameters define the object's configuration,
-        but not its internal contents or data. They are typically passed
-        to the __init__ method of the object at the time of its creation.
+        Parameters define the object's configuration but not its internal
+        contents or data. They are typically passed to __init__ at creation time.
 
         Returns:
             A mapping of parameter names to values.
+
+        Note:
+            Subclasses should override this method to return their specific
+            parameters. The default implementation returns an empty dictionary.
         """
         params = dict()
         return params
@@ -68,8 +69,7 @@ class ParameterizableMixin:
             The class's default parameters sorted by key.
         """
         signature = inspect.signature(cls.__init__)
-        # The first parameter of __init__ is the instance itself (e.g. 'self')
-        # We are skipping it.
+        # Skip the first parameter (self/cls)
         params_to_consider = list(signature.parameters.values())[1:]
         params = {
             p.name: p.default

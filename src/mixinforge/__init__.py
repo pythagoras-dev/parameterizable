@@ -11,6 +11,7 @@ Public API:
 - NotPicklableMixin: Mixin that prevents pickling/unpickling.
 - SingleThreadEnforcerMixin: Enforces single-threaded execution with multi-process support.
 - GuardedInitMeta: Metaclass for strict initialization control and lifecycle hooks.
+- SingletonMixin: Ensures each subclass maintains exactly one instance.
 - sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
 - dumpjs: Serialize an object (or parameters) into a JSON string.
 - loadjs: Deserialize a JSON string produced by dumpjs back into a Python object.
@@ -25,25 +26,14 @@ try:
 except _md.PackageNotFoundError:
     __version__ = "unknown"
 
-from .dict_sorter import sort_dict_by_keys
-
-from .not_picklable_mixin import NotPicklableMixin
-
-from .json_processor import (
-    JsonSerializedObject,
-    loadjs,
-    dumpjs,
-    update_jsparams,
-    access_jsparams
-)
-
-from .parameterizable_mixin import ParameterizableMixin
-
-from .cacheable_properties_mixin import CacheablePropertiesMixin
-
-from .guarded_init_metaclass import GuardedInitMeta
-
-from .single_thread_enforcer_mixin import SingleThreadEnforcerMixin
+from .dict_sorter import *
+from .not_picklable_mixin import *
+from .json_processor import *
+from .parameterizable_mixin import *
+from .cacheable_properties_mixin import *
+from .guarded_init_metaclass import *
+from .single_thread_enforcer_mixin import *
+from .singleton_mixin import *
 
 __all__ = [
     'CacheablePropertiesMixin',

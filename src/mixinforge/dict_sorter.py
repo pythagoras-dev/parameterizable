@@ -1,3 +1,8 @@
+"""Utility for sorting dictionaries by keys.
+
+This module provides a simple helper function for creating sorted dictionaries,
+which is useful for ensuring consistent ordering in serialization and display.
+"""
 from typing import Any
 
 

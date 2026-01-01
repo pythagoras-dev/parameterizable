@@ -120,10 +120,9 @@ def _to_serializable_dict(x: Any, seen: set[int] | None = None) -> Any:
         elif hasattr(x, "__getstate__"):
             result = _process_state(x.__getstate__(), x, _Markers.STATE, seen)
         elif hasattr(x.__class__, "__slots__"):
-            # For slotted objects, create a pickle-style state tuple.
+            # For slotted objects, create a pickle-style state tuple
             slots = _get_all_slots(type(x))
-            # This will raise AttributeError if a slot is not initialized,
-            # which is safer than ignoring it.
+            # Raises AttributeError if a slot is uninitialized
             slot_state = tuple(getattr(x, name) for name in slots)
 
             if hasattr(x, "__dict__"):
@@ -167,7 +166,14 @@ def _process_state(state: Any, obj: Any, marker: str, seen: set[int]) -> dict:
 
 
 def _get_all_slots(cls: type) -> list[str]:
-    """Collect all slot names from a class hierarchy, excluding special ones."""
+    """Collect all slot names from a class hierarchy, excluding special ones.
+
+    Args:
+        cls: The class to inspect for __slots__.
+
+    Returns:
+        List of slot names in MRO order, excluding __dict__ and __weakref__.
+    """
     slots_to_fill = []
     # Traverse in reverse MRO to maintain parent-to-child slot order
     for base_cls in reversed(cls.__mro__):
@@ -232,8 +238,7 @@ def _recreate_object(x: Mapping[str,Any]) -> Any:
             if hasattr(obj, "__setstate__"):
                 obj.__setstate__(state)
             elif isinstance(state, tuple):
-                # This branch handles tuple state, typically from __getstate__
-                # for classes with __slots__.
+                # Handle tuple state from __getstate__ for slotted classes
                 slots_to_fill = _get_all_slots(cls)
 
                 # Support multiple tuple state formats:
@@ -372,7 +377,17 @@ def loadjs(s: JsonSerializedObject, **kwargs) -> Any:
 
 
 def _extract_params_dict(container: dict) -> dict:
-    """Return the DICT payload from PARAMS->DICT or top-level DICT, or raise KeyError."""
+    """Extract the parameter dictionary from a serialized container.
+
+    Args:
+        container: A dictionary containing serialized parameters.
+
+    Returns:
+        The parameter dictionary extracted from PARAMS->DICT or top-level DICT.
+
+    Raises:
+        KeyError: If the expected DICT structure is not found.
+    """
     def pick(block: Any) -> dict | None:
         if isinstance(block, dict):
             candidate = block.get(_Markers.DICT)

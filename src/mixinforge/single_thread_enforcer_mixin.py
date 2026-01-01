@@ -1,19 +1,9 @@
-"""Single-thread execution enforcement for multi-process parallelism.
+"""Single-thread execution enforcement with multi-process support.
 
 This module provides utilities to ensure that code runs only on the thread
 that first initialized it, while automatically supporting process-based
 parallelism through fork detection. After a fork, the child process
 automatically becomes the new owner thread for that process.
-
-Classes:
-    SingleThreadEnforcerMixin: Mixin to add single-thread enforcement to
-        any class.
-
-Functions:
-    _restrict_to_single_thread: Validates that the current thread is the owner
-        thread.
-    _reset_thread_ownership: Resets thread ownership tracking for
-        testing.
 """
 
 from __future__ import annotations
@@ -57,17 +47,18 @@ def _restrict_to_single_thread() -> None:
     if current_thread_native_id != _owner_thread_native_id:
         caller = inspect.stack()[1]
         raise RuntimeError(
-            "Pythagoras portals are single-threaded by design.\n"
+            "This object is restricted to single-threaded execution.\n"
             f"Owner thread : {_owner_thread_native_id} ({_owner_thread_name})\n"
             f"Current thread: {current_thread_native_id} ({current_thread_name}) at "
             f"{caller.filename}:{caller.lineno}\n"
-            "For parallelism use swarming (multi-process).")
+            "For parallelism, use multi-process execution.")
 
 
 def _reset_thread_ownership() -> None:
-    """Reset the thread ownership for the current process.
+    """Reset thread ownership tracking.
 
-    For unit tests only.
+    Note:
+        This function is intended for testing purposes only.
     """
     global _owner_thread_native_id, _owner_thread_name, _owner_process_id
     _owner_thread_native_id = None
@@ -84,25 +75,24 @@ class SingleThreadEnforcerMixin:
     concurrent threading issues.
 
     The enforcement happens at instantiation and can be manually triggered
-    via the restrict_to_single_thread method.
+    via the _restrict_to_single_thread method.
 
     Raises:
-        RuntimeError: If instantiated or if restrict_to_single_thread is called
+        RuntimeError: If instantiated or if _restrict_to_single_thread is called
             from a different thread than the owner thread.
 
     Example:
         >>> class MyClass(SingleThreadEnforcerMixin):
         ...     def process(self):
-        ...         self.restrict_to_single_thread()
+        ...         self._restrict_to_single_thread()
         ...         # Process safely on owner thread
     """
 
-    def restrict_to_single_thread(self):
+    def _restrict_to_single_thread(self):
         """Validate that the current thread is the owner thread.
 
         Raises:
-            RuntimeError: If called from a different thread than the owner
-                thread.
+            RuntimeError: If called from a different thread than the owner thread.
         """
         _restrict_to_single_thread()
 

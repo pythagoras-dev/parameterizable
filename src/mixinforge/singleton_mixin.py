@@ -1,4 +1,9 @@
-"""
+"""Mixin for implementing the singleton pattern.
+
+This module provides SingletonMixin, which ensures each subclass maintains
+exactly one instance that is returned on every instantiation attempt. This is
+useful for classes that should have only a single instance throughout the
+application lifetime, such as configuration managers or resource coordinators.
 """
 from __future__ import annotations
 
@@ -6,21 +11,23 @@ from .parameterizable_mixin import ParameterizableMixin
 
 
 class SingletonMixin(ParameterizableMixin):
-    """Base class for singleton classes.
+    """Mixin for creating singleton classes.
 
-    This class implements a singleton pattern where each subclass maintains
-    exactly one instance that is returned on every instantiation.
+    Ensures each subclass maintains exactly one instance that is returned
+    on every instantiation. The singleton instance is stored per class type,
+    so each subclass has its own singleton instance.
+
+    Note:
+        This implementation is not thread-safe. For multi-threaded applications,
+        additional synchronization mechanisms should be added.
     """
     _instances: dict[type, SingletonMixin] = {}
 
     def __new__(cls):
-        """Create or return the singleton instance for the subclass.
-        
-        Args:
-            cls: The class for which to create or retrieve the singleton instance.
-            
+        """Create or return the singleton instance for this class.
+
         Returns:
-            Joker: The singleton instance for the specified class.
+            The singleton instance for this class.
         """
         if cls not in SingletonMixin._instances:
             SingletonMixin._instances[cls] = super().__new__(cls)
