@@ -1,10 +1,44 @@
 # Read the Docs Configuration Guide
 
-> **References**:
+> **Purpose**: This guide provides complete configuration and best practices for building and maintaining mixinforge documentation using Sphinx and Read the Docs. Use this when setting up, updating, or troubleshooting documentation.
+>
+> **Audience**: Maintainers and contributors working on mixinforge documentation.
+
+---
+
+## Quick Reference
+
+| Task | Command / Location |
+|------|-------------------|
+| Build docs locally | `cd docs && make html` |
+| Test docs | `sphinx-build -b html -W --keep-going docs/source docs/build` |
+| Check links | `sphinx-build -b linkcheck docs/source docs/build` |
+| Config file | `docs/source/conf.py` |
+| Requirements | `docs/requirements.txt` |
+| Theme | `pydata_sphinx_theme` |
+
+---
+
+## Table of Contents
+
+1. [Documentation Structure](#documentation-structure)
+2. [Sphinx Configuration](#sphinx-configuration-confpy)
+3. [Read the Docs Config](#readthedocsyaml)
+4. [Dependencies](#docsrequirementstxt)
+5. [Testing Documentation](#testing-documentation)
+6. [Content Guidelines](#content-guidelines)
+7. [Maintenance Checklist](#maintenance-checklist)
+8. [Mixins Documentation](#project-specific-mixins-documentation)
+
+---
+
+> **Related Documentation**:
 > - Docstring formatting: [docstrings_comments.md](docstrings_comments.md)
 > - Type hints: [type_hints.md](type_hints.md)
 > - Contribution workflow: [contributing.md](contributing.md)
 > - Project structure: [README.md](README.md)
+
+---
 
 ## Documentation Structure
 
@@ -17,14 +51,13 @@ docs/
 │   ├── quickstart.rst
 │   ├── user_guide/
 │   │   ├── index.rst
-│   │   ├── parameterizable.rst
+│   │   ├── mixinforge.rst
 │   │   ├── cacheable_properties.rst
 │   │   ├── thread_safety.rst
 │   │   └── advanced_usage.rst
-│   ├── api_reference/
-│   │   ├── index.rst
-│   │   └── modules.rst
-│   └── changelog.rst
+│   └── api_reference/
+│       ├── index.rst
+│       └── modules.rst
 └── requirements.txt
 ```
 
@@ -124,47 +157,6 @@ sphinx-autodoc-typehints>=1.24
 sphinx-copybutton>=0.5
 ```
 
-## Changelog Format
-
-Use Keep a Changelog format with commit prefixes from contributing.md:
-
-```rst
-Changelog
-=========
-
-Version 0.202.0 (2026-01-01)
-----------------------------
-
-Added
-~~~~~
-- ENH: New SingletonMixin feature
-
-Changed
-~~~~~~~
-- REF: Refactored cache invalidation
-
-Deprecated
-~~~~~~~~~~
-- old_function() will be removed in 0.300.0
-
-Fixed
-~~~~~
-- BUG: Fixed thread safety issue
-```
-
-### Version Directives
-
-```rst
-.. deprecated:: 0.202.0
-   Use :func:`new_function` instead.
-
-.. versionadded:: 0.202.0
-   New feature description.
-
-.. versionchanged:: 0.202.0
-   Behavior change description.
-```
-
 ## Testing Documentation
 
 ### Pre-commit
@@ -208,7 +200,7 @@ pytest --doctest-modules
 
 ### Each Release
 - [ ] Update version (auto from `__version__`)
-- [ ] Add changelog entry (use contributing.md prefixes)
+- [ ] Keep README.md and readthedocs documentation in sync
 - [ ] Update code examples
 - [ ] Test docs build without warnings
 - [ ] Check for broken links
@@ -256,4 +248,5 @@ See :ref:`thread-safety` for considerations.
 2. **CacheablePropertiesMixin**: Cache discovery and invalidation
 3. **SingleThreadEnforcerMixin**: Thread safety patterns
 4. **GuardedInitMeta**: Initialization lifecycle
-5. **NotPicklableMixin**: Serialization constraints
+5. **SingletonMixin**: Single-instance pattern enforcement
+6. **NotPicklableMixin**: Serialization constraints
