@@ -41,6 +41,7 @@ functions that help you build well-structured Python classes. It offers tools fo
 * **Cache management** — Automatically discover and invalidate ``cached_property`` attributes
 * **Initialization control** — Enforce strict initialization contracts with lifecycle hooks
 * **Thread safety** — Enforce single-threaded execution with multi-process support
+* **Singleton pattern** — Ensure each subclass maintains exactly one instance
 * **Pickle prevention** — Explicitly prevent objects from being pickled when serialization is unsafe
 * **JSON serialization** — Convert objects and parameters to/from portable JSON representations
 * **Dictionary utilities** — Helper functions for consistent dictionary handling
@@ -274,6 +275,38 @@ detection.
 
    # Calling from a different thread raises RuntimeError
 
+SingletonMixin
+~~~~~~~~~~~~~~
+
+A mixin for implementing the singleton pattern. Ensures each subclass maintains
+exactly one instance that is returned on every instantiation attempt. Useful for
+classes that should have only a single instance throughout the application
+lifetime, such as configuration managers or resource coordinators.
+
+.. code-block:: python
+
+   from mixinforge import SingletonMixin
+
+
+   class ConfigManager(SingletonMixin):
+       def __init__(self):
+           if not hasattr(self, 'initialized'):
+               self.config = {}
+               self.initialized = True
+
+       def get_params(self) -> dict:
+           return self.config
+
+
+   # Both variables reference the same instance
+   config1 = ConfigManager()
+   config2 = ConfigManager()
+   assert config1 is config2  # True
+
+   # Modifications affect all references
+   config1.config['key'] = 'value'
+   assert config2.config['key'] == 'value'  # True
+
 Utility Functions
 -----------------
 
@@ -339,6 +372,8 @@ Mixins
      - Prevents pickling/unpickling of objects
    * - ``SingleThreadEnforcerMixin``
      - Enforces single-threaded execution with multi-process support
+   * - ``SingletonMixin``
+     - Ensures each subclass maintains exactly one instance
 
 Metaclasses
 ~~~~~~~~~~~
