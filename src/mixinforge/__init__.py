@@ -1,13 +1,16 @@
 """Tools for working with mixinforge classes.
 
-This package provides infrastructure for classes whose behavior is configured
-by (hyper)parameters, typically passed to their __init__ method. It offers
-helpers to retrieve parameters from objects and to convert parameters to and
-from a portable, JSON-serializable dictionary.
+This package provides reusable mixins and utility functions that help you build
+well-structured Python classes. It offers tools for parameter management, cache
+management, initialization control, thread safety, pickle prevention, JSON
+serialization, and dictionary utilities.
 
 Public API:
-- ParameterizableMixin: Base class for mixinforge objects.
+- ParameterizableMixin: Base class for parameterizable objects with JSON serialization.
+- CacheablePropertiesMixin: Automatic discovery and invalidation of cached_property attributes.
 - NotPicklableMixin: Mixin that prevents pickling/unpickling.
+- SingleThreadEnforcerMixin: Enforces single-threaded execution with multi-process support.
+- GuardedInitMeta: Metaclass for strict initialization control and lifecycle hooks.
 - sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
 - dumpjs: Serialize an object (or parameters) into a JSON string.
 - loadjs: Deserialize a JSON string produced by dumpjs back into a Python object.

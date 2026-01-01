@@ -231,7 +231,7 @@ detection.
            self.data = []
 
        def process(self, item):
-           self.enforce_single_thread_access()
+           self.restrict_to_single_thread()
            self.data.append(item)
            return item * 2
 

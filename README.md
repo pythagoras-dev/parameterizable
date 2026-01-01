@@ -16,6 +16,7 @@ A collection of Python mixins and utilities for building robust, configurable cl
 - **Parameter management** — Track, serialize, and deserialize class configuration parameters
 - **Cache management** — Automatically discover and invalidate `cached_property` attributes
 - **Initialization control** — Enforce strict initialization contracts with lifecycle hooks
+- **Thread safety** — Enforce single-threaded execution with multi-process support
 - **Pickle prevention** — Explicitly prevent objects from being pickled when serialization is unsafe
 - **JSON serialization** — Convert objects and parameters to/from portable JSON representations
 - **Dictionary utilities** — Helper functions for consistent dictionary handling
@@ -143,6 +144,31 @@ service = MyService("worker")  # prints "Service 'worker' initialized"
 print(service._init_finished)  # True
 ```
 
+### SingleThreadEnforcerMixin
+
+A mixin to enforce single-threaded execution with multi-process support. Ensures methods are called only from the thread that first instantiated the object, while automatically supporting process-based parallelism through fork detection.
+
+```python
+from mixinforge import SingleThreadEnforcerMixin
+
+
+class MyProcessor(SingleThreadEnforcerMixin):
+    def __init__(self):
+        super().__init__()
+        self.data = []
+
+    def process(self, item):
+        self.restrict_to_single_thread()
+        self.data.append(item)
+        return item * 2
+
+
+processor = MyProcessor()
+processor.process(5)  # Works on the owner thread
+
+# Calling from a different thread raises RuntimeError
+```
+
 ## Utility Functions
 
 ### JSON Serialization
@@ -220,6 +246,7 @@ For development:
 | `ParameterizableMixin` | Base class for parameterizable objects with JSON serialization support |
 | `CacheablePropertiesMixin` | Automatic discovery and invalidation of `cached_property` attributes |
 | `NotPicklableMixin` | Prevents pickling/unpickling of objects |
+| `SingleThreadEnforcerMixin` | Enforces single-threaded execution with multi-process support |
 
 ### Metaclasses
 

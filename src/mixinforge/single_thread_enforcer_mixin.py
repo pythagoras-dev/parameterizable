@@ -10,7 +10,7 @@ Classes:
         any class.
 
 Functions:
-    _enforce_single_thread_access: Validates that the current thread is the owner
+    _restrict_to_single_thread: Validates that the current thread is the owner
         thread.
     _reset_thread_ownership: Resets thread ownership tracking for
         testing.
@@ -27,7 +27,7 @@ _owner_thread_name: str | None = None
 _owner_process_id: int | None = None
 
 
-def _enforce_single_thread_access() -> None:
+def _restrict_to_single_thread() -> None:
     """Ensure current thread is the original thread.
 
     Validates that the calling thread is the same thread that first initialized
@@ -84,28 +84,28 @@ class SingleThreadEnforcerMixin:
     concurrent threading issues.
 
     The enforcement happens at instantiation and can be manually triggered
-    via the enforce_single_thread_access method.
+    via the restrict_to_single_thread method.
 
     Raises:
-        RuntimeError: If instantiated or if enforce_single_thread_access is called
+        RuntimeError: If instantiated or if restrict_to_single_thread is called
             from a different thread than the owner thread.
 
     Example:
         >>> class MyClass(SingleThreadEnforcerMixin):
         ...     def process(self):
-        ...         self.enforce_single_thread_access()
+        ...         self.restrict_to_single_thread()
         ...         # Process safely on owner thread
     """
 
-    def enforce_single_thread_access(self):
+    def restrict_to_single_thread(self):
         """Validate that the current thread is the owner thread.
 
         Raises:
             RuntimeError: If called from a different thread than the owner
                 thread.
         """
-        _enforce_single_thread_access()
+        _restrict_to_single_thread()
 
     def __init__(self):
         """Initialize and register the current thread as the owner."""
-        _enforce_single_thread_access()
+        _restrict_to_single_thread()

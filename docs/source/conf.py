@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'mixinforge'
-copyright = '2025 Vlad (Volodymyr) Pavlov'
+copyright = '2025-2026 Vlad (Volodymyr) Pavlov'
 author = 'Vlad (Volodymyr) Pavlov'
 
 import os

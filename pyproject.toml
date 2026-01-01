@@ -52,4 +52,4 @@ dev = [
 
 [project.urls]
 Home = "https://github.com/pythagoras-dev/mixinforge"
-Docs = "https://parameterizable.readthedocs.io/"
+Docs = "https://mixinforge.readthedocs.io/"
