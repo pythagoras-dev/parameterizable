@@ -40,8 +40,12 @@ from .cacheable_properties_mixin import CacheablePropertiesMixin
 
 from .guarded_init_metaclass import GuardedInitMeta
 
+from .single_thread_enforcer import SingleThreadEnforcerMixin
+
 __all__ = [
     'CacheablePropertiesMixin',
+    'GuardedInitMeta',
+    'SingleThreadEnforcerMixin',
     'sort_dict_by_keys',
     'ParameterizableMixin',
     'NotPicklableMixin',
