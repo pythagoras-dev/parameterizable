@@ -15,11 +15,12 @@ A collection of Python mixins and utilities for building robust, configurable cl
 
 - **Parameter management** — Track, serialize, and deserialize class configuration parameters
 - **Cache management** — Automatically discover and invalidate `cached_property` attributes
+- **Initialization control** — Enforce strict initialization contracts with lifecycle hooks
 - **Pickle prevention** — Explicitly prevent objects from being pickled when serialization is unsafe
 - **JSON serialization** — Convert objects and parameters to/from portable JSON representations
 - **Dictionary utilities** — Helper functions for consistent dictionary handling
 
-## Available Mixins
+## Available Mixins and Metaclasses
 
 ### ParameterizableMixin
 
@@ -119,12 +120,47 @@ except TypeError as e:
     print(e)  # "Pickling is not allowed for DatabaseConnection objects"
 ```
 
+### GuardedInitMeta
+
+A metaclass that enforces strict initialization control and provides lifecycle hooks. It ensures that `_init_finished` is `False` during `__init__` and automatically sets it to `True` afterward, enabling reliable initialization state checks.
+
+```python
+from mixinforge import GuardedInitMeta
+
+
+class MyService(metaclass=GuardedInitMeta):
+    def __init__(self, name):
+        self._init_finished = False  # Required by the contract
+        self.name = name
+        # _init_finished is automatically set to True after __init__
+
+    def __post_init__(self):
+        # Optional hook called after initialization completes
+        print(f"Service '{self.name}' initialized")
+
+
+service = MyService("worker")  # prints "Service 'worker' initialized"
+print(service._init_finished)  # True
+```
+
 ## Utility Functions
 
 ### JSON Serialization
 
 ```python
-from mixinforge import dumpjs, loadjs, update_jsparams, access_jsparams
+from mixinforge import ParameterizableMixin, dumpjs, loadjs, update_jsparams, access_jsparams
+
+
+class MyModel(ParameterizableMixin):
+    def __init__(self, n_trees=10, depth=3):
+        self.n_trees = n_trees
+        self.depth = depth
+
+    def get_params(self) -> dict:
+        return {"n_trees": self.n_trees, "depth": self.depth}
+
+
+model = MyModel(n_trees=50, depth=5)
 
 # Serialize an object to JSON
 js = dumpjs(model)
@@ -158,12 +194,12 @@ Binary installers for the latest released version are available at the Python pa
 [https://pypi.org/project/mixinforge](https://pypi.org/project/mixinforge)
 
 Using uv:
-```
+```bash
 uv add mixinforge
 ```
 
 Using pip:
-```
+```bash
 pip install mixinforge
 ```
 
@@ -184,6 +220,12 @@ For development:
 | `ParameterizableMixin` | Base class for parameterizable objects with JSON serialization support |
 | `CacheablePropertiesMixin` | Automatic discovery and invalidation of `cached_property` attributes |
 | `NotPicklableMixin` | Prevents pickling/unpickling of objects |
+
+### Metaclasses
+
+| Metaclass | Description |
+|-----------|-------------|
+| `GuardedInitMeta` | Metaclass for strict initialization control and lifecycle hooks (`__post_init__`, `__post_setstate__`) |
 
 ### Functions
 
