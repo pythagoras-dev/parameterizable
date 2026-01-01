@@ -1,4 +1,4 @@
-"""Tools for working with parameterizable classes.
+"""Tools for working with mixinforge classes.
 
 This package provides infrastructure for classes whose behavior is configured
 by (hyper)parameters, typically passed to their ``__init__`` method. It offers
@@ -6,7 +6,7 @@ helpers to retrieve parameters from objects and to convert parameters to and
 from a portable, JSON-serializable dictionary.
 
 Public API:
-- ParameterizableClass: Base class for parameterizable objects.
+- ParameterizableClass: Base class for mixinforge objects.
 - NotPicklableClass: Mixin that prevents pickling/unpickling.
 - sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
 - dumpjs: Serialize an object (or parameters) into a JSON string.
@@ -18,7 +18,7 @@ Public API:
 
 from importlib import metadata as _md
 try:
-    __version__ = _md.version("parameterizable")
+    __version__ = _md.version("mixinforge")
 except _md.PackageNotFoundError:
     __version__ = "unknown"
 

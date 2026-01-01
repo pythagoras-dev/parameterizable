@@ -1,15 +1,15 @@
-"""Basic tests for parameterizable classes.
+"""Basic tests for mixinforge classes.
 
 This module offers sample classes that are used
 for testing the fundamental
 """
 
-from parameterizable.parameterizable import *
+from mixinforge.parameterizable import *
 
 from abc import ABC
 
 class GoodParameterizable(ABC, ParameterizableClass):
-    """A well-implemented parameterizable class for testing."""
+    """A well-implemented mixinforge class for testing."""
     def __init__(self, a: int = 10, b: str = "hello", c:type=int):
         ParameterizableClass.__init__(self)
         self.a = a
@@ -36,6 +36,6 @@ class EvenBetterOne(GoodParameterizable):
 
 
 class EmptyClass:
-    """A class that doesn't implement the parameterizable interface."""
+    """A class that doesn't implement the mixinforge interface."""
     pass
 

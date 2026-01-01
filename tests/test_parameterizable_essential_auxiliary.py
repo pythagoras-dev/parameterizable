@@ -1,7 +1,7 @@
 from typing import Any
 
-from parameterizable.parameterizable import ParameterizableClass
-from parameterizable.json_processor import loadjs
+from mixinforge.parameterizable import ParameterizableClass
+from mixinforge.json_processor import loadjs
 
 
 class BasicParam(ParameterizableClass):

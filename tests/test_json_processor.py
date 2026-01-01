@@ -5,7 +5,7 @@ import pytest
 
 from enum import Enum
 
-from parameterizable.json_processor import (
+from mixinforge.json_processor import (
     _to_serializable_dict,
     _recreate_object,
     _from_serializable_dict,

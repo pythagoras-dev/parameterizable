@@ -2,7 +2,7 @@ import json
 import importlib
 import pytest
 
-from parameterizable.json_processor import (
+from mixinforge.json_processor import (
     _to_serializable_dict,
     _from_serializable_dict,
     _Markers,

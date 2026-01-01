@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'parameterizable'
+project = 'mixinforge'
 copyright = '2025 Vlad (Volodymyr) Pavlov'
 author = 'Vlad (Volodymyr) Pavlov'
 

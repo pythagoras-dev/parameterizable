@@ -1,6 +1,6 @@
 import pytest
 
-from parameterizable.json_processor import dumpjs, loadjs, access_jsparams
+from mixinforge.json_processor import dumpjs, loadjs, access_jsparams
 
 
 class ParamObj:

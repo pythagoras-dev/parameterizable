@@ -367,7 +367,7 @@ def loadjs(s: JsonSerializedObject, **kwargs) -> Any:
         ValueError: If ``object_hook`` is provided in ``kwargs``.
     """
     if "object_hook" in kwargs:
-        raise ValueError("object_hook cannot be used with parameterizable.loadjs()")
+        raise ValueError("object_hook cannot be used with mixinforge.loadjs()")
     return _from_serializable_dict(json.loads(s, **kwargs))
 
 
@@ -411,7 +411,7 @@ def update_jsparams(jsparams: JsonSerializedObject, **kwargs) -> JsonSerializedO
     Raises:
         KeyError: If ``jsparams`` does not contain the expected
             ``PARAMS -> DICT`` structure (i.e., the input is not a serialized
-            parameterizable object).
+            mixinforge object).
     """
     params = json.loads(jsparams)
 

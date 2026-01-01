@@ -100,23 +100,25 @@ For development:
 Here's a minimal example showing how to make your class parameterizable and serialize/deserialize it:
 
 ```python
-from parameterizable.parameterizable import ParameterizableClass
-from parameterizable.json_processor import dumpjs, loadjs
+from mixinforge.parameterizable import ParameterizableClass
+from mixinforge.json_processor import dumpjs, loadjs
+
 
 class MyModel(ParameterizableClass):
-    def __init__(self, n_trees=10, depth=3, verbose=False):
-        self.n_trees = n_trees
-        self.depth = depth
-        self.verbose = verbose
+  def __init__(self, n_trees=10, depth=3, verbose=False):
+    self.n_trees = n_trees
+    self.depth = depth
+    self.verbose = verbose
 
-    def get_params(self) -> dict:
-        # Only values returned here are considered this object's "parameters"
-        return {"n_trees": self.n_trees, "depth": self.depth, "verbose": self.verbose}
+  def get_params(self) -> dict:
+    # Only values returned here are considered this object's "parameters"
+    return {"n_trees": self.n_trees, "depth": self.depth, "verbose": self.verbose}
 
-    # Optional: list the parameters that define identity/behavior
-    @property
-    def essential_param_names(self) -> set[str]:
-        return {"n_trees", "depth"}
+  # Optional: list the parameters that define identity/behavior
+  @property
+  def essential_param_names(self) -> set[str]:
+    return {"n_trees", "depth"}
+
 
 m = MyModel(n_trees=50, depth=5, verbose=True)
 
@@ -134,7 +136,7 @@ assert m2.get_params() == m.get_params()
 - Update parameters in JSON without full deserialization:
 
 ```python
-from parameterizable.json_processor import update_jsparams, dumpjs, loadjs
+from mixinforge.json_processor import update_jsparams, dumpjs, loadjs
 
 js2 = update_jsparams(js, n_trees=100)  # returns a new JSON string
 m3 = loadjs(js2)
@@ -144,7 +146,7 @@ assert m3.n_trees == 100
 - Access a subset of parameters directly from JSON:
 
 ```python
-from parameterizable.json_processor import access_jsparams
+from mixinforge.json_processor import access_jsparams
 
 subset = access_jsparams(js2, "n_trees", "depth")
 assert subset == {"n_trees": 100, "depth": 5}
@@ -162,7 +164,8 @@ m.get_auxiliary_jsparams()    # JSON string with only auxiliary params
 - Sort dictionaries by keys (utility):
 
 ```python
-from parameterizable.dict_sorter import sort_dict_by_keys
+from mixinforge.dict_sorter import sort_dict_by_keys
+
 sort_dict_by_keys({"b": 2, "a": 1})  # {"a": 1, "b": 2}
 ```
 
@@ -170,18 +173,20 @@ sort_dict_by_keys({"b": 2, "a": 1})  # {"a": 1, "b": 2}
 
 ```python
 import pickle
-from parameterizable import NotPicklableClass
+from mixinforge import NotPicklableClass
+
 
 class Connection(NotPicklableClass):
-    pass
+  pass
+
 
 conn = Connection()
 
 # Any attempt to pickle or unpickle will raise TypeError
 try:
-    pickle.dumps(conn)
+  pickle.dumps(conn)
 except TypeError:
-    print("Connection cannot be pickled")
+  print("Connection cannot be pickled")
 ```
 
 ## Development

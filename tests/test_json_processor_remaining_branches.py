@@ -1,6 +1,6 @@
 import pytest
 
-from parameterizable.json_processor import _to_serializable_dict, _recreate_object, _Markers
+from mixinforge.json_processor import _to_serializable_dict, _recreate_object, _Markers
 
 
 class Plain:

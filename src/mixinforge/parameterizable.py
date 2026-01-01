@@ -1,6 +1,6 @@
-"""Package with basic infrastructure for parameterizable classes.
+"""Package with basic infrastructure for mixinforge classes.
 
-This package provides the functionality for work with parameterizable classes:
+This package provides the functionality for work with mixinforge classes:
 classes that have (hyper) parameters which define an object's configuration,
 but not its internal contents or data. Such parameters are typically
 passed to the .__init__() method.
@@ -18,7 +18,7 @@ from .json_processor import loadjs,dumpjs, JsonSerializedObject
 
 
 class ParameterizableClass:
-    """Base class for parameterizable classes.
+    """Base class for mixinforge classes.
 
     Classes deriving from this base expose a stable set of configuration
     parameters that define their behavior. Subclasses implement ``get_params()``

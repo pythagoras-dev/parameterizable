@@ -3,8 +3,8 @@ from typing import Any
 
 import pytest
 
-from parameterizable.parameterizable import ParameterizableClass
-from parameterizable.json_processor import dumpjs, loadjs
+from mixinforge.parameterizable import ParameterizableClass
+from mixinforge.json_processor import dumpjs, loadjs
 
 
 class MyParam(ParameterizableClass):

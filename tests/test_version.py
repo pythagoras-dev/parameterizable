@@ -2,23 +2,23 @@ import re
 
 import pytest
 
-import parameterizable
+import mixinforge
 
 
 def test_version_exists():
     """
     Test that __version__ attribute exists and is accessible.
     """
-    assert hasattr(parameterizable, '__version__')
-    assert parameterizable.__version__ is not None
+    assert hasattr(mixinforge, '__version__')
+    assert mixinforge.__version__ is not None
 
 
 def test_version_is_string():
     """
     Test that __version__ is a string.
     """
-    assert isinstance(parameterizable.__version__, str)
-    assert len(parameterizable.__version__) > 0
+    assert isinstance(mixinforge.__version__, str)
+    assert len(mixinforge.__version__) > 0
 
 
 def test_version_follows_semantic_versioning():
@@ -28,7 +28,7 @@ def test_version_follows_semantic_versioning():
     # Basic semantic versioning pattern: major.minor.patch
     # May also include pre-release identifiers (alpha, beta, rc)
     semver_pattern = r'^\d+\.\d+\.\d+(?:[-.]?(?:a|alpha|b|beta|rc|dev)\d*)?$'
-    assert re.match(semver_pattern, parameterizable.__version__)
+    assert re.match(semver_pattern, mixinforge.__version__)
 
 
 def test_version_accessible_from_metadata():
@@ -39,9 +39,9 @@ def test_version_accessible_from_metadata():
     
     # Test that we can get version from metadata (this is how it's implemented)
     try:
-        metadata_version = metadata.version("parameterizable")
+        metadata_version = metadata.version("mixinforge")
         # The __version__ should match what metadata reports
-        assert parameterizable.__version__ == metadata_version
+        assert mixinforge.__version__ == metadata_version
     except Exception as e:
         # If metadata lookup fails, at least ensure __version__ exists and is valid
         pytest.fail(f"Could not retrieve version from metadata: {e}")
@@ -52,7 +52,7 @@ def test_version_format_compatibility():
     Test that __version__ can be compared and parsed as a version string.
     """
     # Split version into components
-    parts = parameterizable.__version__.split('.')
+    parts = mixinforge.__version__.split('.')
 
     # Verify we can parse major, minor, patch version numbers
     assert len(parts) >= 3
@@ -72,4 +72,4 @@ def test_version_in_all():
     """
     Test that __version__ is included in the __all__ list.
     """
-    assert '__version__' in parameterizable.__all__
+    assert '__version__' in mixinforge.__all__

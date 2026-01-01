@@ -1,6 +1,6 @@
 import json
 
-from parameterizable.json_processor import dumpjs, loadjs, update_jsparams
+from mixinforge.json_processor import dumpjs, loadjs, update_jsparams
 
 
 def test_update_jsparams_on_plain_dict_updates_DICT_block():

@@ -1,4 +1,4 @@
-from parameterizable.dict_sorter import sort_dict_by_keys
+from mixinforge.dict_sorter import sort_dict_by_keys
 
 import pytest
 

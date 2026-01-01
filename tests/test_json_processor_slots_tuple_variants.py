@@ -1,6 +1,6 @@
 import json
 
-from parameterizable.json_processor import _from_serializable_dict, _to_serializable_dict, _Markers
+from mixinforge.json_processor import _from_serializable_dict, _to_serializable_dict, _Markers
 
 
 class Duo:

@@ -1,6 +1,6 @@
 import pickle
 
-from parameterizable import NotPicklableClass
+from mixinforge import NotPicklableClass
 
 import pytest
 

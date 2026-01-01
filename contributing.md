@@ -8,7 +8,7 @@ Your help is greatly appreciated. These guidelines will help you get started.
 1.  **Fork and Clone:**
     ```bash
     git clone https://github.com/your-username/parameterizable.git
-    cd parameterizable
+    cd mixinforge
     ```
 
 2.  **Install Dependencies:**
