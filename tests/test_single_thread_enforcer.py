@@ -1,7 +1,7 @@
 import threading
 import pytest
-import mixinforge.single_thread_enforcer as ste
-from mixinforge.single_thread_enforcer import (
+import mixinforge.single_thread_enforcer_mixin as ste
+from mixinforge.single_thread_enforcer_mixin import (
     _enforce_single_thread_access,
     _reset_thread_ownership,
 )

@@ -4,7 +4,7 @@ This module offers sample classes that are used
 for testing the fundamental
 """
 
-from mixinforge.parameterizable import *
+from mixinforge.parameterizable_mixin import *
 
 from abc import ABC
 

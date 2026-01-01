@@ -1,6 +1,6 @@
 from typing import Any
 
-from mixinforge.parameterizable import ParameterizableMixin
+from mixinforge.parameterizable_mixin import ParameterizableMixin
 from mixinforge.json_processor import loadjs
 
 

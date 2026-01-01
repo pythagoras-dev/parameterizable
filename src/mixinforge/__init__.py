@@ -24,7 +24,7 @@ except _md.PackageNotFoundError:
 
 from .dict_sorter import sort_dict_by_keys
 
-from .not_picklable import NotPicklableMixin
+from .not_picklable_mixin import NotPicklableMixin
 
 from .json_processor import (
     JsonSerializedObject,
@@ -34,13 +34,13 @@ from .json_processor import (
     access_jsparams
 )
 
-from .parameterizable import ParameterizableMixin
+from .parameterizable_mixin import ParameterizableMixin
 
 from .cacheable_properties_mixin import CacheablePropertiesMixin
 
 from .guarded_init_metaclass import GuardedInitMeta
 
-from .single_thread_enforcer import SingleThreadEnforcerMixin
+from .single_thread_enforcer_mixin import SingleThreadEnforcerMixin
 
 __all__ = [
     'CacheablePropertiesMixin',

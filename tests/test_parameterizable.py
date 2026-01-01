@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from mixinforge.parameterizable import ParameterizableMixin
+from mixinforge.parameterizable_mixin import ParameterizableMixin
 from mixinforge.json_processor import dumpjs, loadjs
 
 
