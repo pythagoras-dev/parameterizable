@@ -38,6 +38,8 @@ from .parameterizable import ParameterizableMixin
 
 from .cacheable_properties_mixin import CacheablePropertiesMixin
 
+from .guarded_init_metaclass import GuardedInitMeta
+
 __all__ = [
     'CacheablePropertiesMixin',
     'sort_dict_by_keys',
