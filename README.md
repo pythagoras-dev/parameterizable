@@ -1,9 +1,9 @@
 # mixinforge
-[![PyPI version](https://img.shields.io/pypi/v/parameterizable.svg)](https://pypi.org/project/parameterizable/)
-[![Python versions](https://img.shields.io/pypi/pyversions/parameterizable.svg)](https://pypi.org/project/parameterizable/)
+[![PyPI version](https://img.shields.io/pypi/v/mixinforge.svg)](https://pypi.org/project/mixinforge/)
+[![Python versions](https://img.shields.io/pypi/pyversions/mixinforge.svg)](https://pypi.org/project/mixinforge/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Downloads](https://img.shields.io/pypi/dm/parameterizable?color=blue)](https://pypistats.org/packages/parameterizable)
-[![Documentation Status](https://app.readthedocs.org/projects/parameterizable/badge/?version=latest)](https://parameterizable.readthedocs.io/en/latest/)
+[![Downloads](https://img.shields.io/pypi/dm/mixinforge?color=blue)](https://pypistats.org/packages/mixinforge)
+[![Documentation Status](https://app.readthedocs.org/projects/mixinforge/badge/?version=latest)](https://mixinforge.readthedocs.io/en/latest/)
 [![Code style: pep8](https://img.shields.io/badge/code_style-pep8-blue.svg)](https://peps.python.org/pep-0008/)
 [![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
 
