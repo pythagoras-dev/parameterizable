@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 
-def sort_dict_by_keys(d: Dict[str, Any]) -> Dict[str, Any]:
+def sort_dict_by_keys(d: dict[str, Any]) -> dict[str, Any]:
     """Return a new dictionary with keys sorted alphabetically.
 
     Args:
