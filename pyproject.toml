@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mixinforge"
-version = "0.201.0"
+version = "0.202.0"
 description = "Library for work with various useful mixins and utility classes."
 readme = "README.md"
 requires-python = ">=3.11"
