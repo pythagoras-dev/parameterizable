@@ -1,4 +1,4 @@
-# parameterizable
+# mixinforge
 [![PyPI version](https://img.shields.io/pypi/v/parameterizable.svg)](https://pypi.org/project/parameterizable/)
 [![Python versions](https://img.shields.io/pypi/pyversions/parameterizable.svg)](https://pypi.org/project/parameterizable/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -11,12 +11,12 @@ Parameter manipulation for Python classes.
 
 ## What Is It?
 
-`parameterizable` provides functionality for work with parameterizable 
+`mixinforge` provides functionality for work with parameterizable 
 classes: those that have (hyper) parameters which define object's configuration,
 that is different from the object's internal contents or data. Such parameters 
 are typically passed to the `.__init__()` method when an object is created.
 
-`parameterizable` allows to:
+`mixinforge` allows to:
 * Get parameters of an object as a dictionary.
 * Get default parameters of a class as a dictionary.
 * Serialize an object's parameters to a JSON string. 
@@ -24,7 +24,7 @@ are typically passed to the `.__init__()` method when an object is created.
 
 ## Why Is It Useful?
 
-`parameterizable` is useful for developers working with 
+`mixinforge` is useful for developers working with 
 configurable Python objects, especially in scenarios involving 
 machine learning, scientific computing, or any domain where 
 object's behavior is defined by the object's parameters. It provides:

@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "parameterizable"
+name = "mixinforge"
 version = "0.105.2"
-description = "Library for work with parameterizable classes."
+description = "Library for work with various useful mixins and utility classes."
 readme = "README.md"
 requires-python = ">=3.11"
 
@@ -14,7 +14,7 @@ license = {text = "MIT"}
 authors = [
     {name = "Vlad (Volodymyr) Pavlov", email = "vlpavlov@ieee.org"}
 ]
-keywords = ["parameters"]
+keywords = ["parameters", "mixins", "utilities", "python"]
 
 classifiers = [
     "Development Status :: 4 - Beta",
