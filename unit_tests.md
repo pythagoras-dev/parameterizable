@@ -166,6 +166,10 @@ fixtures_and_data:
 ## Coverage Philosophy
 - Use coverage to discover untested behavior/branches, not to force
   trivial or mechanical asserts.
+- Aim for 100% test coverage when practical. High coverage helps catch
+  regressions and ensures all code paths are exercised. However, don't
+  sacrifice test quality for coverage numbers—meaningful tests are more
+  valuable than tests that merely hit lines.
 - It's acceptable to exercise internal branches to stabilize observable
   behavior (e.g., serialization markers), but don't ossify incidental
   details.
