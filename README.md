@@ -72,24 +72,24 @@ to a JSON string (`JsonSerializedObject`).
 ## How To Get It?
 
 The source code is hosted on GitHub at:
-[https://github.com/pythagoras-dev/parameterizable](https://github.com/pythagoras-dev/parameterizable) 
+[https://github.com/pythagoras-dev/mixinforge](https://github.com/pythagoras-dev/mixinforge) 
 
 Binary installers for the latest released version are available at the Python package index at:
-[https://pypi.org/project/parameterizable](https://pypi.org/project/parameterizable)
+[https://pypi.org/project/mixinforge](https://pypi.org/project/mixinforge)
 
 Using uv :
 ```
-uv add parameterizable
+uv add mixinforge
 ```
 
 Using pip (legacy alternative to uv):
 ```
-pip install parameterizable
+pip install mixinforge
 ```
 
 ## Requirements
 
-- Python >= 3.10
+- Python >= 3.11
 - Runtime dependencies: none
 
 For development:
@@ -194,7 +194,7 @@ except TypeError:
 - Run tests:
   - With pytest: `pytest`
   - Or via Python: `python -m pytest`
-- Supported Python versions: 3.10+
+- Supported Python versions: 3.11+
 - See contributing guidelines: [contributing.md](contributing.md)
 
 ## License
