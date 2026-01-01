@@ -28,7 +28,9 @@
 5. [Testing Documentation](#testing-documentation)
 6. [Content Guidelines](#content-guidelines)
 7. [Maintenance Checklist](#maintenance-checklist)
-8. [New Mixin Documentation Template](#new-mixin-documentation-template)
+8. [Component Documentation Templates](#component-documentation-templates)
+9. [Troubleshooting](#troubleshooting)
+10. [Version Management](#version-management)
 
 ---
 
@@ -45,24 +47,30 @@
 ```
 docs/
 ├── source/
-│   ├── conf.py
-│   ├── index.rst
-│   ├── installation.rst
-│   ├── quickstart.rst
-│   ├── contributing.md           # Symlinked from root
-│   ├── type_hints.md             # Symlinked from root
-│   ├── docstrings_comments.md    # Symlinked from root
-│   ├── user_guide/
+│   ├── conf.py                    # Sphinx configuration
+│   ├── index.rst                  # Main documentation page
+│   ├── _static/                   # Static assets (CSS, images, etc.)
+│   ├── _templates/                # Custom templates (optional)
+│   ├── installation.rst           # Installation instructions (optional)
+│   ├── quickstart.rst             # Quick start guide (optional)
+│   ├── contributing.md            # Symlinked from root (optional)
+│   ├── type_hints.md              # Symlinked from root (optional)
+│   ├── docstrings_comments.md     # Symlinked from root (optional)
+│   ├── user_guide/                # User-focused documentation (optional)
 │   │   ├── index.rst
 │   │   ├── mixinforge.rst
 │   │   ├── cacheable_properties.rst
 │   │   ├── thread_safety.rst
 │   │   └── advanced_usage.rst
-│   └── api_reference/
+│   └── api/                       # Auto-generated API reference
 │       ├── index.rst
 │       └── modules.rst
-└── requirements.txt
+├── requirements.txt               # Documentation dependencies
+├── Makefile                       # Build commands for Unix/Mac
+└── make.bat                       # Build commands for Windows
 ```
+
+**Note**: The `_static/` directory must exist (even if empty) to avoid Sphinx warnings.
 
 ## Sphinx Configuration (conf.py)
 
@@ -160,6 +168,23 @@ pydata-sphinx-theme>=0.14
 sphinx-autodoc-typehints>=1.24
 sphinx-copybutton>=0.5
 myst-parser>=2.0.0
+```
+
+**Important**: Keep `docs/requirements.txt` synchronized with `pyproject.toml`'s `[project.optional-dependencies]` docs extra. This ensures:
+- Local development: `pip install -e ".[docs]"`
+- Read the Docs: Uses `extra_requirements: [docs]` from `.readthedocs.yaml`
+- CI/CD: Can reference either file consistently
+
+Example `pyproject.toml`:
+```toml
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "pydata-sphinx-theme",
+    "sphinx-autodoc-typehints",
+    "sphinx-copybutton",
+    "myst-parser"
+]
 ```
 
 ## Testing Documentation
@@ -287,3 +312,21 @@ Performance considerations, edge cases, or related functions.
 5. **SingletonMixin**: Single-instance pattern enforcement
 6. **NotPicklableMixin**: Serialization constraints
 7. **Utility functions**: `dumpjs`, `loadjs`, `update_jsparams`, `access_jsparams`, `sort_dict_by_keys`
+
+---
+
+## Version Management
+
+The documentation version is automatically extracted from the package:
+
+```python
+# In conf.py
+from mixinforge import __version__
+version = release = __version__
+```
+
+This ensures docs always match the installed package version. Update version only in:
+- `pyproject.toml` (for the package)
+- `src/mixinforge/_version_info.py` (if using separate version file)
+
+**Never hardcode version numbers in `conf.py`.**
