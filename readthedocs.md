@@ -28,7 +28,7 @@
 5. [Testing Documentation](#testing-documentation)
 6. [Content Guidelines](#content-guidelines)
 7. [Maintenance Checklist](#maintenance-checklist)
-8. [Mixins Documentation](#project-specific-mixins-documentation)
+8. [New Mixin Documentation Template](#new-mixin-documentation-template)
 
 ---
 
@@ -49,6 +49,9 @@ docs/
 │   ├── index.rst
 │   ├── installation.rst
 │   ├── quickstart.rst
+│   ├── contributing.md           # Symlinked from root
+│   ├── type_hints.md             # Symlinked from root
+│   ├── docstrings_comments.md    # Symlinked from root
 │   ├── user_guide/
 │   │   ├── index.rst
 │   │   ├── mixinforge.rst
@@ -73,6 +76,7 @@ extensions = [
     'sphinx.ext.autosummary',    # Summary tables
     'sphinx_autodoc_typehints',  # Type hint rendering
     'sphinx_copybutton',         # Copy buttons for code
+    'myst_parser',               # Markdown support
 ]
 ```
 
@@ -155,6 +159,7 @@ sphinx>=7.0
 pydata-sphinx-theme>=0.14
 sphinx-autodoc-typehints>=1.24
 sphinx-copybutton>=0.5
+myst-parser>=2.0.0
 ```
 
 ## Testing Documentation
@@ -211,9 +216,11 @@ pytest --doctest-modules
 - [ ] Refresh examples
 - [ ] Review documentation issues
 
-## Project-Specific: Mixins Documentation
+## Mixin Documentation Template
 
-### Structure for Each Mixin
+### Template for Each Mixin
+
+Copy this template when creating documentation for a new mixin:
 ```rst
 MixinName
 =========
