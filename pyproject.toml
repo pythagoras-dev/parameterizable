@@ -39,14 +39,20 @@ dependencies = [
 
 docs = [
     "sphinx",
-    "pydata_sphinx_theme"
+    "pydata-sphinx-theme",
+    "sphinx-autodoc-typehints",
+    "sphinx-copybutton",
+    "myst-parser"
 ]
 
 dev = [
     "pytest",
     "coverage",
     "sphinx",
-    "pydata_sphinx_theme"
+    "pydata-sphinx-theme",
+    "sphinx-autodoc-typehints",
+    "sphinx-copybutton",
+    "myst-parser"
 ]
 
 
