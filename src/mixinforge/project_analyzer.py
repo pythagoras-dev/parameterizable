@@ -119,7 +119,9 @@ class CodeStats:
         self.files += other.files
         return self
 
-    def __raddr__(self, other: "CodeStats") -> "CodeStats":
+    def __radd__(self, other: "CodeStats") -> "CodeStats":
+        if other == 0:
+            return self
         return self.__add__(other)
 
 
@@ -320,12 +322,11 @@ def should_analyze_file(file_path: Path, root: Path) -> bool:
 
 def empty_analysis() -> ProjectAnalysis:
     """Create an empty analysis result for error cases."""
-    empty_row = MetricRow(0, 0, 0)
     return ProjectAnalysis(
-        lines_of_code=empty_row,
-        classes=empty_row,
-        functions=empty_row,
-        files=empty_row
+        lines_of_code=MetricRow(0, 0, 0),
+        classes=MetricRow(0, 0, 0),
+        functions=MetricRow(0, 0, 0),
+        files=MetricRow(0, 0, 0)
     )
 
 
@@ -364,6 +365,11 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
 
     try:
         for file_path in validated_root.rglob('*.py'):
+            if file_path.is_symlink():
+                if verbose:
+                    print(f"Skipping symlinked file: {file_path}")
+                continue
+
             if not should_analyze_file(file_path, validated_root):
                 if verbose:
                     print(f"Skipping excluded file: {file_path}")
