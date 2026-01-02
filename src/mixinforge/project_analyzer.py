@@ -370,6 +370,11 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
                     print(f"Skipping symlinked file: {file_path}")
                 continue
 
+            if any(parent.is_symlink() for parent in file_path.parents):
+                if verbose:
+                    print(f"Skipping file inside symlinked dir: {file_path}")
+                continue
+
             if not should_analyze_file(file_path, validated_root):
                 if verbose:
                     print(f"Skipping excluded file: {file_path}")
