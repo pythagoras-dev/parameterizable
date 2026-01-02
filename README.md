@@ -276,7 +276,7 @@ For development:
   - With pytest: `pytest`
   - Or via Python: `python -m pytest`
 - Supported Python versions: 3.11+
-- See contributing guidelines: [contributing.md](contributing.md)
+- See contributing guidelines: [contributing.md](CONTRIBUTING.md)
 - See docstrings and comments guidelines: [docstrings_comments.md](docstrings_comments.md)
 - See type hints guidelines: [type_hints.md](type_hints.md)
 - See Read the Docs configuration guide: [readthedocs.md](readthedocs.md)
