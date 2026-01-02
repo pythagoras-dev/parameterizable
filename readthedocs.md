@@ -35,10 +35,10 @@
 ---
 
 > **Related Documentation**:
-> - Docstring formatting: [docstrings_comments.md](docstrings_comments.md)
-> - Type hints: [type_hints.md](type_hints.md)
-> - Contribution workflow: [contributing.md](CONTRIBUTING.md)
-> - Project structure: [README.md](README.md)
+> - Docstring formatting: [docstrings_comments.md](https://github.com/pythagoras-dev/mixinforge/blob/master/docstrings_comments.md)
+> - Type hints: [type_hints.md](https://github.com/pythagoras-dev/mixinforge/blob/master/type_hints.md)
+> - Contribution workflow: [contributing.md](https://github.com/pythagoras-dev/mixinforge/blob/master/CONTRIBUTING.md)
+> - Project structure: [README.md](https://github.com/pythagoras-dev/mixinforge/blob/master/README.md)
 
 ---
 

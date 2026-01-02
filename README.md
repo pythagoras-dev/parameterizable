@@ -276,14 +276,14 @@ For development:
   - With pytest: `pytest`
   - Or via Python: `python -m pytest`
 - Supported Python versions: 3.11+
-- See contributing guidelines: [contributing.md](CONTRIBUTING.md)
-- See docstrings and comments guidelines: [docstrings_comments.md](docstrings_comments.md)
-- See type hints guidelines: [type_hints.md](type_hints.md)
-- See Read the Docs configuration guide: [readthedocs.md](readthedocs.md)
+- See contributing guidelines: [contributing.md](https://github.com/pythagoras-dev/mixinforge/blob/master/CONTRIBUTING.md)
+- See docstrings and comments guidelines: [docstrings_comments.md](https://github.com/pythagoras-dev/mixinforge/blob/master/docstrings_comments.md)
+- See type hints guidelines: [type_hints.md](https://github.com/pythagoras-dev/mixinforge/blob/master/type_hints.md)
+- See Read the Docs configuration guide: [readthedocs.md](https://github.com/pythagoras-dev/mixinforge/blob/master/readthedocs.md)
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License — see [LICENSE](https://github.com/pythagoras-dev/mixinforge/blob/master/LICENSE) for details.
 
 ## Key Contacts
 
