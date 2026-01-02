@@ -227,20 +227,25 @@ def count_sloc(tree: ast.AST, content: str) -> int:
     # Collect all docstring line ranges
     docstring_lines = set()
     for node in ast.walk(tree):
-        docstring = ast.get_docstring(node, clean=False)
-        if docstring is not None:
-            # Find the string node that contains the docstring
-            if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                if (node.body and
-                    isinstance(node.body[0], ast.Expr) and
-                    isinstance(node.body[0].value, ast.Constant) and
-                    isinstance(node.body[0].value.value, str)):
-                    # Mark all lines occupied by this docstring
-                    start_line = node.body[0].lineno
-                    end_line = node.body[0].end_lineno
-                    if end_line is not None:
-                        for line_num in range(start_line, end_line + 1):
-                            docstring_lines.add(line_num)
+        # Only check nodes that can have docstrings
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            try:
+                docstring = ast.get_docstring(node, clean=False)
+                if docstring is not None:
+                    # Find the string node that contains the docstring
+                    if (node.body and
+                        isinstance(node.body[0], ast.Expr) and
+                        isinstance(node.body[0].value, ast.Constant) and
+                        isinstance(node.body[0].value.value, str)):
+                        # Mark all lines occupied by this docstring
+                        start_line = node.body[0].lineno
+                        end_line = node.body[0].end_lineno
+                        if end_line is not None:
+                            for line_num in range(start_line, end_line + 1):
+                                docstring_lines.add(line_num)
+            except (TypeError, AttributeError):
+                # Skip nodes that can't have docstrings
+                pass
 
     # Count lines that are not blank, not comments, and not in docstrings
     sloc = 0
@@ -426,9 +431,6 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
     unit_tests = CodeStats()
 
     try:
-        # Track seen inodes to detect circular symlinks
-        seen_dirs = set()
-
         for file_path in validated_root.rglob('*.py'):
             try:
                 # Skip symlinked files
@@ -439,6 +441,8 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
 
                 # Check if any parent is a symlink to prevent following symlinked directories
                 skip_file = False
+                # Track seen inodes for this specific file path to detect circular references
+                seen_dirs = set()
                 for parent in file_path.parents:
                     if parent == validated_root:
                         break
@@ -447,7 +451,7 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
                             print(f"Skipping file inside symlinked dir: {file_path}")
                         skip_file = True
                         break
-                    # Track directory inodes to detect circular references
+                    # Track directory inodes to detect circular references within this path
                     try:
                         parent_stat = parent.stat()
                         inode = (parent_stat.st_dev, parent_stat.st_ino)
@@ -502,6 +506,43 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
 
 
     return analysis
+
+
+def main():
+    """CLI entry point for generating project metrics.
+
+    Analyzes the current directory and generates a project_metrics.md file
+    with code statistics.
+    """
+    import sys
+    from pathlib import Path
+
+    # Get the directory to analyze (current directory by default)
+    target_dir = Path.cwd()
+
+    print(f"Analyzing project at: {target_dir}")
+
+    # Analyze the project
+    analysis = analyze_project(target_dir, verbose=False)
+
+    # Convert to markdown
+    markdown_content = analysis.to_markdown()
+
+    # Save to file
+    output_file = target_dir / 'project_metrics.md'
+    try:
+        with open(output_file, 'w') as f:
+            f.write('# Project Metrics\n\n')
+            f.write(markdown_content)
+            f.write('\n')
+        print(f'\n✓ Analysis saved to {output_file}')
+    except IOError as e:
+        print(f'\n✗ Error saving file: {e}', file=sys.stderr)
+        sys.exit(1)
+
+    # Print the results
+    print('\nCurrent metrics:')
+    print(markdown_content)
 
 
 
