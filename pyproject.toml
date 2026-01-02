@@ -57,7 +57,7 @@ dev = [
 
 
 [project.scripts]
-mf-stats = "mixinforge.project_analyzer:main"
+mf-stats = "mixinforge._entry_points:mf_stats"
 
 [project.urls]
 Home = "https://github.com/pythagoras-dev/mixinforge"
