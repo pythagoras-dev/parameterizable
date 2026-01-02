@@ -14,7 +14,8 @@ from pathlib import Path
 
 EXCLUDE_DIRS: set[str] = {'.venv', 'venv', '__pycache__', '.pytest_cache',
     '.tox','build', 'dist', '.git', '.eggs', 'htmlcov', 'htmlReport',
-    '.mypy_cache', '.coverage', 'node_modules', 'docs'}
+    '.mypy_cache', '.coverage', 'node_modules', 'docs', '.ruff_cache',
+    '.ipynb_checkpoints', '__pypackages__', 'site-packages'}
 
 
 def validate_path(path: Path | str, must_exist: bool = True, must_be_dir: bool = False) -> Path:
@@ -90,12 +91,14 @@ class CodeStats:
     number of classes, functions, and file count.
 
     Attributes:
-        lines: Total lines of code.
+        lines: Total lines of code (LOC) including blank lines and comments.
+        sloc: Source lines of code (SLOC) excluding blank lines, comments, and docstrings.
         classes: Total number of class definitions.
         functions: Total number of function and method definitions.
         files: Total number of files analyzed.
     """
     lines: int = 0
+    sloc: int = 0
     classes: int = 0
     functions: int = 0
     files: int = 0
@@ -106,6 +109,7 @@ class CodeStats:
             return NotImplemented
         return CodeStats(
             lines=self.lines + other.lines,
+            sloc=self.sloc + other.sloc,
             classes=self.classes + other.classes,
             functions=self.functions + other.functions,
             files=self.files + other.files)
@@ -114,6 +118,7 @@ class CodeStats:
         if not isinstance(other, CodeStats):
             return NotImplemented
         self.lines += other.lines
+        self.sloc += other.sloc
         self.classes += other.classes
         self.functions += other.functions
         self.files += other.files
@@ -158,12 +163,14 @@ class ProjectAnalysis:
     tests, and total).
 
     Attributes:
-        lines_of_code: Line count metrics.
+        lines_of_code: Line count metrics (LOC).
+        source_lines_of_code: Source line count metrics (SLOC).
         classes: Class definition count metrics.
         functions: Function and method count metrics.
         files: File count metrics.
     """
     lines_of_code: MetricRow
+    source_lines_of_code: MetricRow
     classes: MetricRow
     functions: MetricRow
     files: MetricRow
@@ -176,7 +183,8 @@ class ProjectAnalysis:
             pd.DataFrame(result).T
         """
         return {
-            'Lines Of Code': self.lines_of_code.to_dict(),
+            'Lines Of Code (LOC)': self.lines_of_code.to_dict(),
+            'Source Lines Of Code (SLOC)': self.source_lines_of_code.to_dict(),
             'Classes': self.classes.to_dict(),
             'Functions / Methods': self.functions.to_dict(),
             'Files': self.files.to_dict()
@@ -188,6 +196,45 @@ class ProjectAnalysis:
         for metric_name, metric_dict in self.to_dict().items():
             print(f"{metric_name:20} | Main: {metric_dict['Main code']:>8} | "
                   f"Tests: {metric_dict['Unit Tests']:>8} | Total: {metric_dict['Total']:>8}")
+
+
+def count_sloc(tree: ast.AST, content: str) -> int:
+    """Count source lines of code, excluding blank lines, comments, and docstrings.
+
+    Args:
+        tree: Parsed AST of the file.
+        content: The file content as a string.
+
+    Returns:
+        Number of source lines of code.
+    """
+    # Collect all docstring line ranges
+    docstring_lines = set()
+    for node in ast.walk(tree):
+        docstring = ast.get_docstring(node, clean=False)
+        if docstring is not None:
+            # Find the string node that contains the docstring
+            if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                if (node.body and
+                    isinstance(node.body[0], ast.Expr) and
+                    isinstance(node.body[0].value, ast.Constant) and
+                    isinstance(node.body[0].value.value, str)):
+                    # Mark all lines occupied by this docstring
+                    start_line = node.body[0].lineno
+                    end_line = node.body[0].end_lineno
+                    if end_line is not None:
+                        for line_num in range(start_line, end_line + 1):
+                            docstring_lines.add(line_num)
+
+    # Count lines that are not blank, not comments, and not in docstrings
+    sloc = 0
+    for line_num, line in enumerate(content.splitlines(), start=1):
+        stripped = line.strip()
+        # Skip blank lines, comment-only lines, and docstring lines
+        if stripped and not stripped.startswith('#') and line_num not in docstring_lines:
+            sloc += 1
+
+    return sloc
 
 
 def analyze_file(file_path: Path | str, root_path: Path | str | None = None) -> CodeStats:
@@ -226,7 +273,6 @@ def analyze_file(file_path: Path | str, root_path: Path | str | None = None) -> 
         print(f"Error accessing file {file_path}: {e}")
         return CodeStats()
 
-    content = None
     try:
         with open(validated_path, 'r', encoding='utf-8', errors='replace') as f:
             content = f.read()
@@ -235,9 +281,6 @@ def analyze_file(file_path: Path | str, root_path: Path | str | None = None) -> 
         return CodeStats()
     except Exception as e:
         print(f"Unexpected error reading file {validated_path}: {e}")
-        return CodeStats()
-
-    if content is None:
         return CodeStats()
 
     try:
@@ -253,8 +296,9 @@ def analyze_file(file_path: Path | str, root_path: Path | str | None = None) -> 
         functions = sum(1 for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)))
         classes = sum(1 for node in ast.walk(tree) if isinstance(node, ast.ClassDef))
         lines = len(content.splitlines())
+        sloc = count_sloc(tree, content)
 
-        return CodeStats(lines=lines, classes=classes, functions=functions, files=1)
+        return CodeStats(lines=lines, sloc=sloc, classes=classes, functions=functions, files=1)
     except Exception as e:
         print(f"Error analyzing AST for file {validated_path}: {e}")
         return CodeStats()
@@ -324,6 +368,7 @@ def empty_analysis() -> ProjectAnalysis:
     """Create an empty analysis result for error cases."""
     return ProjectAnalysis(
         lines_of_code=MetricRow(0, 0, 0),
+        source_lines_of_code=MetricRow(0, 0, 0),
         classes=MetricRow(0, 0, 0),
         functions=MetricRow(0, 0, 0),
         files=MetricRow(0, 0, 0)
@@ -343,7 +388,8 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
 
     Returns:
         ProjectAnalysis containing summary statistics broken down by:
-        - lines_of_code: Line counts for main code, tests, and total
+        - lines_of_code: Line counts (LOC) including blanks and comments
+        - source_lines_of_code: Source line counts (SLOC) excluding blanks and comments
         - classes: Class counts for main code, tests, and total
         - functions: Function/method counts for main code, tests, and total
         - files: File counts for main code, tests, and total
@@ -364,31 +410,62 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
     unit_tests = CodeStats()
 
     try:
+        # Track seen inodes to detect circular symlinks
+        seen_dirs = set()
+
         for file_path in validated_root.rglob('*.py'):
-            if file_path.is_symlink():
+            try:
+                # Skip symlinked files
+                if file_path.is_symlink():
+                    if verbose:
+                        print(f"Skipping symlinked file: {file_path}")
+                    continue
+
+                # Check if any parent is a symlink to prevent following symlinked directories
+                skip_file = False
+                for parent in file_path.parents:
+                    if parent == validated_root:
+                        break
+                    if parent.is_symlink():
+                        if verbose:
+                            print(f"Skipping file inside symlinked dir: {file_path}")
+                        skip_file = True
+                        break
+                    # Track directory inodes to detect circular references
+                    try:
+                        parent_stat = parent.stat()
+                        inode = (parent_stat.st_dev, parent_stat.st_ino)
+                        if inode in seen_dirs:
+                            if verbose:
+                                print(f"Skipping file in circular path: {file_path}")
+                            skip_file = True
+                            break
+                        seen_dirs.add(inode)
+                    except OSError:
+                        pass
+
+                if skip_file:
+                    continue
+
+                if not should_analyze_file(file_path, validated_root):
+                    if verbose:
+                        print(f"Skipping excluded file: {file_path}")
+                    continue
+
                 if verbose:
-                    print(f"Skipping symlinked file: {file_path}")
-                continue
+                    print(f"Analyzing file: {file_path}")
 
-            if any(parent.is_symlink() for parent in file_path.parents):
+                stats = analyze_file(file_path, root_path=validated_root)
+
+                if is_test_file(file_path, validated_root):
+                    unit_tests += stats
+                else:
+                    main_code += stats
+
+            except (OSError, PermissionError) as e:
                 if verbose:
-                    print(f"Skipping file inside symlinked dir: {file_path}")
+                    print(f"Error accessing {file_path}: {e}")
                 continue
-
-            if not should_analyze_file(file_path, validated_root):
-                if verbose:
-                    print(f"Skipping excluded file: {file_path}")
-                continue
-
-            if verbose:
-                print(f"Analyzing file: {file_path}")
-
-            stats = analyze_file(file_path, root_path=validated_root)
-
-            if is_test_file(file_path, validated_root):
-                unit_tests += stats
-            else:
-                main_code += stats
 
     except (OSError, PermissionError) as e:
         print(f"Error accessing directory during analysis: {e}")
@@ -401,6 +478,7 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
 
     analysis = ProjectAnalysis(
         lines_of_code=MetricRow(main_code.lines, unit_tests.lines, total.lines),
+        source_lines_of_code=MetricRow(main_code.sloc, unit_tests.sloc, total.sloc),
         classes=MetricRow(main_code.classes, unit_tests.classes, total.classes),
         functions=MetricRow(main_code.functions, unit_tests.functions, total.functions),
         files=MetricRow(main_code.files, unit_tests.files, total.files)
