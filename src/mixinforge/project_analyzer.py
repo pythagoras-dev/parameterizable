@@ -190,6 +190,22 @@ class ProjectAnalysis:
             'Files': self.files.to_dict()
         }
 
+    def to_markdown(self) -> str:
+        """Convert to markdown table format.
+
+        Returns:
+            Markdown-formatted table string with project metrics.
+        """
+        lines = []
+        lines.append("| Metric | Main code | Unit Tests | Total |")
+        lines.append("|--------|-----------|------------|-------|")
+
+        for metric_name, metric_dict in self.to_dict().items():
+            lines.append(f"| {metric_name} | {metric_dict['Main code']} | "
+                        f"{metric_dict['Unit Tests']} | {metric_dict['Total']} |")
+
+        return "\n".join(lines)
+
     def print_summary(self) -> None:
         """Print formatted summary table to stdout."""
         print("\nSummary:")
