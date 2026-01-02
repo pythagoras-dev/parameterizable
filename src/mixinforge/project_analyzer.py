@@ -12,6 +12,10 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
+EXCLUDE_DIRS: set[str] = {'.venv', 'venv', '__pycache__', '.pytest_cache',
+    '.tox','build', 'dist', '.git', '.eggs', 'htmlcov', 'htmlReport',
+    '.mypy_cache', '.coverage', 'node_modules', 'docs'}
+
 
 def validate_path(path: Path | str, must_exist: bool = True, must_be_dir: bool = False) -> Path:
     """Validate and sanitize a file path for secure access.
@@ -98,12 +102,25 @@ class CodeStats:
 
     def __add__(self, other: 'CodeStats') -> 'CodeStats':
         """Combine statistics from two CodeStats instances."""
+        if not isinstance(other, CodeStats):
+            return NotImplemented
         return CodeStats(
             lines=self.lines + other.lines,
             classes=self.classes + other.classes,
             functions=self.functions + other.functions,
-            files=self.files + other.files
-        )
+            files=self.files + other.files)
+
+    def __iadd__(self, other: "CodeStats") -> "CodeStats":
+        if not isinstance(other, CodeStats):
+            return NotImplemented
+        self.lines += other.lines
+        self.classes += other.classes
+        self.functions += other.functions
+        self.files += other.files
+        return self
+
+    def __raddr__(self, other: "CodeStats") -> "CodeStats":
+        return self.__add__(other)
 
 
 @dataclass
@@ -167,8 +184,8 @@ class ProjectAnalysis:
         """Print formatted summary table to stdout."""
         print("\nSummary:")
         for metric_name, metric_dict in self.to_dict().items():
-            print(f"{metric_name:20} | Main: {metric_dict['Main code']:4} | "
-                  f"Tests: {metric_dict['Unit Tests']:4} | Total: {metric_dict['Total']:4}")
+            print(f"{metric_name:20} | Main: {metric_dict['Main code']:>8} | "
+                  f"Tests: {metric_dict['Unit Tests']:>8} | Total: {metric_dict['Total']:>8}")
 
 
 def analyze_file(file_path: Path | str, root_path: Path | str | None = None) -> CodeStats:
@@ -287,10 +304,6 @@ def should_analyze_file(file_path: Path, root: Path) -> bool:
     """
     if not isinstance(file_path, Path) or not isinstance(root, Path):
         return False
-
-    EXCLUDE_DIRS = {'.venv', 'venv', '__pycache__', '.pytest_cache', '.tox',
-                    'build', 'dist', '.git', '.eggs', 'htmlcov', 'htmlReport',
-                    '.mypy_cache', '.coverage', 'node_modules', 'docs'}
 
     try:
         parts = file_path.relative_to(root).parts
