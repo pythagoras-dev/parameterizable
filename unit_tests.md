@@ -27,7 +27,7 @@ commands:
 naming_conventions:
   test_files: "test_*.py (mirror features/use-cases)"
   test_functions: "test_* (describe behavior, not implementation)"
-  test_location: "tests/ subdirectories"
+  test_location: "tests/ organized into feature/component subdirectories"
 
 test_structure:
   style: "Plain functions (no test classes)"
@@ -94,8 +94,13 @@ fixtures_and_data:
 - Always make sure tests are logically sound and semantically correct.
 
 ## Layout and Naming
-- All tests live in `tests/` and its subdirectories.
-- Test files start with `test_` and mirror features or use-cases.
+- All tests live in `tests/` organized into subdirectories by feature
+  or component (e.g., tests for JSON processor functionality go in
+  `json_processor/`, tests for mixins go in `mixins/`).
+- Test files start with `test_` and describe the specific behavior or
+  use-case being tested.
+- Each test subdirectory should contain an `__init__.py` file to ensure
+  proper test discovery.
 - Keep files focused and small. Aim for under 300-400 lines per test
   file; if a file grows beyond this, split it by feature or
   sub-component. It's okay to create a separate file targeting a
