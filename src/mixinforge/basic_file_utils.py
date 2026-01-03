@@ -71,7 +71,29 @@ def is_path_within_root(file_path: Path, root_path: Path) -> bool:
         return False
 
 
-def has_pyproject_toml(folder_path: Path | str) -> bool:
+def folder_contains_file(folder_path: Path | str, filename: str) -> bool:
+    """Check if a specific file exists in the specified folder.
+
+    Validates the folder path and checks for the presence of a file
+    with the given name in that directory.
+
+    Args:
+        folder_path: Path to the folder to check; accepts string or Path object.
+        filename: Name of the file to look for in the folder.
+
+    Returns:
+        True if the file exists in the folder, False otherwise.
+
+    Raises:
+        ValueError: If folder_path is invalid or doesn't exist.
+        TypeError: If folder_path is not a string or Path object.
+    """
+    validated_folder = validate_path(folder_path, must_exist=True, must_be_dir=True)
+    file_path = validated_folder / filename
+    return file_path.exists() and file_path.is_file()
+
+
+def folder_contains_pyproject_toml(folder_path: Path | str) -> bool:
     """Check if a pyproject.toml file exists in the specified folder.
 
     Validates the folder path and checks for the presence of a pyproject.toml
@@ -87,6 +109,4 @@ def has_pyproject_toml(folder_path: Path | str) -> bool:
         ValueError: If folder_path is invalid or doesn't exist.
         TypeError: If folder_path is not a string or Path object.
     """
-    validated_folder = validate_path(folder_path, must_exist=True, must_be_dir=True)
-    pyproject_path = validated_folder / "pyproject.toml"
-    return pyproject_path.exists() and pyproject_path.is_file()
+    return folder_contains_file(folder_path, "pyproject.toml")
