@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 
 
-def validate_path(path: Path | str, must_exist: bool = True, must_be_dir: bool = False) -> Path:
+def sanitize_and_validate_path(path: Path | str, must_exist: bool = True, must_be_dir: bool = False) -> Path:
     """Validate and sanitize a file path for secure access.
 
     Ensures the path is valid, resolves it to an absolute normalized form,
@@ -89,7 +89,7 @@ def folder_contains_file(folder_path: Path | str, filename: str) -> bool:
         ValueError: If folder_path is invalid or doesn't exist.
         TypeError: If folder_path is not a string or Path object.
     """
-    validated_folder = validate_path(folder_path, must_exist=True, must_be_dir=True)
+    validated_folder = sanitize_and_validate_path(folder_path, must_exist=True, must_be_dir=True)
     file_path = validated_folder / filename
     return file_path.exists() and file_path.is_file()
 
@@ -142,7 +142,7 @@ def remove_python_cache_files(folder_path: Path | str) -> tuple[int, list[str]]:
         ValueError: If folder_path is invalid or doesn't exist.
         TypeError: If folder_path is not a string or Path object.
     """
-    validated_folder = validate_path(folder_path, must_exist=True, must_be_dir=True)
+    validated_folder = sanitize_and_validate_path(folder_path, must_exist=True, must_be_dir=True)
 
     # Define patterns to remove
     cache_dirs = {'__pycache__', '.pytest_cache', '.ruff_cache', '.mypy_cache',

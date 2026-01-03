@@ -12,7 +12,7 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
-from .basic_file_utils import validate_path, is_path_within_root
+from .basic_file_utils import sanitize_and_validate_path, is_path_within_root
 
 EXCLUDE_DIRS: set[str] = {'.venv', 'venv', '__pycache__', '.pytest_cache',
     '.tox','build', 'dist', '.git', '.eggs', 'htmlcov', 'htmlReport',
@@ -211,10 +211,10 @@ def analyze_file(file_path: Path | str, root_path: Path | str | None = None) -> 
         CodeStats with file metrics, or empty CodeStats if analysis fails.
     """
     try:
-        validated_path = validate_path(file_path, must_exist=True, must_be_dir=False)
+        validated_path = sanitize_and_validate_path(file_path, must_exist=True, must_be_dir=False)
 
         if root_path is not None:
-            validated_root = validate_path(root_path, must_exist=True, must_be_dir=True)
+            validated_root = sanitize_and_validate_path(root_path, must_exist=True, must_be_dir=True)
             if not is_path_within_root(validated_path, validated_root):
                 raise ValueError(f"File {validated_path} is outside root directory {validated_root}")
 
@@ -356,7 +356,7 @@ def analyze_project(path_to_root: Path | str, verbose: bool = False) -> ProjectA
         directly convertible to pandas DataFrame via: pd.DataFrame(result).T
     """
     try:
-        validated_root = validate_path(path_to_root, must_exist=True, must_be_dir=True)
+        validated_root = sanitize_and_validate_path(path_to_root, must_exist=True, must_be_dir=True)
     except (ValueError, TypeError) as e:
         print(f"Invalid root path: {e}")
         return empty_analysis()
