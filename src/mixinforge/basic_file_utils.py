@@ -36,6 +36,8 @@ def sanitize_and_validate_path(path: Path | str, must_exist: bool = True, must_b
     if isinstance(path, str):
         if not path.strip():
             raise ValueError("Path cannot be empty or whitespace")
+        if '\x00' in path:
+            raise ValueError("Path cannot contain null bytes")
         path = Path(path)
 
     try:
@@ -161,14 +163,14 @@ def remove_python_cache_files(folder_path: Path | str) -> tuple[int, list[str]]:
         try:
             # Check if it's a cache directory
             if item.is_dir() and item.name in cache_dirs:
-                relative_path = str(item.relative_to(validated_folder))
+                relative_path = item.relative_to(validated_folder).as_posix()
                 removed_items.append(relative_path)
                 shutil.rmtree(item)
                 removed_count += 1
             # Check if it's a cache file
             elif item.is_file():
                 if item.suffix in cache_file_extensions or item.name.startswith('.coverage'):
-                    relative_path = str(item.relative_to(validated_folder))
+                    relative_path = item.relative_to(validated_folder).as_posix()
                     removed_items.append(relative_path)
                     item.unlink()
                     removed_count += 1
