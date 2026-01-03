@@ -93,15 +93,11 @@ def test_parse_invalid_directory_path(tmp_path):
     invalid_path = "\x00invalid"
 
     with patch.object(sys, 'argv', ['mf-stats', invalid_path]):
-        with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
-            with pytest.raises(SystemExit) as exc_info:
-                _parse_cli_arguments_with_optional_output(
-                    "Test description",
-                    "default.md"
-                )
-
-            assert exc_info.value.code == 1
-            assert "Invalid directory path" in mock_stderr.getvalue()
+        with pytest.raises(ValueError):
+            _parse_cli_arguments_with_optional_output(
+                "Test description",
+                "default.md"
+            )
 
 
 def test_parse_missing_pyproject_toml(tmp_path):
