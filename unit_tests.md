@@ -119,8 +119,24 @@ fixtures_and_data:
 - Use plain `assert` statements (pytest style). Keep Arrange–Act–Assert
   (or Given–When–Then) ordering clear.
 - Keep tests deterministic and independent. Avoid shared global state.
-- Include negative tests with `pytest.raises` for error contracts
-  (types, messages if they are part of the contract).
+- Include negative tests with `pytest.raises` for error contracts:
+  - Test that the correct exception type is raised.
+  - Only use the `match` parameter when the error message is part of
+    the public contract or you need to verify a specific field/value
+    is mentioned.
+  - Omit `match` when only the exception type matters—don't use it
+    mechanically.
+  - Be especially cautious with low-level errors (OSError, ValueError
+    from stdlib) whose messages vary across Python versions and
+    platforms.
+  - Examples:
+    - ✅ Good: `pytest.raises(ValueError)` when message doesn't matter
+    - ✅ Good: `pytest.raises(ValueError, match="user_id")` when
+      checking a specific field is mentioned
+    - ✅ Good: `pytest.raises(KeyError, match="missing_key")` for a
+      contract-defined error
+    - ❌ Fragile: `pytest.raises(ValueError, match="embedded null
+      character")` for platform-specific messages
 - Avoid fragile assertions:
   - Don't over-specify exact error text if only the error type matters.
   - Don't depend on dict/set ordering unless the API guarantees it.
@@ -221,9 +237,17 @@ maintainable when AI/LLM agents generate or modify code.
   survive reformatting.
 
 **Keep error-message checks tolerant:**
-- ✅ Good: `assert "invalid input" in str(excinfo.value).lower()`
+- ✅ Good: `pytest.raises(ValueError)` when only exception type matters
+- ✅ Good: `pytest.raises(ValueError, match="user_id")` when checking
+  a specific field is mentioned in your own error message
+- ❌ Fragile: `pytest.raises(ValueError, match="embedded null
+  character")` for low-level platform/version-dependent errors
 - ❌ Fragile: `assert str(excinfo.value) ==
   "Error: Invalid input provided at line 42"`
+- Python's internal error messages (from pathlib, os, etc.) vary across
+  versions and platforms. Don't use `match` mechanically — only when 
+  (the elements of) the message content is semantically important 
+  to the contract.
 - AI-generated error messages may vary in wording; check for key
   content, not exact phrasing.
 
