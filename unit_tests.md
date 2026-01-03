@@ -44,6 +44,7 @@ critical_dos:
   - "Use tmp_path for filesystem operations"
   - "Seed randomness locally for reproducibility"
   - "Keep tests deterministic and independent"
+  - "Write tests for cross-platform compatibility (macOS, Windows, Linux)"
 
 critical_donts:
   - "Don't reimplement algorithm logic in tests"
@@ -174,6 +175,21 @@ fixtures_and_data:
   the test scope; restore automatically via fixtures.
 - Avoid touching the network or external services in unit tests. Use
   fakes or local doubles.
+
+## Cross-Platform Compatibility
+- All tests must run successfully on macOS, Windows, and Linux.
+- Use `Path.as_posix()` for path assertions to ensure forward slashes
+  regardless of platform (e.g., comparing returned paths in strings).
+- Avoid platform-specific assumptions:
+  - File path separators (use `pathlib.Path` operations)
+  - Line endings (use text mode or normalize explicitly)
+  - Case sensitivity (Windows is case-insensitive, Unix is not)
+  - Filesystem permissions (Windows handles them differently)
+  - Error messages from system libraries (vary by OS and Python version)
+- When testing path manipulation, validate behavior with `Path` methods
+  rather than string comparisons where possible.
+- Test invalid inputs carefully: null bytes, special characters, and
+  path traversal attempts may behave differently across platforms.
  
 ## Size and Focus
 - The ideal size of a unit test is between 12 and 25 lines.
