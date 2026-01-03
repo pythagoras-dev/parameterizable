@@ -8,12 +8,19 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:  # Allow manual triggering
 
+concurrency:
+  group: update-stats
+  cancel-in-progress: false
+
 jobs:
   update-stats:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,13 +39,31 @@ jobs:
       - name: Check for changes
         id: git-check
         run: |
-          git diff --exit-code README.md || echo "changed=true" >> $GITHUB_OUTPUT
+          git diff --quiet README.md || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Commit and push if changed
         if: steps.git-check.outputs.changed == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add README.md project_metrics.md
+          git add README.md
+          if [ -f project_metrics.md ]; then
+            git diff --quiet project_metrics.md || git add project_metrics.md
+          fi
           git commit -m "AUTO: Update project statistics in README.md"
-          git push
+
+          # Retry logic for push with rebase
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            if git pull --rebase origin master && git push; then
+              echo "Successfully pushed changes"
+              exit 0
+            fi
+            echo "Push failed, attempt $attempt of $max_attempts"
+            attempt=$((attempt + 1))
+            sleep 2
+          done
+
+          echo "Failed to push after $max_attempts attempts"
+          exit 1
