@@ -58,7 +58,7 @@ dev = [
 
 
 [project.scripts]
-mf-stats = "mixinforge._cli_entry_points:mf_stats"
+mf-get-stats = "mixinforge._cli_entry_points:mf_get_stats"
 mf-clean-cache = "mixinforge._cli_entry_points:mf_clean_cache"
 
 [project.urls]

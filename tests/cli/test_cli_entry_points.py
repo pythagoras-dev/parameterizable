@@ -13,7 +13,7 @@ from mixinforge._cli_entry_points import (
     _parse_cli_arguments_with_optional_output,
     _validate_output_filename_and_warn_if_exists,
     _print_error_and_exit,
-    mf_stats,
+    mf_get_stats,
     mf_clean_cache
 )
 
@@ -214,7 +214,7 @@ def test_mf_stats_success(mock_analyze, tmp_path):
     with patch.object(sys, 'argv', ['mf-stats', str(project_dir)]):
         with patch('builtins.open', mock_open()) as mock_file:
             with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-                mf_stats()
+                mf_get_stats()
 
             # Verify analyze_project was called
             mock_analyze.assert_called_once_with(project_dir, verbose=False)
@@ -245,7 +245,7 @@ def test_mf_stats_analyze_value_error(mock_analyze, tmp_path):
     with patch.object(sys, 'argv', ['mf-stats', str(project_dir)]):
         with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
             with pytest.raises(SystemExit) as exc_info:
-                mf_stats()
+                mf_get_stats()
 
             assert exc_info.value.code == 1
             assert "Error: Invalid project structure" in mock_stderr.getvalue()
@@ -267,7 +267,7 @@ def test_mf_stats_file_write_error(mock_analyze, tmp_path):
         with patch('builtins.open', side_effect=IOError("Permission denied")):
             with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
                 with pytest.raises(SystemExit) as exc_info:
-                    mf_stats()
+                    mf_get_stats()
 
                 assert exc_info.value.code == 1
                 assert "Error saving file" in mock_stderr.getvalue()

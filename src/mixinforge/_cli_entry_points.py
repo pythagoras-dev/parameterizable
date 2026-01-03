@@ -108,7 +108,7 @@ def _print_error_and_exit(error: Exception) -> None:
     sys.exit(1)
 
 
-def mf_stats():
+def mf_get_stats():
     """CLI entry point for generating project metrics.
 
     Analyzes a directory and generates a project metrics file with code statistics.
