@@ -40,6 +40,10 @@ def sanitize_and_validate_path(path: Path | str, must_exist: bool = True, must_b
             raise ValueError("Path cannot contain null bytes")
         path = Path(path)
 
+    # Check for null bytes in Path objects (they convert string but preserve null bytes)
+    if '\x00' in str(path):
+        raise ValueError("Path cannot contain null bytes")
+
     try:
         resolved_path = path.resolve()
     except (OSError, RuntimeError) as e:
