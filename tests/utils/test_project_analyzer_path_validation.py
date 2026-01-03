@@ -5,91 +5,91 @@ Tests cover path validation, security checks, and directory traversal prevention
 from pathlib import Path
 import pytest
 
-from mixinforge.project_analyzer import (
-    validate_path,
+from mixinforge.basic_file_utils import (
+    sanitize_and_validate_path,
     is_path_within_root,
 )
 
 
 # ============================================================================
-# validate_path tests
+# sanitize_and_validate_path tests
 # ============================================================================
 
-def test_validate_path_with_valid_path(tmp_path):
+def test_sanitize_and_validate_path_with_valid_path(tmp_path):
     """Validate that a valid path is resolved correctly."""
     test_file = tmp_path / "test.py"
     test_file.write_text("# test")
 
-    result = validate_path(test_file, must_exist=True)
+    result = sanitize_and_validate_path(test_file, must_exist=True)
     assert result.exists()
     assert result.is_absolute()
 
 
-def test_validate_path_none_raises_valueerror():
+def test_sanitize_and_validate_path_none_raises_valueerror():
     """Validate that None path raises ValueError."""
     with pytest.raises(ValueError, match="Path cannot be None"):
-        validate_path(None)
+        sanitize_and_validate_path(None)
 
 
-def test_validate_path_empty_string_raises_valueerror():
+def test_sanitize_and_validate_path_empty_string_raises_valueerror():
     """Validate that empty string raises ValueError."""
     with pytest.raises(ValueError, match="cannot be empty"):
-        validate_path("")
+        sanitize_and_validate_path("")
 
 
-def test_validate_path_whitespace_raises_valueerror():
+def test_sanitize_and_validate_path_whitespace_raises_valueerror():
     """Validate that whitespace-only string raises ValueError."""
     with pytest.raises(ValueError, match="cannot be empty"):
-        validate_path("   ")
+        sanitize_and_validate_path("   ")
 
 
-def test_validate_path_invalid_type_raises_typeerror():
+def test_sanitize_and_validate_path_invalid_type_raises_typeerror():
     """Validate that invalid type raises TypeError."""
     with pytest.raises(TypeError, match="must be a string or Path"):
-        validate_path(123)
+        sanitize_and_validate_path(123)
 
 
-def test_validate_path_nonexistent_with_must_exist(tmp_path):
+def test_sanitize_and_validate_path_nonexistent_with_must_exist(tmp_path):
     """Validate that nonexistent path with must_exist=True raises ValueError."""
     nonexistent = tmp_path / "does_not_exist.py"
     with pytest.raises(ValueError, match="does not exist"):
-        validate_path(nonexistent, must_exist=True)
+        sanitize_and_validate_path(nonexistent, must_exist=True)
 
 
-def test_validate_path_file_with_must_be_dir(tmp_path):
+def test_sanitize_and_validate_path_file_with_must_be_dir(tmp_path):
     """Validate that file path with must_be_dir=True raises ValueError."""
     test_file = tmp_path / "test.py"
     test_file.write_text("# test")
 
     with pytest.raises(ValueError, match="not a directory"):
-        validate_path(test_file, must_exist=True, must_be_dir=True)
+        sanitize_and_validate_path(test_file, must_exist=True, must_be_dir=True)
 
 
-def test_validate_path_directory_with_must_be_dir(tmp_path):
+def test_sanitize_and_validate_path_directory_with_must_be_dir(tmp_path):
     """Validate that directory path with must_be_dir=True succeeds."""
-    result = validate_path(tmp_path, must_exist=True, must_be_dir=True)
+    result = sanitize_and_validate_path(tmp_path, must_exist=True, must_be_dir=True)
     assert result.is_dir()
 
 
-def test_validate_path_accepts_path_object(tmp_path):
+def test_sanitize_and_validate_path_accepts_path_object(tmp_path):
     """Validate that Path object is accepted."""
     test_file = tmp_path / "test.py"
     test_file.write_text("# test")
 
-    result = validate_path(test_file, must_exist=True)
+    result = sanitize_and_validate_path(test_file, must_exist=True)
     assert result.exists()
 
 
-def test_validate_path_with_invalid_path_string():
-    """Verify validate_path handles OS errors gracefully."""
+def test_sanitize_and_validate_path_with_invalid_path_string():
+    """Verify sanitize_and_validate_path handles OS errors gracefully."""
     # Path with null bytes should raise ValueError
     with pytest.raises(ValueError, match="embedded null character"):
-        validate_path("\x00invalid")
+        sanitize_and_validate_path("\x00invalid")
 
 
-def test_validate_path_converts_string_to_path():
-    """Verify validate_path converts string to Path object."""
-    result = validate_path(".", must_exist=True)
+def test_sanitize_and_validate_path_converts_string_to_path():
+    """Verify sanitize_and_validate_path converts string to Path object."""
+    result = sanitize_and_validate_path(".", must_exist=True)
     assert isinstance(result, Path)
     assert result.is_absolute()
 
