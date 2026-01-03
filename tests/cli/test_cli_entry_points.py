@@ -93,7 +93,7 @@ def test_parse_invalid_directory_path(tmp_path):
     invalid_path = "\x00invalid"
 
     with patch.object(sys, 'argv', ['mf-stats', invalid_path]):
-        with pytest.raises(ValueError):
+        with pytest.raises(SystemExit):
             _parse_cli_arguments_with_optional_output(
                 "Test description",
                 "default.md"
