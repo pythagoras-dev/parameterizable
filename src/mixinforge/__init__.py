@@ -34,14 +34,15 @@ from .singleton_mixin import *
 __all__ = [
     'CacheablePropertiesMixin',
     'GuardedInitMeta',
-    'SingleThreadEnforcerMixin',
-    'sort_dict_by_keys',
-    'ParameterizableMixin',
-    'NotPicklableMixin',
-    'loadjs',
-    'dumpjs',
     'JsonSerializedObject',
-    'update_jsparams',
+    'NotPicklableMixin',
+    'ParameterizableMixin',
+    'SingleThreadEnforcerMixin',
+    'SingletonMixin',
+    '__version__',
     'access_jsparams',
-    '__version__'
+    'dumpjs',
+    'loadjs',
+    'sort_dict_by_keys',
+    'update_jsparams',
 ]
