@@ -33,6 +33,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "tabulate",
 ]
 
 [project.optional-dependencies]

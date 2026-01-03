@@ -143,12 +143,31 @@ class ProjectAnalysis:
 
         return "\n".join(lines)
 
-    def print_summary(self) -> None:
-        """Print formatted summary table to stdout."""
-        print("\nSummary:")
+    def to_console_table(self) -> str:
+        """Convert to formatted console table with box-drawing characters.
+
+        Returns:
+            Beautifully formatted table string for terminal display.
+        """
+        from tabulate import tabulate
+
+        # Prepare data as list of lists
+        table_data = []
         for metric_name, metric_dict in self.to_dict().items():
-            print(f"{metric_name:20} | Main: {metric_dict['Main code']:>8} | "
-                  f"Tests: {metric_dict['Unit Tests']:>8} | Total: {metric_dict['Total']:>8}")
+            table_data.append([
+                metric_name,
+                metric_dict['Main code'],
+                metric_dict['Unit Tests'],
+                metric_dict['Total']
+            ])
+
+        # Format table with fancy grid and thousand separators
+        return tabulate(
+            table_data,
+            headers=['Metric', 'Main code', 'Unit Tests', 'Total'],
+            tablefmt='fancy_grid',
+            intfmt=','
+        )
 
 
 def count_sloc(tree: ast.AST, content: str) -> int:

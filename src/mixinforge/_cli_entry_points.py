@@ -139,9 +139,8 @@ def mf_stats():
             print(f'\n✗ Error saving file: {e}', file=sys.stderr)
             sys.exit(1)
 
-        # Print the results
-        print('\nCurrent metrics:')
-        print(markdown_content)
+        # Print the results in a nice table format
+        print('\n' + analysis.to_console_table())
 
     except (ValueError, Exception) as e:
         _print_error_and_exit(e)

@@ -221,26 +221,6 @@ def test_projectanalysis_to_markdown():
     assert "| Files | 3 | 1 | 4 |" in markdown
 
 
-def test_projectanalysis_print_summary(capsys):
-    """Verify ProjectAnalysis prints summary correctly."""
-    analysis = ProjectAnalysis(
-        lines_of_code=MetricRow(100, 50, 150),
-        source_lines_of_code=MetricRow(80, 40, 120),
-        classes=MetricRow(5, 2, 7),
-        functions=MetricRow(10, 5, 15),
-        files=MetricRow(3, 1, 4)
-    )
-
-    analysis.print_summary()
-    captured = capsys.readouterr()
-
-    assert "Summary:" in captured.out
-    assert "Lines Of Code (LOC)" in captured.out
-    assert "Main:      100" in captured.out
-    assert "Tests:       50" in captured.out
-    assert "Total:      150" in captured.out
-
-
 def test_projectanalysis_markdown_format():
     """Verify ProjectAnalysis markdown output is properly formatted."""
     analysis = ProjectAnalysis(
@@ -259,3 +239,45 @@ def test_projectanalysis_markdown_format():
     assert all('|' in line for line in lines)
     # Verify alignment row
     assert '|--------|' in lines[1]
+
+
+def test_projectanalysis_to_console_table():
+    """Verify ProjectAnalysis console table output is properly formatted with tabulate."""
+    analysis = ProjectAnalysis(
+        lines_of_code=MetricRow(1000, 500, 1500),
+        source_lines_of_code=MetricRow(800, 400, 1200),
+        classes=MetricRow(50, 20, 70),
+        functions=MetricRow(100, 50, 150),
+        files=MetricRow(30, 10, 40)
+    )
+
+    console_output = analysis.to_console_table()
+
+    # Verify it returns a non-empty string
+    assert isinstance(console_output, str)
+    assert len(console_output) > 0
+
+    # Verify headers are present
+    assert "Metric" in console_output
+    assert "Main code" in console_output
+    assert "Unit Tests" in console_output
+    assert "Total" in console_output
+
+    # Verify metric names are present
+    assert "Lines Of Code (LOC)" in console_output
+    assert "Source Lines Of Code (SLOC)" in console_output
+    assert "Classes" in console_output
+    assert "Functions / Methods" in console_output
+    assert "Files" in console_output
+
+    # Verify values with thousand separators are present
+    assert "1,000" in console_output
+    assert "1,500" in console_output
+    assert "1,200" in console_output
+
+    # Verify box-drawing characters are present (fancy_grid format)
+    assert "─" in console_output  # horizontal line
+    assert "│" in console_output  # vertical line
+    # Check for corner/junction characters (any of these should be present)
+    box_chars = ["┌", "┐", "└", "┘", "├", "┤", "┬", "┴", "┼"]
+    assert any(char in console_output for char in box_chars)
