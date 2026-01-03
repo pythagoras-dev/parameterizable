@@ -12,6 +12,9 @@ concurrency:
   group: update-stats
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   update-stats:
     runs-on: ubuntu-latest
