@@ -108,6 +108,64 @@ def _print_error_and_exit(error: Exception) -> None:
     sys.exit(1)
 
 
+def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> bool:
+    """Update README.md with stats table if it exists and contains markers.
+
+    Checks if README.md exists in the target directory and contains the
+    required <!-- STATS_START --> and <!-- STATS_END --> markers. If both
+    conditions are met, updates the section between the markers with the
+    new stats table.
+
+    Args:
+        target_dir: Directory where README.md should be located.
+        markdown_table: The markdown table content to insert.
+
+    Returns:
+        True if README.md was updated, False otherwise.
+
+    Note:
+        This function silently returns False if README.md doesn't exist
+        or doesn't contain the required markers. No errors are raised.
+    """
+    readme_file = target_dir / 'README.md'
+
+    # Check if README.md exists
+    if not readme_file.exists():
+        return False
+
+    try:
+        content = readme_file.read_text()
+    except (IOError, UnicodeDecodeError):
+        return False
+
+    # Check if markers exist
+    start_marker = '<!-- STATS_START -->'
+    end_marker = '<!-- STATS_END -->'
+
+    if start_marker not in content or end_marker not in content:
+        return False
+
+    # Update the section between markers
+    try:
+        start_idx = content.index(start_marker) + len(start_marker)
+        end_idx = content.index(end_marker)
+
+        # Build the new content
+        new_stats_section = f"\n{markdown_table}\n"
+        new_content = content[:start_idx] + new_stats_section + content[end_idx:]
+
+        # Check if content actually changed
+        if new_content == content:
+            return False
+
+        # Write the updated content
+        readme_file.write_text(new_content)
+        return True
+
+    except (ValueError, IOError):
+        return False
+
+
 def mf_get_stats():
     """CLI entry point for generating project metrics.
 
@@ -141,6 +199,10 @@ def mf_get_stats():
 
         # Print the results in a nice table format
         print('\n' + analysis.to_console_table())
+
+        # Try to update README.md if it exists and has markers
+        if _update_readme_if_possible(target_dir, markdown_content):
+            print(f'✓ README.md has been updated with the latest stats')
 
     except (ValueError, Exception) as e:
         _print_error_and_exit(e)

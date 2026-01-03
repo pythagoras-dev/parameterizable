@@ -337,6 +337,18 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 |------|-------------|
 | `JsonSerializedObject` | Type alias for JSON strings produced by `dumpjs` |
 
+## Project Statistics
+
+<!-- STATS_START -->
+| Metric | Main code | Unit Tests | Total |
+|--------|-----------|------------|-------|
+| Lines Of Code (LOC) | 2310 | 4801 | 7111 |
+| Source Lines Of Code (SLOC) | 986 | 2977 | 3963 |
+| Classes | 10 | 105 | 115 |
+| Functions / Methods | 73 | 447 | 520 |
+| Files | 13 | 34 | 47 |
+<!-- STATS_END -->
+
 ## Development
 
 - Run tests:
