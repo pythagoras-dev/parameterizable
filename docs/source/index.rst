@@ -103,13 +103,6 @@ For development:
 
 * pytest (optional)
 
-Table of Contents
------------------
-
-.. contents::
-   :local:
-   :depth: 2
-
 Available Mixins and Metaclasses
 --------------------------------
 
@@ -355,35 +348,6 @@ Generates a detailed markdown report of removed items.
 Utility Functions
 -----------------
 
-File and Path Utilities
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   from mixinforge.basic_file_utils import (
-       sanitize_and_validate_path,
-       is_path_within_root,
-       folder_contains_file,
-       folder_contains_pyproject_toml,
-       remove_python_cache_files
-   )
-
-   # Sanitize and validate paths for secure access
-   safe_path = sanitize_and_validate_path("/path/to/file", must_exist=True)
-
-   # Check if path is within root (prevents directory traversal)
-   is_safe = is_path_within_root(file_path, root_path)
-
-   # Check for specific file in folder
-   has_config = folder_contains_file("/path/to/dir", "config.json")
-
-   # Check for pyproject.toml
-   is_python_project = folder_contains_pyproject_toml("/path/to/dir")
-
-   # Remove Python cache files
-   count, items = remove_python_cache_files("/path/to/project")
-   print(f"Removed {count} cache items")
-
 JSON Serialization
 ~~~~~~~~~~~~~~~~~~
 
@@ -480,16 +444,6 @@ Functions
      - Extract specific parameters from a JSON string
    * - ``sort_dict_by_keys(d)``
      - Return a new dictionary with keys sorted alphabetically
-   * - ``sanitize_and_validate_path(path, must_exist, must_be_dir)``
-     - Validate and sanitize file paths for secure access
-   * - ``is_path_within_root(file_path, root_path)``
-     - Check if a file path is within a root directory
-   * - ``folder_contains_file(folder_path, filename)``
-     - Check if a specific file exists in a folder
-   * - ``folder_contains_pyproject_toml(folder_path)``
-     - Check if pyproject.toml exists in a folder
-   * - ``remove_python_cache_files(folder_path)``
-     - Remove all Python cache files from a folder and its subfolders
 
 Types
 ~~~~~

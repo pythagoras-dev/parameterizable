@@ -17,9 +17,62 @@ A collection of Python mixins and utilities for building robust, configurable cl
 - **Cache management** — Automatically discover and invalidate `cached_property` attributes
 - **Initialization control** — Enforce strict initialization contracts with lifecycle hooks
 - **Thread safety** — Enforce single-threaded execution with multi-process support
+- **Singleton pattern** — Ensure each subclass maintains exactly one instance
 - **Pickle prevention** — Explicitly prevent objects from being pickled when serialization is unsafe
 - **JSON serialization** — Convert objects and parameters to/from portable JSON representations
 - **Dictionary utilities** — Helper functions for consistent dictionary handling
+
+## Quick Example
+
+Here's a quick example demonstrating parameter management and JSON serialization:
+
+```python
+from mixinforge import ParameterizableMixin, dumpjs, loadjs
+
+class MyModel(ParameterizableMixin):
+    def __init__(self, n_trees=10, depth=3):
+        self.n_trees = n_trees
+        self.depth = depth
+
+    def get_params(self) -> dict:
+        return {"n_trees": self.n_trees, "depth": self.depth}
+
+# Create and configure
+model = MyModel(n_trees=50, depth=5)
+
+# Serialize to JSON
+js = dumpjs(model)
+
+# Recreate from JSON
+model2 = loadjs(js)
+assert model2.get_params() == model.get_params()
+```
+
+## Installation
+
+The source code is hosted on GitHub at:
+[https://github.com/pythagoras-dev/mixinforge](https://github.com/pythagoras-dev/mixinforge)
+
+Binary installers for the latest released version are available at the Python package index at:
+[https://pypi.org/project/mixinforge](https://pypi.org/project/mixinforge)
+
+Using uv:
+```bash
+uv add mixinforge
+```
+
+Using pip:
+```bash
+pip install mixinforge
+```
+
+## Requirements
+
+- Python >= 3.11
+- Runtime dependencies: none
+
+For development:
+- pytest (optional)
 
 ## Available Mixins and Metaclasses
 
@@ -209,34 +262,6 @@ Removes `__pycache__` directories, `.pyc` files, `.pyo` files, and cache directo
 
 ## Utility Functions
 
-### File and Path Utilities
-
-```python
-from mixinforge.basic_file_utils import (
-    sanitize_and_validate_path,
-    is_path_within_root,
-    folder_contains_file,
-    folder_contains_pyproject_toml,
-    remove_python_cache_files
-)
-
-# Sanitize and validate paths for secure access
-safe_path = sanitize_and_validate_path("/path/to/file", must_exist=True)
-
-# Check if path is within root (prevents directory traversal)
-is_safe = is_path_within_root(file_path, root_path)
-
-# Check for specific file in folder
-has_config = folder_contains_file("/path/to/dir", "config.json")
-
-# Check for pyproject.toml
-is_python_project = folder_contains_pyproject_toml("/path/to/dir")
-
-# Remove Python cache files
-count, items = remove_python_cache_files("/path/to/project")
-print(f"Removed {count} cache items")
-```
-
 ### JSON Serialization
 
 ```python
@@ -277,32 +302,6 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 # {"apple": 2, "mango": 3, "zebra": 1}
 ```
 
-## Installation
-
-The source code is hosted on GitHub at:
-[https://github.com/pythagoras-dev/mixinforge](https://github.com/pythagoras-dev/mixinforge)
-
-Binary installers for the latest released version are available at the Python package index at:
-[https://pypi.org/project/mixinforge](https://pypi.org/project/mixinforge)
-
-Using uv:
-```bash
-uv add mixinforge
-```
-
-Using pip:
-```bash
-pip install mixinforge
-```
-
-## Requirements
-
-- Python >= 3.11
-- Runtime dependencies: none
-
-For development:
-- pytest (optional)
-
 ## API Reference
 
 ### Mixins
@@ -313,6 +312,7 @@ For development:
 | `CacheablePropertiesMixin` | Automatic discovery and invalidation of `cached_property` attributes |
 | `NotPicklableMixin` | Prevents pickling/unpickling of objects |
 | `SingleThreadEnforcerMixin` | Enforces single-threaded execution with multi-process support |
+| `SingletonMixin` | Ensures each subclass maintains exactly one instance |
 
 ### Metaclasses
 
@@ -329,11 +329,6 @@ For development:
 | `update_jsparams(js, **updates)` | Update parameters in a JSON string without full deserialization |
 | `access_jsparams(js, *names)` | Extract specific parameters from a JSON string |
 | `sort_dict_by_keys(d)` | Return a new dictionary with keys sorted alphabetically |
-| `sanitize_and_validate_path(path, must_exist, must_be_dir)` | Validate and sanitize file paths for secure access |
-| `is_path_within_root(file_path, root_path)` | Check if a file path is within a root directory |
-| `folder_contains_file(folder_path, filename)` | Check if a specific file exists in a folder |
-| `folder_contains_pyproject_toml(folder_path)` | Check if pyproject.toml exists in a folder |
-| `remove_python_cache_files(folder_path)` | Remove all Python cache files from a folder and its subfolders |
 
 ### Types
 
