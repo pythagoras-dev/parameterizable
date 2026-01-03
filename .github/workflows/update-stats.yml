@@ -1,0 +1,44 @@
+name: Update Project Statistics
+
+on:
+  push:
+    branches: [ master ]
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv pip install -e . --system
+
+      - name: Generate stats and update README
+        run: mf-get-stats
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code README.md || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push if changed
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add README.md project_metrics.md
+          git commit -m "AUTO: Update project statistics in README.md"
+          git push
