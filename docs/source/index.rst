@@ -307,8 +307,82 @@ lifetime, such as configuration managers or resource coordinators.
    config1.config['key'] = 'value'
    assert config2.config['key'] == 'value'  # True
 
+CLI Commands
+------------
+
+mixinforge provides command-line tools for project analysis and maintenance.
+
+mf-stats
+~~~~~~~~
+
+Generate project metrics and save to file:
+
+.. code-block:: bash
+
+   # Analyze current directory
+   mf-stats
+
+   # Analyze specific directory
+   mf-stats /path/to/project
+
+   # Specify custom output filename
+   mf-stats --output my_metrics.md
+
+Generates a markdown report with code statistics including lines of code (LOC),
+source lines of code (SLOC), class counts, function counts, and file counts,
+broken down by main code and unit tests.
+
+mf-clean-cache
+~~~~~~~~~~~~~~
+
+Remove Python cache files from a directory and its subdirectories:
+
+.. code-block:: bash
+
+   # Clean current directory
+   mf-clean-cache
+
+   # Clean specific directory
+   mf-clean-cache /path/to/project
+
+   # Specify custom report filename
+   mf-clean-cache --output cleanup_report.md
+
+Removes ``__pycache__`` directories, ``.pyc`` files, ``.pyo`` files, and cache
+directories from pytest, mypy, ruff, hypothesis, tox, and coverage tools.
+Generates a detailed markdown report of removed items.
+
 Utility Functions
 -----------------
+
+File and Path Utilities
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   from mixinforge.basic_file_utils import (
+       sanitize_and_validate_path,
+       is_path_within_root,
+       folder_contains_file,
+       folder_contains_pyproject_toml,
+       remove_python_cache_files
+   )
+
+   # Sanitize and validate paths for secure access
+   safe_path = sanitize_and_validate_path("/path/to/file", must_exist=True)
+
+   # Check if path is within root (prevents directory traversal)
+   is_safe = is_path_within_root(file_path, root_path)
+
+   # Check for specific file in folder
+   has_config = folder_contains_file("/path/to/dir", "config.json")
+
+   # Check for pyproject.toml
+   is_python_project = folder_contains_pyproject_toml("/path/to/dir")
+
+   # Remove Python cache files
+   count, items = remove_python_cache_files("/path/to/project")
+   print(f"Removed {count} cache items")
 
 JSON Serialization
 ~~~~~~~~~~~~~~~~~~
@@ -406,6 +480,16 @@ Functions
      - Extract specific parameters from a JSON string
    * - ``sort_dict_by_keys(d)``
      - Return a new dictionary with keys sorted alphabetically
+   * - ``sanitize_and_validate_path(path, must_exist, must_be_dir)``
+     - Validate and sanitize file paths for secure access
+   * - ``is_path_within_root(file_path, root_path)``
+     - Check if a file path is within a root directory
+   * - ``folder_contains_file(folder_path, filename)``
+     - Check if a specific file exists in a folder
+   * - ``folder_contains_pyproject_toml(folder_path)``
+     - Check if pyproject.toml exists in a folder
+   * - ``remove_python_cache_files(folder_path)``
+     - Remove all Python cache files from a folder and its subfolders
 
 Types
 ~~~~~
@@ -431,7 +515,7 @@ Full API Documentation
 Contributing
 ------------
 
-Contributions are welcome! Please see the `contributing guide <https://github.com/pythagoras-dev/mixinforge/blob/master/contributing.md>`_
+Contributions are welcome! Please see the `contributing guide <https://github.com/pythagoras-dev/mixinforge/blob/master/CONTRIBUTING.md>`_
 for details on:
 
 * Setting up the development environment
