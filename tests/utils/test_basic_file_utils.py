@@ -1,4 +1,4 @@
-"""Tests for pyproject_utils.py functionality.
+"""Tests for basic_file_utils.py functionality.
 
 Tests cover detection of pyproject.toml files in project directories,
 including path validation and error handling.
@@ -6,7 +6,7 @@ including path validation and error handling.
 from pathlib import Path
 import pytest
 
-from mixinforge.pyproject_utils import has_pyproject_toml
+from mixinforge.basic_file_utils import has_pyproject_toml
 
 
 # ============================================================================
