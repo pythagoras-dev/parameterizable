@@ -69,7 +69,8 @@ pip install mixinforge
 ## Requirements
 
 - Python >= 3.11
-- Runtime dependencies: none
+- Runtime dependencies:
+  - tabulate
 
 For development:
 - pytest (optional)
@@ -226,22 +227,22 @@ processor.process(5)  # Works on the owner thread
 
 mixinforge provides command-line tools for project analysis and maintenance.
 
-### mf-stats
+### mf-get-stats
 
 Generate project metrics and save to file:
 
 ```bash
 # Analyze current directory
-mf-stats
+mf-get-stats
 
 # Analyze specific directory
-mf-stats /path/to/project
+mf-get-stats /path/to/project
 
 # Specify custom output filename
-mf-stats --output my_metrics.md
+mf-get-stats --output my_metrics.md
 ```
 
-Generates a markdown report with code statistics including lines of code (LOC), source lines of code (SLOC), class counts, function counts, and file counts, broken down by main code and unit tests.
+Generates a markdown report with code statistics including lines of code (LOC), source lines of code (SLOC), class counts, function counts, and file counts, broken down by main code and unit tests. Also displays a formatted summary table in the console.
 
 ### mf-clean-cache
 
