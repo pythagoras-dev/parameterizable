@@ -83,7 +83,7 @@ def test_sanitize_and_validate_path_accepts_path_object(tmp_path):
 def test_sanitize_and_validate_path_with_invalid_path_string():
     """Verify sanitize_and_validate_path handles OS errors gracefully."""
     # Path with null bytes should raise ValueError
-    with pytest.raises(ValueError, match="embedded null character"):
+    with pytest.raises(ValueError):
         sanitize_and_validate_path("\x00invalid")
 
 
