@@ -3,6 +3,7 @@
 This module provides helper functions for detecting and working with
 pyproject.toml files in Python projects.
 """
+import shutil
 from pathlib import Path
 
 
@@ -110,3 +111,69 @@ def folder_contains_pyproject_toml(folder_path: Path | str) -> bool:
         TypeError: If folder_path is not a string or Path object.
     """
     return folder_contains_file(folder_path, "pyproject.toml")
+
+
+def remove_python_cache_files(folder_path: Path | str) -> tuple[int, list[str]]:
+    """Remove all Python cached files from a folder and its subfolders.
+
+    Recursively removes cache files and directories created by Python interpreter
+    and popular Python tools including pytest, mypy, ruff, hypothesis, tox, and coverage.
+
+    The following items are removed:
+    - __pycache__/ directories (Python bytecode cache)
+    - .pyc files (compiled Python files)
+    - .pyo files (optimized compiled files, older Python versions)
+    - .pytest_cache/ directories (pytest cache)
+    - .ruff_cache/ directories (Ruff linter cache)
+    - .mypy_cache/ directories (mypy type checker cache)
+    - .hypothesis/ directories (Hypothesis test cache)
+    - .tox/ directories (tox testing cache)
+    - .eggs/ directories (setuptools egg cache)
+    - .coverage* files (coverage data files)
+
+    Args:
+        folder_path: Path to the folder to clean; accepts string or Path object.
+
+    Returns:
+        Tuple of (count of removed items, list of removed item paths).
+        Paths in the list are relative to the folder_path.
+
+    Raises:
+        ValueError: If folder_path is invalid or doesn't exist.
+        TypeError: If folder_path is not a string or Path object.
+    """
+    validated_folder = validate_path(folder_path, must_exist=True, must_be_dir=True)
+
+    # Define patterns to remove
+    cache_dirs = {'__pycache__', '.pytest_cache', '.ruff_cache', '.mypy_cache',
+                  '.hypothesis', '.tox', '.eggs'}
+    cache_file_extensions = {'.pyc', '.pyo'}
+
+    removed_count = 0
+    removed_items = []
+
+    # Walk through directory tree
+    # Note: When we delete a directory with shutil.rmtree(), its descendants are
+    # automatically removed with it, so we won't encounter errors from trying to
+    # access already-deleted nested items. Any other filesystem issues (permissions,
+    # locks, etc.) are caught by the try-except block below.
+    for item in validated_folder.rglob('*'):
+        try:
+            # Check if it's a cache directory
+            if item.is_dir() and item.name in cache_dirs:
+                relative_path = str(item.relative_to(validated_folder))
+                removed_items.append(relative_path)
+                shutil.rmtree(item)
+                removed_count += 1
+            # Check if it's a cache file
+            elif item.is_file():
+                if item.suffix in cache_file_extensions or item.name.startswith('.coverage'):
+                    relative_path = str(item.relative_to(validated_folder))
+                    removed_items.append(relative_path)
+                    item.unlink()
+                    removed_count += 1
+        except (OSError, PermissionError):
+            # Skip items that can't be removed
+            continue
+
+    return removed_count, removed_items

@@ -1,37 +1,205 @@
-from .project_analyzer import *
+import sys
+import argparse
+from pathlib import Path
+
+from .project_analyzer import analyze_project
+from .basic_file_utils import remove_python_cache_files, folder_contains_pyproject_toml
+
+
+def _parse_cli_arguments_with_optional_output(
+    description: str,
+    default_output_filename: str
+) -> tuple[Path, str]:
+    """Parse directory and optional --output arguments from command line.
+
+    Sets up argparse with the provided description, parses the optional
+    directory argument (defaulting to current directory), and an optional
+    --output/-o flag for specifying output filename.
+
+    Validates that the target directory contains a pyproject.toml file,
+    ensuring the command only operates on valid Python projects.
+
+    Args:
+        description: Description of the command for --help output.
+        default_output_filename: Default filename for --output option.
+
+    Returns:
+        Tuple of (resolved Path object for target directory, output filename).
+
+    Note:
+        This function exits the program with code 1 if path validation fails
+        or if pyproject.toml is not found in the directory.
+    """
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        'directory',
+        nargs='?',
+        default='.',
+        help='Directory to process (default: current directory)'
+    )
+    parser.add_argument(
+        '--output', '-o',
+        default=default_output_filename,
+        help=f'Output filename (default: {default_output_filename})'
+    )
+    args = parser.parse_args()
+
+    try:
+        target_dir = Path(args.directory).resolve()
+    except Exception as e:
+        print(f'\n✗ Invalid directory path: {e}', file=sys.stderr)
+        sys.exit(1)
+
+    # Validate that directory contains pyproject.toml
+    if not folder_contains_pyproject_toml(target_dir):
+        print(f'\n✗ Error: No pyproject.toml found in {target_dir}', file=sys.stderr)
+        print('This command requires a Python project directory with pyproject.toml', file=sys.stderr)
+        sys.exit(1)
+
+    return target_dir, args.output
+
+
+def _validate_output_filename_and_warn_if_exists(target_dir: Path, output_filename: str) -> Path:
+    """Validate output filename and warn if file already exists.
+
+    Validates that the output filename is just a filename (not a path) and
+    constructs the full output file path. Warns if the file already exists.
+
+    Args:
+        target_dir: Directory where the file will be saved.
+        output_filename: Name of the output file.
+
+    Returns:
+        Full Path object for the output file.
+
+    Note:
+        Exits with code 1 if output_filename contains path separators.
+    """
+    # Validate that output_filename is just a filename, not a path
+    if '/' in output_filename or '\\' in output_filename:
+        print(f'\n✗ Error: Output must be a filename, not a path: {output_filename}', file=sys.stderr)
+        print('Use the directory argument to specify location, not the output filename.', file=sys.stderr)
+        sys.exit(1)
+
+    output_file = target_dir / output_filename
+
+    # Warn if output file already exists
+    if output_file.exists():
+        print(f'⚠ Warning: {output_file} already exists and will be overwritten', file=sys.stderr)
+
+    return output_file
+
+
+def _print_error_and_exit(error: Exception) -> None:
+    """Print formatted error message to stderr and exit with code 1.
+
+    Prints a formatted error message to stderr and exits with code 1.
+
+    Args:
+        error: The exception to handle.
+
+    Note:
+        This function always exits the program with code 1.
+    """
+    if isinstance(error, ValueError):
+        print(f'\n✗ Error: {error}', file=sys.stderr)
+    else:
+        print(f'\n✗ Unexpected error: {error}', file=sys.stderr)
+    sys.exit(1)
+
 
 def mf_stats():
     """CLI entry point for generating project metrics.
 
-    Analyzes the current directory and generates a project_metrics.md file
-    with code statistics.
+    Analyzes a directory and generates a project metrics file with code statistics.
+    Both saves the results to a file and prints them to the console.
     """
-    import sys
-    from pathlib import Path
-
-    # Get the directory to analyze (current directory by default)
-    target_dir = Path.cwd()
+    target_dir, output_filename = _parse_cli_arguments_with_optional_output(
+        'Generate project metrics and save to file',
+        'project_metrics.md'
+    )
 
     print(f"Analyzing project at: {target_dir}")
 
-    # Analyze the project
-    analysis = analyze_project(target_dir, verbose=False)
-
-    # Convert to markdown
-    markdown_content = analysis.to_markdown()
-
-    # Save to file
-    output_file = target_dir / 'project_metrics.md'
     try:
-        with open(output_file, 'w') as f:
-            f.write('# Project Metrics\n\n')
-            f.write(markdown_content)
-            f.write('\n')
-        print(f'\n✓ Analysis saved to {output_file}')
-    except IOError as e:
-        print(f'\n✗ Error saving file: {e}', file=sys.stderr)
-        sys.exit(1)
+        analysis = analyze_project(target_dir, verbose=False)
+        markdown_content = analysis.to_markdown()
 
-    # Print the results
-    print('\nCurrent metrics:')
-    print(markdown_content)
+        # Validate output filename and get full path
+        output_file = _validate_output_filename_and_warn_if_exists(target_dir, output_filename)
+
+        # Save to file
+        try:
+            with open(output_file, 'w') as f:
+                f.write('# Project Metrics\n\n')
+                f.write(markdown_content)
+                f.write('\n')
+            print(f'\n✓ Analysis saved to {output_file}')
+        except IOError as e:
+            print(f'\n✗ Error saving file: {e}', file=sys.stderr)
+            sys.exit(1)
+
+        # Print the results
+        print('\nCurrent metrics:')
+        print(markdown_content)
+
+    except (ValueError, Exception) as e:
+        _print_error_and_exit(e)
+
+
+def mf_clean_cache():
+    """CLI entry point for cleaning Python cache files.
+
+    Removes all Python cache files and directories from a directory and its subdirectories,
+    including __pycache__, .pyc files, and various tool caches (pytest, mypy, ruff, etc.).
+    Both saves a detailed report to a file and prints a summary to the console.
+    """
+    from datetime import datetime
+
+    target_dir, output_filename = _parse_cli_arguments_with_optional_output(
+        'Remove Python cache files from a directory and its subdirectories',
+        'cache_cleanup_report.md'
+    )
+
+    print(f"Cleaning Python cache files from: {target_dir}")
+
+    try:
+        removed_count, removed_items = remove_python_cache_files(target_dir)
+
+        # Generate markdown report
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        markdown_content = f"""# Cache Cleanup Report
+
+**Directory:** {target_dir}
+**Date:** {timestamp}
+**Items removed:** {removed_count}
+
+## Removed Items
+
+"""
+        if removed_count > 0:
+            for item in removed_items:
+                markdown_content += f"- {item}\n"
+        else:
+            markdown_content += "*No cache files found*\n"
+
+        # Validate output filename and get full path
+        output_file = _validate_output_filename_and_warn_if_exists(target_dir, output_filename)
+
+        # Save to file
+        try:
+            with open(output_file, 'w') as f:
+                f.write(markdown_content)
+            print(f'\n✓ Report saved to {output_file}')
+        except IOError as e:
+            print(f'\n✗ Error saving file: {e}', file=sys.stderr)
+            sys.exit(1)
+
+        # Print summary to console
+        if removed_count > 0:
+            print(f'✓ Successfully removed {removed_count} cache items')
+        else:
+            print('✓ No cache files found')
+
+    except (ValueError, Exception) as e:
+        _print_error_and_exit(e)
