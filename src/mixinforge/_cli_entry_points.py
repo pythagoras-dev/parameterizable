@@ -46,14 +46,13 @@ def _parse_cli_arguments_with_optional_output(
 
     try:
         target_dir = Path(args.directory).resolve()
+        # Validate that directory contains pyproject.toml
+        if not folder_contains_pyproject_toml(target_dir):
+            print(f'\n✗ Error: No pyproject.toml found in {target_dir}', file=sys.stderr)
+            print('This command requires a Python project directory with pyproject.toml', file=sys.stderr)
+            sys.exit(1)
     except Exception as e:
         print(f'\n✗ Invalid directory path: {e}', file=sys.stderr)
-        sys.exit(1)
-
-    # Validate that directory contains pyproject.toml
-    if not folder_contains_pyproject_toml(target_dir):
-        print(f'\n✗ Error: No pyproject.toml found in {target_dir}', file=sys.stderr)
-        print('This command requires a Python project directory with pyproject.toml', file=sys.stderr)
         sys.exit(1)
 
     return target_dir, args.output
