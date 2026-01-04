@@ -107,42 +107,81 @@ def _print_error_and_exit(error: Exception) -> None:
     sys.exit(1)
 
 
-def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> bool:
-    """Update README.md with stats table if it exists and contains markers.
+def _find_readme(target_dir: Path) -> Path | None:
+    """Find README file in common locations and variations.
 
-    Checks if README.md exists in the target directory and contains the
-    required <!-- STATS_START --> and <!-- STATS_END --> markers. If both
+    Searches for README files with various naming conventions in the
+    project root and common documentation directories.
+
+    Args:
+        target_dir: Root directory of the project to search.
+
+    Returns:
+        Path to README file if found, None otherwise.
+
+    Note:
+        Searches in order of preference:
+        - README.md (root)
+        - readme.md (root)
+        - Readme.md (root)
+        - README.rst (root)
+        - docs/README.md
+        - doc/README.md
+    """
+    # Common README file patterns, in order of preference
+    search_patterns = [
+        'README.md',
+        'readme.md',
+        'Readme.md',
+        'README.rst',
+        'docs/README.md',
+        'doc/README.md'
+    ]
+
+    for pattern in search_patterns:
+        readme_path = target_dir / pattern
+        if readme_path.exists():
+            return readme_path
+
+    return None
+
+
+def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> Path | None:
+    """Update README with stats table if it exists and contains markers.
+
+    Locates a README file and checks if it contains the required
+    <!-- STATS_START --> and <!-- STATS_END --> markers. If both
     conditions are met, updates the section between the markers with the
     new stats table.
 
     Args:
-        target_dir: Directory where README.md should be located.
+        target_dir: Root directory of the project.
         markdown_table: The markdown table content to insert.
 
     Returns:
-        True if README.md was updated, False otherwise.
+        Path to the updated README file if successful, None otherwise.
 
     Note:
-        This function silently returns False if README.md doesn't exist
+        This function silently returns None if README doesn't exist
         or doesn't contain the required markers. No errors are raised.
     """
-    readme_file = target_dir / 'README.md'
+    readme_file = _find_readme(target_dir)
 
-    # Check if README.md exists
-    if not readme_file.exists():
-        return False
+    # Check if README exists
+    if readme_file is None:
+        return None
 
     try:
         content = readme_file.read_text()
     except (IOError, UnicodeDecodeError):
-        return False
+        return None
 
     # Check if markers exist
     start_marker = '<!-- STATS_START -->'
     end_marker = '<!-- STATS_END -->'
 
     if start_marker not in content or end_marker not in content:
-        return False
+        return None
 
     # Update the section between markers
     try:
@@ -155,14 +194,112 @@ def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> bool:
 
         # Check if content actually changed
         if new_content == content:
-            return False
+            return None
 
         # Write the updated content
         readme_file.write_text(new_content)
-        return True
+        return readme_file
 
     except (ValueError, IOError):
-        return False
+        return None
+
+
+def _find_sphinx_index_rst(target_dir: Path) -> Path | None:
+    """Find Sphinx index.rst file by locating conf.py first.
+
+    Searches for Sphinx conf.py in common documentation directory locations,
+    then looks for index.rst in the same directory or parent directory.
+
+    Args:
+        target_dir: Root directory of the project to search.
+
+    Returns:
+        Path to index.rst if found, None otherwise.
+
+    Note:
+        Searches in order: docs/source/, docs/, doc/source/, doc/
+    """
+    # Common Sphinx documentation directory patterns
+    search_patterns = [
+        'docs/source',
+        'docs',
+        'doc/source',
+        'doc'
+    ]
+
+    for pattern in search_patterns:
+        conf_py_path = target_dir / pattern / 'conf.py'
+        if conf_py_path.exists():
+            # Found conf.py, now look for index.rst in same dir or parent
+            conf_dir = conf_py_path.parent
+
+            # Check in same directory as conf.py
+            index_rst = conf_dir / 'index.rst'
+            if index_rst.exists():
+                return index_rst
+
+            # Check in parent directory
+            index_rst = conf_dir.parent / 'index.rst'
+            if index_rst.exists():
+                return index_rst
+
+    return None
+
+
+def _update_rst_docs_if_possible(target_dir: Path, rst_table: str) -> Path | None:
+    """Update Sphinx index.rst with stats table if it exists and contains markers.
+
+    Locates the Sphinx index.rst file and checks if it contains the required
+    .. STATS_START and .. STATS_END markers. If both conditions are met,
+    updates the section between the markers with the new stats table.
+
+    Args:
+        target_dir: Root directory of the project.
+        rst_table: The RST list-table content to insert.
+
+    Returns:
+        Path to the updated index.rst file if successful, None otherwise.
+
+    Note:
+        This function silently returns None if index.rst doesn't exist
+        or doesn't contain the required markers. No errors are raised.
+    """
+    index_rst_path = _find_sphinx_index_rst(target_dir)
+
+    if index_rst_path is None:
+        return None
+
+    try:
+        content = index_rst_path.read_text()
+    except (IOError, UnicodeDecodeError):
+        return None
+
+    # Check if markers exist
+    start_marker = '.. STATS_START'
+    end_marker = '.. STATS_END'
+
+    if start_marker not in content or end_marker not in content:
+        return None
+
+    # Update the section between markers
+    try:
+        start_idx = content.index(start_marker) + len(start_marker)
+        end_idx = content.index(end_marker)
+
+        # Build the new content
+        new_stats_section = f"\n\n{rst_table}\n\n"
+        new_content = content[:start_idx] + new_stats_section + content[end_idx:]
+
+        # Check if content actually changed
+        if new_content == content:
+            return None
+
+        # Write the updated content
+        index_rst_path.write_text(new_content)
+        return index_rst_path
+
+    except (ValueError, IOError):
+        return None
 
 
 def mf_get_stats():
@@ -181,6 +318,7 @@ def mf_get_stats():
     try:
         analysis = analyze_project(target_dir, verbose=False)
         markdown_content = analysis.to_markdown()
+        rst_content = analysis.to_rst()
 
         # Validate output filename and get full path
         output_file = _validate_output_filename_and_warn_if_exists(target_dir, output_filename)
@@ -199,9 +337,24 @@ def mf_get_stats():
         # Print the results in a nice table format
         print('\n' + analysis.to_console_table())
 
-        # Try to update README.md if it exists and has markers
-        if _update_readme_if_possible(target_dir, markdown_content):
-            print(f'✓ README.md has been updated with the latest stats')
+        # Track updated files for CI/CD workflows
+        updated_files = []
+
+        # Try to update README if it exists and has markers
+        readme_path = _update_readme_if_possible(target_dir, markdown_content)
+        if readme_path:
+            relative_path = readme_path.relative_to(target_dir)
+            updated_files.append(str(relative_path))
+
+        # Try to update Sphinx docs if they exist and have markers
+        rst_path = _update_rst_docs_if_possible(target_dir, rst_content)
+        if rst_path:
+            relative_path = rst_path.relative_to(target_dir)
+            updated_files.append(str(relative_path))
+
+        # Output updated files summary
+        if updated_files:
+            print(f'\n✓ UPDATED_FILES: {" ".join(updated_files)}')
 
     except (ValueError, Exception) as e:
         _print_error_and_exit(e)

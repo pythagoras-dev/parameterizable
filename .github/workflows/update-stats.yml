@@ -36,24 +36,48 @@ jobs:
       - name: Install dependencies
         run: uv pip install -e . --system
 
-      - name: Generate stats and update README
-        run: mf-get-stats
-
-      - name: Check for changes
-        id: git-check
+      - name: Generate stats and update files
+        id: stats
         run: |
-          git diff --quiet README.md || echo "changed=true" >> $GITHUB_OUTPUT
+          # Run mf-get-stats and capture output (both stdout and stderr)
+          output=$(mf-get-stats 2>&1)
+          echo "$output"
+
+          # Extract updated files from output (line starts with ✓ UPDATED_FILES:)
+          updated_files=$(echo "$output" | grep "UPDATED_FILES:" | cut -d: -f2 | xargs || echo "")
+
+          # Set output for next step
+          if [ -n "$updated_files" ]; then
+            echo "files=$updated_files" >> $GITHUB_OUTPUT
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and push if changed
-        if: steps.git-check.outputs.changed == 'true'
+        if: steps.stats.outputs.changed == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add README.md
+
+          # Add the files that were updated by mf-get-stats
+          files="${{ steps.stats.outputs.files }}"
+          for file in $files; do
+            if [ -f "$file" ]; then
+              git add "$file"
+            fi
+          done
+
+          # Add project_metrics.md if it exists and has changes
           if [ -f project_metrics.md ]; then
             git diff --quiet project_metrics.md || git add project_metrics.md
           fi
-          git commit -m "AUTO: Update project statistics in README.md"
+
+          # Build commit message with updated file names
+          commit_msg="AUTO: Update project statistics"
+          if [ -n "$files" ]; then
+            commit_msg="$commit_msg ($files)"
+          fi
+
+          git commit -m "$commit_msg"
 
           # Retry logic for push with rebase
           max_attempts=3

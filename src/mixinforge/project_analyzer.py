@@ -143,6 +143,30 @@ class ProjectAnalysis:
 
         return "\n".join(lines)
 
+    def to_rst(self) -> str:
+        """Convert to reStructuredText list-table format.
+
+        Returns:
+            RST-formatted list-table string with project metrics.
+        """
+        lines = []
+        lines.append(".. list-table::")
+        lines.append("   :header-rows: 1")
+        lines.append("   :widths: 40 20 20 20")
+        lines.append("")
+        lines.append("   * - Metric")
+        lines.append("     - Main code")
+        lines.append("     - Unit Tests")
+        lines.append("     - Total")
+
+        for metric_name, metric_dict in self.to_dict().items():
+            lines.append(f"   * - {metric_name}")
+            lines.append(f"     - {metric_dict['Main code']}")
+            lines.append(f"     - {metric_dict['Unit Tests']}")
+            lines.append(f"     - {metric_dict['Total']}")
+
+        return "\n".join(lines)
+
     def to_console_table(self) -> str:
         """Convert to formatted console table with box-drawing characters.
 

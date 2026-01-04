@@ -460,6 +460,42 @@ Types
    * - ``JsonSerializedObject``
      - Type alias for JSON strings produced by ``dumpjs``
 
+Project Statistics
+-------------------
+
+.. STATS_START
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 20 20 20
+
+   * - Metric
+     - Main code
+     - Unit Tests
+     - Total
+   * - Lines Of Code (LOC)
+     - 2493
+     - 4797
+     - 7290
+   * - Source Lines Of Code (SLOC)
+     - 1071
+     - 2974
+     - 4045
+   * - Classes
+     - 10
+     - 105
+     - 115
+   * - Functions / Methods
+     - 77
+     - 447
+     - 524
+   * - Files
+     - 13
+     - 34
+     - 47
+
+.. STATS_END
+
 Full API Documentation
 ----------------------
 
