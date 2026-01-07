@@ -11,7 +11,7 @@ from collections.abc import Iterator
 import pytest
 
 from mixinforge.nested_collections_processor import (
-    get_atomics_from_nested_collections,
+    find_atomics_in_nested_collections,
     _is_flattenable,
 )
 
@@ -57,28 +57,28 @@ def test_is_flattenable_non_iterable():
 def test_flatten_simple_list():
     """Flatten a simple nested list structure."""
     nested = [1, [2, 3], [4, [5, 6]]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3, 4, 5, 6]
 
 
 def test_flatten_simple_tuple():
     """Flatten a simple nested tuple structure."""
     nested = (1, (2, 3), (4, (5, 6)))
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3, 4, 5, 6]
 
 
 def test_flatten_mixed_list_tuple():
     """Flatten mixed lists and tuples."""
     nested = [1, (2, [3, (4, 5)])]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3, 4, 5]
 
 
 def test_flatten_dictionary_values_only():
     """Dictionary flattening traverses values only, ignoring keys."""
     nested = {"a": 1, "b": [2, 3], "c": {"d": 4}}
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # Keys "a", "b", "c", "d" are not yielded
     assert result == [1, 2, 3, 4]
 
@@ -91,26 +91,26 @@ def test_flatten_nested_dictionaries():
             "more": {"deep": 3}
         }
     }
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3]
 
 
 def test_flatten_empty_list():
     """Empty list yields no elements."""
-    result = list(get_atomics_from_nested_collections([]))
+    result = list(find_atomics_in_nested_collections([]))
     assert result == []
 
 
 def test_flatten_empty_dict():
     """Empty dictionary yields no elements."""
-    result = list(get_atomics_from_nested_collections({}))
+    result = list(find_atomics_in_nested_collections({}))
     assert result == []
 
 
 def test_flatten_nested_empty_collections():
     """Nested empty collections yield nothing."""
     nested = [[], [[]], {}, [{}]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == []
 
 
@@ -122,7 +122,7 @@ def test_flatten_nested_empty_collections():
 def test_strings_are_atomic():
     """Strings are treated as atomic, not decomposed into characters."""
     nested = ["hello", ["world", "foo"]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == ["hello", "world", "foo"]
     # Not ['h', 'e', 'l', 'l', 'o', ...]
 
@@ -130,7 +130,7 @@ def test_strings_are_atomic():
 def test_bytes_are_atomic():
     """Bytes and bytearray are treated as atomic."""
     nested = [b"data", [bytearray(b"more")]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert len(result) == 2
     assert result[0] == b"data"
     assert result[1] == bytearray(b"more")
@@ -139,14 +139,14 @@ def test_bytes_are_atomic():
 def test_numeric_types_are_atomic():
     """Numbers are yielded as leaf values."""
     nested = [1, [2.5, [3+4j]], True]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2.5, 3+4j, True]
 
 
 def test_none_is_atomic():
     """None is treated as an atomic value."""
     nested = [None, [1, None], [[None]]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # None is a singleton, so identity deduplication means it appears once
     assert result == [None, 1]
 
@@ -156,7 +156,7 @@ def test_path_objects_are_atomic():
     p1 = pathlib.Path("/tmp/file1")
     p2 = pathlib.Path("/tmp/file2")
     nested = [p1, [p2]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [p1, p2]
 
 
@@ -165,7 +165,7 @@ def test_datetime_objects_are_atomic():
     dt1 = datetime.datetime(2024, 1, 1)
     dt2 = datetime.date(2024, 1, 2)
     nested = [dt1, [dt2]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [dt1, dt2]
 
 
@@ -178,7 +178,7 @@ def test_same_object_referenced_multiple_times_yields_once():
     """Same object (by identity) is yielded only once."""
     shared = [1, 2, 3]
     nested = [shared, shared, shared]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # shared is traversed once, not three times
     assert result == [1, 2, 3]
 
@@ -187,7 +187,7 @@ def test_same_atomic_object_yielded_once():
     """Same atomic object (by identity) is yielded only once."""
     obj = "shared_string"
     nested = [obj, [obj, [obj]]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert len(result) == 1
     assert result[0] is obj
 
@@ -196,7 +196,7 @@ def test_different_objects_with_same_value_all_yielded():
     """Different objects with equal values - but small ints are cached."""
     # Create separate list objects with the same content
     nested = [[1, 2], [1, 2], [1, 2]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # Each list is a different object, but 1 and 2 are cached singletons
     # So they appear only once due to identity-based deduplication
     assert result == [1, 2]
@@ -213,7 +213,7 @@ def test_different_atomic_objects_with_same_value_all_yielded():
     if a is b:
         pytest.skip("Large integers unexpectedly have same identity")
     nested = [a, b]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert len(result) == 2
     assert result[0] == result[1]
 
@@ -223,7 +223,7 @@ def test_shared_substructure_traversed_once():
     inner = [1, 2]
     middle = [inner, 3]
     nested = [middle, middle, middle]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # middle and inner are each traversed once
     assert result == [1, 2, 3]
 
@@ -238,7 +238,7 @@ def test_self_referential_list_raises_error():
     cyclic = [1, 2]
     cyclic.append(cyclic)
     with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(get_atomics_from_nested_collections(cyclic))
+        list(find_atomics_in_nested_collections(cyclic))
 
 
 def test_circular_reference_between_lists_raises_error():
@@ -247,7 +247,7 @@ def test_circular_reference_between_lists_raises_error():
     list_b = [2, list_a]
     list_a.append(list_b)
     with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(get_atomics_from_nested_collections(list_a))
+        list(find_atomics_in_nested_collections(list_a))
 
 
 def test_circular_reference_in_dict_raises_error():
@@ -255,7 +255,7 @@ def test_circular_reference_in_dict_raises_error():
     d = {"a": 1}
     d["self"] = d
     with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(get_atomics_from_nested_collections(d))
+        list(find_atomics_in_nested_collections(d))
 
 
 def test_deeply_nested_cycle_detected():
@@ -265,7 +265,7 @@ def test_deeply_nested_cycle_detected():
     outer = [middle, 3]
     inner.append(outer)  # Create cycle: inner -> middle -> outer -> inner
     with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(get_atomics_from_nested_collections(outer))
+        list(find_atomics_in_nested_collections(outer))
 
 
 def test_no_false_positive_cycle_with_shared_structure():
@@ -273,7 +273,7 @@ def test_no_false_positive_cycle_with_shared_structure():
     shared = [1, 2]
     nested = [[shared, shared], [shared, 3]]
     # This is a DAG, not a cycle - should work fine
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3]
 
 
@@ -285,20 +285,20 @@ def test_no_false_positive_cycle_with_shared_structure():
 def test_non_iterable_input_raises_typeerror():
     """Non-iterable input raises TypeError."""
     with pytest.raises(TypeError, match="Expected an Iterable"):
-        list(get_atomics_from_nested_collections(42))
+        list(find_atomics_in_nested_collections(42))
 
 
 def test_none_input_raises_typeerror():
     """None as input raises TypeError."""
     with pytest.raises(TypeError, match="Expected an Iterable"):
-        list(get_atomics_from_nested_collections(None))
+        list(find_atomics_in_nested_collections(None))
 
 
 def test_string_as_input_is_atomic_iterable():
     """String as top-level input iterates over characters (which are deduplicated)."""
     # Strings are atomic, but string as input is still an iterable
     # The function iterates over the string, yielding each character
-    result = list(get_atomics_from_nested_collections("hello"))
+    result = list(find_atomics_in_nested_collections("hello"))
     # Single-character strings are interned, so duplicates are deduplicated
     # 'h', 'e', 'l', 'l', 'o' -> 'h', 'e', 'l', 'o' (second 'l' deduplicated)
     assert result == ['h', 'e', 'l', 'o']
@@ -315,7 +315,7 @@ def test_deeply_nested_structure():
     nested = [1]
     for _ in range(1000):
         nested = [nested]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1]
 
 
@@ -326,14 +326,14 @@ def test_mixed_mappings_and_sequences():
         [{"b": 3}, 4],
         {"c": {"d": [5, 6]}}
     ]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3, 4, 5, 6]
 
 
 def test_sets_are_flattened():
     """Sets are iterable and should be flattened."""
     nested = [1, {2, 3}, [4]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # Sets are unordered, so we use set comparison
     assert set(result) == {1, 2, 3, 4}
     assert len(result) == 4
@@ -342,7 +342,7 @@ def test_sets_are_flattened():
 def test_frozensets_are_flattened():
     """Frozensets are iterable and should be flattened."""
     nested = [1, frozenset([2, 3]), [4]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert set(result) == {1, 2, 3, 4}
     assert len(result) == 4
 
@@ -353,14 +353,14 @@ def test_range_objects_are_atomic():
     r1 = range(3)
     r2 = range(3, 5)
     nested = [r1, [r2]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [r1, r2]
 
 
 def test_deque_is_flattened():
     """Deque objects are iterable and should be flattened."""
     nested = [deque([1, 2]), [3, deque([4, 5])]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3, 4, 5]
 
 
@@ -371,7 +371,7 @@ def test_generator_as_input():
         yield [2, 3]
         yield 4
 
-    result = list(get_atomics_from_nested_collections(gen()))
+    result = list(find_atomics_in_nested_collections(gen()))
     assert result == [1, 2, 3, 4]
 
 
@@ -386,7 +386,7 @@ def test_nested_generators():
         yield inner_gen()
         yield 4
 
-    result = list(get_atomics_from_nested_collections(outer_gen()))
+    result = list(find_atomics_in_nested_collections(outer_gen()))
     assert result == [1, 2, 3, 4]
 
 
@@ -397,14 +397,14 @@ def test_custom_iterable_class():
             return iter([1, 2, 3])
 
     nested = [CustomIterable(), [4, 5]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert result == [1, 2, 3, 4, 5]
 
 
 def test_return_type_is_iterator():
     """Function returns an iterator, not a list."""
     nested = [1, 2, 3]
-    result = get_atomics_from_nested_collections(nested)
+    result = find_atomics_in_nested_collections(nested)
     assert isinstance(result, Iterator)
     # Verify it's lazy by consuming it
     assert next(result) == 1
@@ -418,7 +418,7 @@ def test_multiple_none_values():
     """Multiple None values with same identity are deduplicated."""
     # None is a singleton in Python, so all None values have the same id
     nested = [None, [None, [None]]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # All None values have the same identity, so only one is yielded
     assert result == [None]
 
@@ -427,7 +427,7 @@ def test_boolean_singletons():
     """Boolean singletons (True/False) are deduplicated by identity."""
     # True and False are singletons in Python
     nested = [True, [True, False], [[True, False]]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # Each singleton appears once
     assert result == [True, False]
 
@@ -436,7 +436,7 @@ def test_small_integer_caching():
     """Small integers are cached by Python and deduplicated by identity."""
     # Python caches small integers (-5 to 256)
     nested = [1, [1, 2], [[1, 2, 3]]]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     # Due to integer caching, each unique small int appears once
     assert result == [1, 2, 3]
 
@@ -448,6 +448,6 @@ def test_large_integers_not_deduplicated_by_value():
     b = 10**100
     assert a == b and a is not b  # Same value, different identity
     nested = [a, b]
-    result = list(get_atomics_from_nested_collections(nested))
+    result = list(find_atomics_in_nested_collections(nested))
     assert len(result) == 2
     assert result[0] == result[1] == 10**100

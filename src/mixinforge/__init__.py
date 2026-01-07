@@ -46,5 +46,6 @@ __all__ = [
     'loadjs',
     'sort_dict_by_keys',
     'update_jsparams',
-    'get_atomics_from_nested_collections'
+    'find_atomics_in_nested_collections',
+    'find_nonatomics_inside_composite_object'
 ]
