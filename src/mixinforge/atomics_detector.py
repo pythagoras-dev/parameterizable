@@ -191,10 +191,7 @@ class _LazyTypeRegistry:
             indexed_with_first_key = self._indexed_types.get(first_key)
             if indexed_with_first_key:
                 for descriptor in indexed_with_first_key.values():
-                    # Performance optimization:
-                    # If the target module isn't loaded yet, avoid importing it
-                    # just because the type name matches (e.g. "Tensor" or "DataFrame"),
-                    # unless the module roots appear compatible.
+                    # Skip unloaded modules with different roots to avoid unnecessary imports
                     if descriptor.module_name not in sys.modules:
                         desc_root = descriptor.module_name.split('.')[0]
                         if query_root != desc_root:
@@ -329,9 +326,24 @@ _ATOMIC_TYPES_REGISTRY.register_many_types(
 
 @cache
 def is_atomic_type(type_to_check: type) -> bool:
-    """Check if a type is atomic (indivisible)."""
+    """Check if a type is atomic (indivisible).
+
+    Args:
+        type_to_check: The type to check.
+
+    Returns:
+        True if the type or any of its ancestors is registered as atomic.
+    """
     return _ATOMIC_TYPES_REGISTRY.is_inherited_from_registered(type_to_check)
 
+
 def is_atomic_object(obj: object) -> bool:
-    """Check if an object's type is atomic (indivisible)."""
+    """Check if an object's type is atomic (indivisible).
+
+    Args:
+        obj: The object to check.
+
+    Returns:
+        True if the object's type is registered as atomic.
+    """
     return is_atomic_type(type(obj))
