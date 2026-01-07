@@ -127,7 +127,6 @@ class _LazyTypeDescriptor:
             # and is never retried. We do not support scenarios where a
             # new package is installed after the first access attempt.
 
-
         return self._actual_type
 
 
@@ -218,30 +217,10 @@ class _LazyTypeRegistry:
             raise TypeError(f"Query type {query_type} is not allowed to be "
                             "checked if registered")
 
-        # Check each ancestor in the MRO (excluding the type itself)
         for ancestor in query_type.__mro__:
             if self.is_registered(ancestor):
                 return True
         return False
-
-    def __contains__(self, type_spec: TypeSpec) -> bool:
-        """Check if a type is in the registry.
-
-        Alias for is_type_registered.
-        """
-        return self.is_registered(type_spec)
-
-    def __iadd__(self, type_spec: TypeSpec) -> Self:
-        """Register a type using the += operator.
-
-        Args:
-            type_spec: The type to register.
-
-        Returns:
-            The registry instance.
-        """
-        self.register_type(type_spec)
-        return self
 
 
 # A registry of atomic (indivisible) types.
@@ -264,6 +243,7 @@ _STANDARD_LIBRARY_ATOMIC_TYPES = [
     datetime.date,
     datetime.time,
     datetime.timedelta,
+    datetime.timezone,
     decimal.Decimal,
     fractions.Fraction,
     uuid.UUID,
@@ -280,6 +260,7 @@ _ATOMIC_TYPES_REGISTRY.register_many_types(
 _ATOMIC_TYPES_FROM_POPULAR_PACKAGES = [
     ("numpy", "ndarray"),
     ("numpy", "generic"),
+    ("numpy", "dtype"),
     #--#--#--#--#
     ("pandas", "DataFrame"),
     ("pandas", "Series"),
@@ -338,6 +319,11 @@ _ATOMIC_TYPES_FROM_POPULAR_PACKAGES = [
     ("Bio.Align", "MultipleSeqAlignment"),
     #--#--#--#--#
     ("rdkit.Chem.rdchem", "Mol"),
+    #--#--#--#--#
+    ("ipaddress", "IPv4Address"),
+    ("ipaddress", "IPv6Address"),
+    ("ipaddress", "IPv4Network"),
+    ("ipaddress", "IPv6Network"),
 ]
 
 _ATOMIC_TYPES_REGISTRY.register_many_types(
