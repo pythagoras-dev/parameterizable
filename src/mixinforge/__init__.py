@@ -30,7 +30,7 @@ from .cacheable_properties_mixin import *
 from .guarded_init_metaclass import *
 from .single_thread_enforcer_mixin import *
 from .singleton_mixin import *
-from .iterative_flattener import *
+from .nested_collection_flattener import *
 
 __all__ = [
     'CacheablePropertiesMixin',
@@ -46,5 +46,5 @@ __all__ = [
     'loadjs',
     'sort_dict_by_keys',
     'update_jsparams',
-    "flatten_iterative"
+    'get_atomics_from_nested_collections'
 ]
