@@ -4,17 +4,14 @@ Stack-based flattening of nested collections with cycle detection.
 Avoids recursion depth limits and treats strings/bytes as atomic values.
 For mappings (dicts), flattens values only (keys are ignored).
 """
-from collections.abc import Iterable, Mapping
-from typing import Any, Iterator
 from collections import deque
+from collections.abc import Iterable, Iterator, Mapping
+from typing import Any
 
 from .atomics_detector import is_atomic_object
 
 def _is_flattenable(obj: Any) -> bool:
-    """Return True if obj should be traversed, False if it's a leaf value.
-
-    An object is flattenable when it is an Iterable and not registered
-    as atomic via atomics_detector.is_atomic_object.
+    """Check if an object should be traversed or yielded as a leaf.
 
     Args:
         obj: Candidate object encountered during traversal.
@@ -30,11 +27,11 @@ def _is_flattenable(obj: Any) -> bool:
 
 
 def get_atomics_from_nested_collections(obj: Iterable[Any]) -> Iterator[Any]:
-    """Yield atomic elements from a nested collection using stack-based traversal.
+    """Yield unique atomic elements from a nested collection.
 
-    Flattens nested iterables depth-first. For mappings, only values are
-    traversed (keys are ignored). Shared sub-structures are visited once;
-    cycles raise an error.
+    Traverses nested iterables depth-first using a stack. For mappings, only
+    values are traversed. Ensures object identity uniqueness: shared
+    sub-structures and duplicate atomic objects are yielded only once.
 
     Args:
         obj: The nested collection to flatten.
