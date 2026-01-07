@@ -5,16 +5,24 @@ be treated as atomic (indivisible) during traversal or flattening operations,
 supporting lazy loading to avoid unnecessary imports.
 """
 from __future__ import annotations
-from typing import TypeAlias, Self
+
+import datetime
+import decimal
+import enum
+import fractions
+import pathlib
+import re
+import uuid
+from typing import TypeAlias, Self, Iterable, Union
 import importlib
 
-TypeSpec: TypeAlias = type | "LazyTypeDescriptor" | tuple[str, str]
+TypeSpec: TypeAlias = Union[type, "_LazyTypeDescriptor", tuple[str, str]]
 
 class _TypeCouldNotBeImported:
     """Sentinel type for types that cannot be imported."""
     pass
 
-class LazyTypeDescriptor:
+class _LazyTypeDescriptor:
     """Defers type resolution until needed, avoiding expensive imports.
 
     Stores type information as strings (module and type names) or as an
@@ -26,7 +34,7 @@ class LazyTypeDescriptor:
         type_name: Name of the type within its module.
         type: The resolved type object.
     """
-    _eager_validation_mode:bool = False
+    _eager_loading_mode:bool = False
     _module_name: str
     _type_name: str
     _actual_type: type | None
@@ -44,7 +52,7 @@ class LazyTypeDescriptor:
                 contains empty strings.
             TypeError: If type_spec is not a supported type.
         """
-        if isinstance(type_spec, LazyTypeDescriptor):
+        if isinstance(type_spec, _LazyTypeDescriptor):
             self._module_name = type_spec._module_name
             self._type_name = type_spec._type_name
             self._actual_type = type_spec._actual_type
@@ -69,8 +77,16 @@ class LazyTypeDescriptor:
                 f"got {type(type_spec).__name__}: {type_spec!r}"
             )
 
-        if self._eager_validation_mode:
+        if self._eager_loading_mode:
             _ = self.type
+
+    @property
+    def eager_loading_mode(self) -> bool:
+        """Whether to load/import types eagerly.
+
+        This mode mostly exists for testing purposes.
+        """
+        return self._eager_loading_mode
 
     @property
     def module_name(self) -> str:
@@ -89,7 +105,7 @@ class LazyTypeDescriptor:
         Import occurs on first access.
 
         Returns:
-            The type object, or a sentinel value if the import fails.
+            The type object, or a sentinel type if the import fails.
         """
         if self._actual_type is not None:
             return self._actual_type
@@ -105,11 +121,15 @@ class LazyTypeDescriptor:
             self._actual_type = _TypeCouldNotBeImported
             # Sentinel value indicating a type could not be imported
             # Later comparison checks against this value will always fail
+            # It intentionally stored the first time the type is accessed
+            # and is never retried. We do not support scenarios where a
+            # new package is installed after the first access attempt.
+
 
         return self._actual_type
 
 
-class LazyTypeRegister:
+class _LazyTypeRegistry:
     """Registry for types that should be treated as atomic.
 
     Maintains a collection of type descriptors to check if an object's type
@@ -120,7 +140,7 @@ class LazyTypeRegister:
     type aliases and re-exports.
     """
 
-    _indexed_types: dict[str, dict[tuple[str, str], LazyTypeDescriptor]]
+    _indexed_types: dict[str, dict[tuple[str, str], _LazyTypeDescriptor]]
 
     def __init__(self):
         """Initialize an empty type registry."""
@@ -132,12 +152,18 @@ class LazyTypeRegister:
         Args:
             type_spec: The type definition to register.
         """
-        type_spec = LazyTypeDescriptor(type_spec)
+        type_spec = _LazyTypeDescriptor(type_spec)
         second_key = (type_spec.module_name, type_spec.type_name)
         for first_key in [type_spec.module_name, type_spec.type_name]:
             if first_key not in self._indexed_types:
                 self._indexed_types[first_key] = dict()
             self._indexed_types[first_key][second_key] = type_spec
+
+
+    def register_many_types(self, types: Iterable[TypeSpec]):
+        """Register multiple types as atomic."""
+        for type_spec in types:
+            self.register_type(type_spec)
 
 
     def is_type_registered(self, type_spec: TypeSpec) -> bool:
@@ -155,7 +181,7 @@ class LazyTypeRegister:
         Raises:
             TypeError: If the query type cannot be imported.
         """
-        type_spec = LazyTypeDescriptor(type_spec)
+        type_spec = _LazyTypeDescriptor(type_spec)
         query_type = type_spec.type
         if query_type is _TypeCouldNotBeImported:
             raise TypeError(f"Query type {query_type} is not allowed to be "
@@ -188,3 +214,98 @@ class LazyTypeRegister:
         """
         self.register_type(type_spec)
         return self
+
+
+# A registry of atomic (indivisible) types.
+_ATOMIC_TYPES_REGISTRY = _LazyTypeRegistry()
+
+
+# Builtin types treated as atomic (not recursively flattened).
+# Strings/bytes are iterable but should not be decomposed into characters/bytes.
+_BUILTIN_ATOMIC_TYPES = [str, bytes, bytearray, memoryview
+    , int, float, complex, bool, type(None)]
+
+_ATOMIC_TYPES_REGISTRY.register_many_types(_BUILTIN_ATOMIC_TYPES)
+
+
+# Key standard library atomics beyond builtins
+_STANDARD_LIBRARY_ATOMIC_TYPES = [
+    pathlib.Path,
+    pathlib.PurePath,
+    datetime.datetime,
+    datetime.date,
+    datetime.time,
+    datetime.timedelta,
+    decimal.Decimal,
+    fractions.Fraction,
+    uuid.UUID,
+    re.Pattern,
+    enum.Enum,
+    range,
+]
+
+_ATOMIC_TYPES_REGISTRY.register_many_types(
+    _STANDARD_LIBRARY_ATOMIC_TYPES)
+
+
+# Atomic types from popular scientific computing packages
+_ATOMIC_TYPES_FROM_POPULAR_SCIENTIFIC_PACKAGES = [
+    ("numpy", "ndarray"),
+    ("numpy", "generic"),
+    #--#--#--#--#
+    ("pandas", "DataFrame"),
+    ("pandas", "Series"),
+    ("pandas", "Index"),
+    ("pandas", "Timestamp"),
+    #--#--#--#--#
+    ("pandas", "Timedelta"),
+    ("polars", "DataFrame"),
+    ("polars", "LazyFrame"),
+    ("polars", "Series"),
+    # --#--#--#--#
+    ("scipy.sparse", "spmatrix"),
+    # --#--#--#--#
+    ("xarray", "DataArray"),
+    ("xarray", "Dataset"),
+    # --#--#--#--#
+    ("dask.array", "Array"),
+    ("dask.dataframe", "DataFrame"),
+    # --#--#--#--#
+    ("pyarrow", "Array"),
+    ("pyarrow", "Table"),
+    ("pyarrow", "RecordBatch"),
+    # --#--#--#--#
+    ("cupy", "ndarray"),
+    # --#--#--#--#
+    ("torch", "Tensor"),
+    ("tensorflow", "Tensor"),
+    ("tensorflow", "Variable"),
+    # --#--#--#--#
+    ("jax.numpy", "Array"),
+    # --#--#--#--#
+    ("PIL.Image", "Image"),
+    # --#--#--#--#
+    ("sympy", "Basic"),
+    # --#--#--#--#
+    ("networkx", "Graph"),
+    ("networkx", "DiGraph"),
+    # --#--#--#--#
+    ("shapely.geometry", "BaseGeometry"),
+    # --#--#--#--#
+    ("astropy.units", "Quantity"),
+    # --#--#--#--#
+    ("h5py", "Dataset"),
+    ("h5py", "File")
+]
+
+_ATOMIC_TYPES_REGISTRY.register_many_types(
+    _ATOMIC_TYPES_FROM_POPULAR_SCIENTIFIC_PACKAGES)
+
+
+def is_atomic_type(type_to_check: type) -> bool:
+    """Check if a type is atomic (indivisible)."""
+    return _ATOMIC_TYPES_REGISTRY.is_type_registered(type_to_check)
+
+def is_atomic_object(obj: object) -> bool:
+    """Check if an object's type is atomic (indivisible)."""
+    return is_atomic_type(type(obj))
