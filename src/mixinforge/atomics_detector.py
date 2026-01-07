@@ -276,8 +276,8 @@ _ATOMIC_TYPES_REGISTRY.register_many_types(
     _STANDARD_LIBRARY_ATOMIC_TYPES)
 
 
-# Atomic types from popular scientific computing packages
-_ATOMIC_TYPES_FROM_POPULAR_SCIENTIFIC_PACKAGES = [
+# Atomic types from popular packages
+_ATOMIC_TYPES_FROM_POPULAR_PACKAGES = [
     ("numpy", "ndarray"),
     ("numpy", "generic"),
     #--#--#--#--#
@@ -290,44 +290,58 @@ _ATOMIC_TYPES_FROM_POPULAR_SCIENTIFIC_PACKAGES = [
     ("polars", "DataFrame"),
     ("polars", "LazyFrame"),
     ("polars", "Series"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("scipy.sparse", "spmatrix"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("xarray", "DataArray"),
     ("xarray", "Dataset"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("dask.array", "Array"),
     ("dask.dataframe", "DataFrame"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("pyarrow", "Array"),
     ("pyarrow", "Table"),
     ("pyarrow", "RecordBatch"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("cupy", "ndarray"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("torch", "Tensor"),
     ("tensorflow", "Tensor"),
     ("tensorflow", "Variable"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("jax.numpy", "Array"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("PIL.Image", "Image"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("sympy", "Basic"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("networkx", "Graph"),
     ("networkx", "DiGraph"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("shapely.geometry", "BaseGeometry"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("astropy.units", "Quantity"),
-    # --#--#--#--#
+    #--#--#--#--#
     ("h5py", "Dataset"),
-    ("h5py", "File")
+    ("h5py", "File"),
+    #--#--#--#--#
+    ("pyspark.sql", "DataFrame"),
+    ("pyspark.sql", "Column"),
+    #--#--#--#--#
+    ("zarr.core", "Array"),
+    ("zarr.hierarchy", "Group"),
+    #--#--#--#--#
+    ("netCDF4", "Dataset"),
+    ("netCDF4", "Variable"),
+    #--#--#--#--#
+    ("Bio.Seq", "Seq"),
+    ("Bio.Align", "MultipleSeqAlignment"),
+    #--#--#--#--#
+    ("rdkit.Chem.rdchem", "Mol"),
 ]
 
 _ATOMIC_TYPES_REGISTRY.register_many_types(
-    _ATOMIC_TYPES_FROM_POPULAR_SCIENTIFIC_PACKAGES)
+    _ATOMIC_TYPES_FROM_POPULAR_PACKAGES)
 
 @cache
 def is_atomic_type(type_to_check: type) -> bool:
