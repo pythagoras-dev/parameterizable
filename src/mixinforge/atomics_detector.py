@@ -13,6 +13,7 @@ import fractions
 import pathlib
 import re
 import uuid
+from functools import cache
 from typing import TypeAlias, Self, Iterable, Union
 import importlib
 
@@ -152,6 +153,7 @@ class _LazyTypeRegistry:
         Args:
             type_spec: The type definition to register.
         """
+        is_atomic_type.cache_clear()
         type_spec = _LazyTypeDescriptor(type_spec)
         second_key = (type_spec.module_name, type_spec.type_name)
         for first_key in [type_spec.module_name, type_spec.type_name]:
@@ -166,7 +168,7 @@ class _LazyTypeRegistry:
             self.register_type(type_spec)
 
 
-    def is_type_registered(self, type_spec: TypeSpec) -> bool:
+    def is_registered(self, type_spec: TypeSpec) -> bool:
         """Check if a type is registered as atomic.
 
         Resolves the type specification and checks against registered descriptors.
@@ -196,12 +198,26 @@ class _LazyTypeRegistry:
                             return True
         return False
 
+    def is_inherited_from_registered(self, type_spec: TypeSpec) -> bool:
+        """Check if a type inherits from a registered type."""
+        type_spec = _LazyTypeDescriptor(type_spec)
+        query_type = type_spec.type
+        if query_type is _TypeCouldNotBeImported:
+            raise TypeError(f"Query type {query_type} is not allowed to be "
+                            "checked if registered")
+
+        # Check each ancestor in the MRO (excluding the type itself)
+        for ancestor in query_type.__mro__:
+            if self.is_registered(ancestor):
+                return True
+        return False
+
     def __contains__(self, type_spec: TypeSpec) -> bool:
         """Check if a type is in the registry.
 
         Alias for is_type_registered.
         """
-        return self.is_type_registered(type_spec)
+        return self.is_registered(type_spec)
 
     def __iadd__(self, type_spec: TypeSpec) -> Self:
         """Register a type using the += operator.
@@ -301,10 +317,10 @@ _ATOMIC_TYPES_FROM_POPULAR_SCIENTIFIC_PACKAGES = [
 _ATOMIC_TYPES_REGISTRY.register_many_types(
     _ATOMIC_TYPES_FROM_POPULAR_SCIENTIFIC_PACKAGES)
 
-
+@cache
 def is_atomic_type(type_to_check: type) -> bool:
     """Check if a type is atomic (indivisible)."""
-    return _ATOMIC_TYPES_REGISTRY.is_type_registered(type_to_check)
+    return _ATOMIC_TYPES_REGISTRY.is_inherited_from_registered(type_to_check)
 
 def is_atomic_object(obj: object) -> bool:
     """Check if an object's type is atomic (indivisible)."""
