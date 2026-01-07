@@ -7,6 +7,7 @@ Uses iterative algorithms to avoid recursion depth limits.
 from collections import deque
 from collections.abc import Iterable, Iterator, Mapping
 from typing import Any, TypeVar
+from itertools import chain
 
 T = TypeVar('T')
 
@@ -24,7 +25,6 @@ def _create_mapping_iterator(mapping: Mapping, traverse_dict_keys: bool) -> Iter
         Iterator over values only, or over keys then values.
     """
     if traverse_dict_keys:
-        from itertools import chain
         return chain(mapping.keys(), mapping.values())
     return iter(mapping.values())
 
