@@ -27,7 +27,7 @@ def _is_flattenable(obj: Any) -> bool:
 
 
 def get_atomics_from_nested_collections(obj: Iterable[Any]) -> Iterator[Any]:
-    """Yield unique atomic elements from a nested collection.
+    """Yield atomic elements from a nested collection, perform partial dedup.
 
     Traverses nested iterables depth-first using a stack. For mappings, only
     values are traversed. Ensures object identity uniqueness: shared
