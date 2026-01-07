@@ -12,6 +12,7 @@ import enum
 import fractions
 import pathlib
 import re
+import sys
 import uuid
 from functools import cache
 from typing import TypeAlias, Self, Iterable, Union
@@ -188,10 +189,21 @@ class _LazyTypeRegistry:
         if query_type is _TypeCouldNotBeImported:
             raise TypeError(f"Query type {query_type} is not allowed to be "
                             "checked if registered")
+
+        query_root = type_spec.module_name.split('.')[0]
+
         for first_key in [type_spec.module_name, type_spec.type_name]:
             indexed_with_first_key = self._indexed_types.get(first_key)
             if indexed_with_first_key:
                 for descriptor in indexed_with_first_key.values():
+                    # Performance optimization:
+                    # If the target module isn't loaded yet, avoid importing it
+                    # just because the type name matches (e.g. "Tensor" or "DataFrame"),
+                    # unless the module roots appear compatible.
+                    if descriptor.module_name not in sys.modules:
+                        desc_root = descriptor.module_name.split('.')[0]
+                        if query_root != desc_root:
+                            continue
                     registered_type = descriptor.type
                     if registered_type is not _TypeCouldNotBeImported:
                         if registered_type is query_type:
