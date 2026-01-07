@@ -15,7 +15,7 @@ import re
 import sys
 import uuid
 from functools import cache
-from typing import TypeAlias, Self, Iterable, Union
+from typing import TypeAlias, Iterable, Union
 import importlib
 
 TypeSpec: TypeAlias = Union[type, "_LazyTypeDescriptor", tuple[str, str]]
@@ -36,7 +36,7 @@ class _LazyTypeDescriptor:
         type_name: Name of the type within its module.
         type: The resolved type object.
     """
-    _eager_loading_mode:bool = False
+    _eager_loading_mode: bool = False
     _module_name: str
     _type_name: str
     _actual_type: type | None
@@ -61,7 +61,7 @@ class _LazyTypeDescriptor:
         elif isinstance(type_spec, type):
             self._actual_type = type_spec
             self._module_name = type_spec.__module__
-            self._type_name   = type_spec.__qualname__
+            self._type_name = type_spec.__qualname__
         elif isinstance(type_spec, tuple):
             if len(type_spec) != 2:
                 raise ValueError(f"Tuple must have exactly 2 elements (module_name, type_name), got {len(type_spec)}")
@@ -104,10 +104,8 @@ class _LazyTypeDescriptor:
     def type(self) -> type:
         """The resolved type object.
 
-        Import occurs on first access.
-
-        Returns:
-            The type object, or a sentinel type if the import fails.
+        Import occurs on first access. Returns a sentinel type if the import
+        fails.
         """
         if self._actual_type is not None:
             return self._actual_type
@@ -121,9 +119,9 @@ class _LazyTypeDescriptor:
             self._actual_type = current_object
         except Exception:
             self._actual_type = _TypeCouldNotBeImported
-            # Sentinel value indicating a type could not be imported
-            # Later comparison checks against this value will always fail
-            # It intentionally stored the first time the type is accessed
+            # Sentinel value indicating a type could not be imported.
+            # Later comparison checks against this value will always fail.
+            # It is intentionally stored the first time the type is accessed
             # and is never retried. We do not support scenarios where a
             # new package is installed after the first access attempt.
 
@@ -145,9 +143,9 @@ class _LazyTypeRegistry:
 
     def __init__(self):
         """Initialize an empty type registry."""
-        self._indexed_types =  dict()
+        self._indexed_types = dict()
 
-    def register_type(self, type_spec: TypeSpec):
+    def register_type(self, type_spec: TypeSpec) -> None:
         """Register a type as atomic.
 
         Args:
@@ -161,12 +159,10 @@ class _LazyTypeRegistry:
                 self._indexed_types[first_key] = dict()
             self._indexed_types[first_key][second_key] = type_spec
 
-
-    def register_many_types(self, types: Iterable[TypeSpec]):
+    def register_many_types(self, types: Iterable[TypeSpec]) -> None:
         """Register multiple types as atomic."""
         for type_spec in types:
             self.register_type(type_spec)
-
 
     def is_registered(self, type_spec: TypeSpec) -> bool:
         """Check if a type is registered as atomic.
@@ -229,8 +225,10 @@ _ATOMIC_TYPES_REGISTRY = _LazyTypeRegistry()
 
 # Builtin types treated as atomic (not recursively flattened).
 # Strings/bytes are iterable but should not be decomposed into characters/bytes.
-_BUILTIN_ATOMIC_TYPES = [str, bytes, bytearray, memoryview
-    , int, float, complex, bool, type(None)]
+_BUILTIN_ATOMIC_TYPES = [
+    str, bytes, bytearray, memoryview,
+    int, float, complex, bool, type(None)
+]
 
 _ATOMIC_TYPES_REGISTRY.register_many_types(_BUILTIN_ATOMIC_TYPES)
 
@@ -261,65 +259,65 @@ _ATOMIC_TYPES_FROM_POPULAR_PACKAGES = [
     ("numpy", "ndarray"),
     ("numpy", "generic"),
     ("numpy", "dtype"),
-    #--#--#--#--#
+
     ("pandas", "DataFrame"),
     ("pandas", "Series"),
     ("pandas", "Index"),
     ("pandas", "Timestamp"),
-    #--#--#--#--#
     ("pandas", "Timedelta"),
+
     ("polars", "DataFrame"),
     ("polars", "LazyFrame"),
     ("polars", "Series"),
-    #--#--#--#--#
+
     ("scipy.sparse", "spmatrix"),
-    #--#--#--#--#
+
     ("xarray", "DataArray"),
     ("xarray", "Dataset"),
-    #--#--#--#--#
+
     ("dask.array", "Array"),
     ("dask.dataframe", "DataFrame"),
-    #--#--#--#--#
+
     ("pyarrow", "Array"),
     ("pyarrow", "Table"),
     ("pyarrow", "RecordBatch"),
-    #--#--#--#--#
+
     ("cupy", "ndarray"),
-    #--#--#--#--#
+
     ("torch", "Tensor"),
     ("tensorflow", "Tensor"),
     ("tensorflow", "Variable"),
-    #--#--#--#--#
+
     ("jax.numpy", "Array"),
-    #--#--#--#--#
+
     ("PIL.Image", "Image"),
-    #--#--#--#--#
+
     ("sympy", "Basic"),
-    #--#--#--#--#
+
     ("networkx", "Graph"),
     ("networkx", "DiGraph"),
-    #--#--#--#--#
+
     ("shapely.geometry", "BaseGeometry"),
-    #--#--#--#--#
+
     ("astropy.units", "Quantity"),
-    #--#--#--#--#
+
     ("h5py", "Dataset"),
     ("h5py", "File"),
-    #--#--#--#--#
+
     ("pyspark.sql", "DataFrame"),
     ("pyspark.sql", "Column"),
-    #--#--#--#--#
+
     ("zarr.core", "Array"),
     ("zarr.hierarchy", "Group"),
-    #--#--#--#--#
+
     ("netCDF4", "Dataset"),
     ("netCDF4", "Variable"),
-    #--#--#--#--#
+
     ("Bio.Seq", "Seq"),
     ("Bio.Align", "MultipleSeqAlignment"),
-    #--#--#--#--#
+
     ("rdkit.Chem.rdchem", "Mol"),
-    #--#--#--#--#
+
     ("ipaddress", "IPv4Address"),
     ("ipaddress", "IPv6Address"),
     ("ipaddress", "IPv4Network"),
