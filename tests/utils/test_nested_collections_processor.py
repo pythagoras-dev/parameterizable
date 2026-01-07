@@ -12,7 +12,7 @@ import pytest
 
 from mixinforge.nested_collections_processor import (
     find_atomics_in_nested_collections,
-    _is_flattenable,
+    _is_traversable_collection,
 )
 
 
@@ -23,22 +23,22 @@ from mixinforge.nested_collections_processor import (
 
 def test_is_flattenable_atomic_types():
     """Atomic types should not be flattenable."""
-    assert not _is_flattenable("string")
-    assert not _is_flattenable(b"bytes")
-    assert not _is_flattenable(42)
-    assert not _is_flattenable(3.14)
-    assert not _is_flattenable(True)
-    assert not _is_flattenable(None)
-    assert not _is_flattenable(pathlib.Path("/tmp"))
-    assert not _is_flattenable(datetime.datetime.now())
+    assert not _is_traversable_collection("string")
+    assert not _is_traversable_collection(b"bytes")
+    assert not _is_traversable_collection(42)
+    assert not _is_traversable_collection(3.14)
+    assert not _is_traversable_collection(True)
+    assert not _is_traversable_collection(None)
+    assert not _is_traversable_collection(pathlib.Path("/tmp"))
+    assert not _is_traversable_collection(datetime.datetime.now())
 
 
 def test_is_flattenable_collections():
     """Collections should be flattenable."""
-    assert _is_flattenable([1, 2, 3])
-    assert _is_flattenable((1, 2, 3))
-    assert _is_flattenable({"a": 1, "b": 2})
-    assert _is_flattenable({1, 2, 3})
+    assert _is_traversable_collection([1, 2, 3])
+    assert _is_traversable_collection((1, 2, 3))
+    assert _is_traversable_collection({"a": 1, "b": 2})
+    assert _is_traversable_collection({1, 2, 3})
 
 
 def test_is_flattenable_non_iterable():
@@ -46,7 +46,7 @@ def test_is_flattenable_non_iterable():
     class NonIterable:
         pass
 
-    assert not _is_flattenable(NonIterable())
+    assert not _is_traversable_collection(NonIterable())
 
 
 # ============================================================================

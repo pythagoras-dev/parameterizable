@@ -75,7 +75,7 @@ def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[An
                 continue
 
 
-def _is_flattenable(obj: Any) -> bool:
+def _is_traversable_collection(obj: Any) -> bool:
     """Check if object should be traversed or yielded as atomic leaf.
 
     Args:
@@ -133,7 +133,7 @@ def find_atomics_in_nested_collections(
             continue
 
         obj_id = id(item)
-        if _is_flattenable(item):
+        if _is_traversable_collection(item):
             if obj_id in path:
                 raise ValueError(f"Cyclic reference detected at {obj_id}")
             if obj_id in seen_ids:
