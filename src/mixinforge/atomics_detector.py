@@ -151,7 +151,9 @@ class _LazyTypeRegistry:
         Args:
             type_spec: The type definition to register.
         """
-        is_atomic_type.cache_clear()
+        # Clear cache if is_atomic_type is already defined
+        if 'is_atomic_type' in globals():
+            is_atomic_type.cache_clear()
         type_spec = _LazyTypeDescriptor(type_spec)
         second_key = (type_spec.module_name, type_spec.type_name)
         for first_key in [type_spec.module_name, type_spec.type_name]:
