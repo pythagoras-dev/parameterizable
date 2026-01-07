@@ -342,11 +342,11 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 <!-- STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 2947 | 5242 | 8189 |
-| Source Lines Of Code (SLOC) | 1297 | 3199 | 4496 |
+| Lines Of Code (LOC) | 3060 | 5242 | 8302 |
+| Source Lines Of Code (SLOC) | 1336 | 3199 | 4535 |
 | Classes | 13 | 120 | 133 |
-| Functions / Methods | 91 | 479 | 570 |
-| Files | 15 | 35 | 50 |
+| Functions / Methods | 93 | 479 | 572 |
+| Files | 16 | 35 | 51 |
 <!-- STATS_END -->
 
 ## Development
