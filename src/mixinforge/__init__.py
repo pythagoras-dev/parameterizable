@@ -30,7 +30,7 @@ from .cacheable_properties_mixin import *
 from .guarded_init_metaclass import *
 from .single_thread_enforcer_mixin import *
 from .singleton_mixin import *
-from .nested_collection_flattener import *
+from .nested_collections_processor import *
 
 __all__ = [
     'CacheablePropertiesMixin',
