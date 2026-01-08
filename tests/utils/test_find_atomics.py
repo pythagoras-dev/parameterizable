@@ -1,7 +1,7 @@
-"""Tests for nested_collections_processor module.
+"""Tests for find_atomics_in_nested_collections function.
 
-Tests the stack-based flattening of nested collections with cycle detection
-and partial deduplication based on object identity.
+Tests the stack-based traversal of nested collections to find atomic leaf elements,
+with cycle detection and partial deduplication based on object identity.
 """
 import datetime
 import pathlib
@@ -81,6 +81,17 @@ def test_flatten_dictionary_values_only():
     result = list(find_atomics_in_nested_collections(nested))
     # Keys "a", "b", "c", "d" are not yielded
     assert result == [1, 2, 3, 4]
+
+
+def test_flatten_dictionary_includes_keys_when_requested():
+    """Dictionary traversal can include keys when requested."""
+    nested = {"a": 1, "b": {"c": 2, "d": [3]}}
+
+    result = list(
+        find_atomics_in_nested_collections(nested, traverse_dict_keys=True)
+    )
+
+    assert result == ["a", "b", 1, "c", "d", 2, 3]
 
 
 def test_flatten_nested_dictionaries():
