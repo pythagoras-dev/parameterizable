@@ -19,7 +19,7 @@ def _create_mapping_iterator(mapping: Mapping, traverse_dict_keys: bool) -> Iter
 
     Args:
         mapping: Mapping to iterate over.
-        traverse_dict_keys: Whether to include both keys and values.
+        traverse_dict_keys: If True, yields keys then values; otherwise yields values only.
 
     Returns:
         Iterator over values only, or over keys then values.
@@ -140,16 +140,12 @@ def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[An
     if is_atomic_object(obj):
         return
 
-    # Standard mappings: iterate with key control
     if _is_standard_mapping(obj):
         yield from _create_mapping_iterator(obj, traverse_dict_keys)
-    # Standard iterables: iterate only
     elif _is_standard_iterable(obj):
         yield from obj
-    # Custom iterables: attributes + iteration
     elif isinstance(obj, Iterable):
         yield from chain(_yield_attributes(obj), obj)
-    # Non-iterable objects: attributes only
     else:
         yield from _yield_attributes(obj)
 
@@ -183,14 +179,14 @@ def find_atomics_in_nested_collections(
     identity.
 
     Args:
-        obj: Nested collection to traverse.
-        traverse_dict_keys: Whether to traverse mapping keys along with values.
+        obj: The root collection to traverse.
+        traverse_dict_keys: If True, includes mapping keys in the traversal.
 
     Yields:
         Atomic elements in depth-first order, deduplicated by identity.
 
     Raises:
-        TypeError: If obj is not iterable.
+        TypeError: If obj is not an iterable.
         ValueError: If a cycle is detected.
     """
     if not isinstance(obj, Iterable):
@@ -241,9 +237,9 @@ def find_nonatomics_inside_composite_object(
     continuing to search inside matched objects for nested instances.
 
     Args:
-        obj: Object to search within.
-        target_type: Composite type to find. Atomic types are not allowed.
-        traverse_dict_keys: Whether to traverse mapping keys along with values.
+        obj: The object to search within.
+        target_type: The composite type to search for.
+        traverse_dict_keys: If True, includes mapping keys in the traversal.
 
     Yields:
         Instances of target_type in depth-first order, deduplicated by identity.
