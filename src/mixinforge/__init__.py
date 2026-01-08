@@ -22,15 +22,15 @@ Public API:
 
 from ._version_info import __version__
 
-from .dict_sorter import *
-from .not_picklable_mixin import *
-from .json_processor import *
-from .parameterizable_mixin import *
-from .cacheable_properties_mixin import *
-from .guarded_init_metaclass import *
-from .single_thread_enforcer_mixin import *
-from .singleton_mixin import *
-from .nested_collections_processor import *
+from .utility_functions.dict_sorter import *
+from .mixins_and_metaclasses.not_picklable_mixin import *
+from .utility_functions.json_processor import *
+from .mixins_and_metaclasses.parameterizable_mixin import *
+from .mixins_and_metaclasses.cacheable_properties_mixin import *
+from .mixins_and_metaclasses.guarded_init_metaclass import *
+from .mixins_and_metaclasses.single_thread_enforcer_mixin import *
+from .mixins_and_metaclasses.singleton_mixin import *
+from .utility_functions.nested_collections_processor import *
 
 __all__ = [
     'CacheablePropertiesMixin',

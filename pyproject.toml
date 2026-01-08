@@ -58,8 +58,8 @@ dev = [
 
 
 [project.scripts]
-mf-get-stats = "mixinforge._cli_entry_points:mf_get_stats"
-mf-clean-cache = "mixinforge._cli_entry_points:mf_clean_cache"
+mf-get-stats = "mixinforge.command_line_interface._cli_entry_points:mf_get_stats"
+mf-clean-cache = "mixinforge.command_line_interface._cli_entry_points:mf_clean_cache"
 
 [project.urls]
 Home = "https://github.com/pythagoras-dev/mixinforge"
