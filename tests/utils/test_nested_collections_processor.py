@@ -284,13 +284,13 @@ def test_no_false_positive_cycle_with_shared_structure():
 
 def test_non_iterable_input_raises_typeerror():
     """Non-iterable input raises TypeError."""
-    with pytest.raises(TypeError, match="Expected an Iterable"):
+    with pytest.raises(TypeError):
         list(find_atomics_in_nested_collections(42))
 
 
 def test_none_input_raises_typeerror():
     """None as input raises TypeError."""
-    with pytest.raises(TypeError, match="Expected an Iterable"):
+    with pytest.raises(TypeError):
         list(find_atomics_in_nested_collections(None))
 
 

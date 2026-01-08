@@ -137,8 +137,9 @@ def _yield_attributes(obj: Any) -> Iterator[Any]:
                     property,
                     staticmethod,
                     classmethod,
-                    # MemberDescriptorType is intentionally NOT skipped because
-                    # it represents the actual slots we want to read.
+                    # Note: MemberDescriptorType (slots) is intentionally OMITTED
+                    # from this list because it represents
+                    # the actual slots we want to read.
                     GetSetDescriptorType,
                 ),
             ):
@@ -175,7 +176,7 @@ def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[An
         Child objects to traverse.
     """
     if is_atomic_object(obj):
-        return
+        return iter(())
 
     if _is_standard_mapping(obj):
         yield from _create_mapping_iterator(obj, traverse_dict_keys)
@@ -309,11 +310,17 @@ def find_nonatomics_inside_composite_object(
             f"got atomic type: {target_type.__name__}"
         )
 
-    stack: deque[tuple[Any, set[int]]] = deque([(obj, set())])
+    stack: deque[tuple[Iterator[Any], set[int]]] = deque([(iter([obj]), set())])
     seen_ids: set[int] = set()
 
     while stack:
-        current, path = stack.pop()
+        it, path = stack[-1]
+        try:
+            current = next(it)
+        except StopIteration:
+            stack.pop()
+            continue
+
         obj_id = id(current)
 
         if obj_id in path:
@@ -329,6 +336,8 @@ def find_nonatomics_inside_composite_object(
         if isinstance(current, target_type):
             yield current
 
-        new_path = path | {obj_id}
-        for child in _get_children_from_object(current, traverse_dict_keys):
-            stack.append((child, new_path))
+        if is_atomic_object(current):
+            continue
+
+        children_iter = _get_children_from_object(current, traverse_dict_keys)
+        stack.append((children_iter, path | {obj_id}))
