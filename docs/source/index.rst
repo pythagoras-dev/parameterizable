@@ -328,7 +328,7 @@ source lines of code (SLOC), class counts, function counts, and file counts,
 broken down by main code and unit tests. Also displays a formatted summary table
 in the console.
 
-mf-clean-cache
+mf-clear-cache
 ~~~~~~~~~~~~~~
 
 Remove Python cache files from a directory and its subdirectories:
@@ -336,13 +336,13 @@ Remove Python cache files from a directory and its subdirectories:
 .. code-block:: bash
 
    # Clean current directory
-   mf-clean-cache
+   mf-clear-cache
 
    # Clean specific directory
-   mf-clean-cache /path/to/project
+   mf-clear-cache /path/to/project
 
    # Specify custom report filename
-   mf-clean-cache --output cleanup_report.md
+   mf-clear-cache --output cleanup_report.md
 
 Removes ``__pycache__`` directories, ``.pyc`` files, ``.pyo`` files, and cache
 directories from pytest, mypy, ruff, hypothesis, tox, and coverage tools.
@@ -474,25 +474,25 @@ Project Statistics
      - Unit Tests
      - Total
    * - Lines Of Code (LOC)
-     - 2923
-     - 5242
-     - 8165
+     - 3189
+     - 5959
+     - 9148
    * - Source Lines Of Code (SLOC)
-     - 1304
-     - 3199
-     - 4503
+     - 1416
+     - 3596
+     - 5012
    * - Classes
      - 13
-     - 120
      - 133
+     - 146
    * - Functions / Methods
-     - 91
-     - 479
-     - 570
+     - 98
+     - 557
+     - 655
    * - Files
      - 15
-     - 35
-     - 50
+     - 38
+     - 53
 
 .. STATS_END
 
@@ -505,8 +505,18 @@ Full API Documentation
 
    api/modules
 
+Development
+-----------
+
+* **Run tests**:
+
+  * With pytest: ``pytest``
+  * Or via Python: ``python -m pytest``
+
+* **Supported Python versions**: 3.11+
+
 Contributing
-------------
+~~~~~~~~~~~~
 
 Contributions are welcome! Please see the `contributing guide <https://github.com/pythagoras-dev/mixinforge/blob/master/CONTRIBUTING.md>`_
 for details on:
@@ -516,6 +526,13 @@ for details on:
 * Code style guidelines
 * Commit message conventions
 * Submitting pull requests
+
+Additional guidelines:
+
+* `Docstrings and comments <https://github.com/pythagoras-dev/mixinforge/blob/master/docstrings_comments.md>`_
+* `Type hints <https://github.com/pythagoras-dev/mixinforge/blob/master/type_hints.md>`_
+* `Unit tests <https://github.com/pythagoras-dev/mixinforge/blob/master/unit_tests.md>`_
+* `Read the Docs configuration <https://github.com/pythagoras-dev/mixinforge/blob/master/readthedocs.md>`_
 
 License
 -------

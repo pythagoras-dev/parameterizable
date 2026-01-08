@@ -223,6 +223,34 @@ processor.process(5)  # Works on the owner thread
 # Calling from a different thread raises RuntimeError
 ```
 
+### SingletonMixin
+
+A mixin for implementing the singleton pattern. Ensures each subclass maintains exactly one instance that is returned on every instantiation attempt. Useful for classes that should have only a single instance throughout the application lifetime, such as configuration managers or resource coordinators.
+
+```python
+from mixinforge import SingletonMixin
+
+
+class ConfigManager(SingletonMixin):
+    def __init__(self):
+        if not hasattr(self, 'initialized'):
+            self.config = {}
+            self.initialized = True
+
+    def get_params(self) -> dict:
+        return self.config
+
+
+# Both variables reference the same instance
+config1 = ConfigManager()
+config2 = ConfigManager()
+assert config1 is config2  # True
+
+# Modifications affect all references
+config1.config['key'] = 'value'
+assert config2.config['key'] == 'value'  # True
+```
+
 ## CLI Commands
 
 mixinforge provides command-line tools for project analysis and maintenance.
@@ -244,19 +272,19 @@ mf-get-stats --output my_metrics.md
 
 Generates a markdown report with code statistics including lines of code (LOC), source lines of code (SLOC), class counts, function counts, and file counts, broken down by main code and unit tests. Also displays a formatted summary table in the console.
 
-### mf-clean-cache
+### mf-clear-cache
 
 Remove Python cache files from a directory and its subdirectories:
 
 ```bash
 # Clean current directory
-mf-clean-cache
+mf-clear-cache
 
 # Clean specific directory
-mf-clean-cache /path/to/project
+mf-clear-cache /path/to/project
 
 # Specify custom report filename
-mf-clean-cache --output cleanup_report.md
+mf-clear-cache --output cleanup_report.md
 ```
 
 Removes `__pycache__` directories, `.pyc` files, `.pyo` files, and cache directories from pytest, mypy, ruff, hypothesis, tox, and coverage tools. Generates a detailed markdown report of removed items.
@@ -342,11 +370,11 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 <!-- STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 2923 | 5242 | 8165 |
-| Source Lines Of Code (SLOC) | 1304 | 3199 | 4503 |
-| Classes | 13 | 120 | 133 |
-| Functions / Methods | 91 | 479 | 570 |
-| Files | 15 | 35 | 50 |
+| Lines Of Code (LOC) | 3189 | 5959 | 9148 |
+| Source Lines Of Code (SLOC) | 1416 | 3596 | 5012 |
+| Classes | 13 | 133 | 146 |
+| Functions / Methods | 98 | 557 | 655 |
+| Files | 15 | 38 | 53 |
 <!-- STATS_END -->
 
 ## Development
@@ -364,6 +392,7 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 
 This project is licensed under the MIT License — see [LICENSE](https://github.com/pythagoras-dev/mixinforge/blob/master/LICENSE) for details.
 
-## Key Contacts
+## Contact
 
-* [Vlad (Volodymyr) Pavlov](https://www.linkedin.com/in/vlpavlov/)
+* **Maintainer**: [Vlad (Volodymyr) Pavlov](https://www.linkedin.com/in/vlpavlov/)
+* **Email**: vlpavlov@ieee.org

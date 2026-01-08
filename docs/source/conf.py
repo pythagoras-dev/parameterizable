@@ -73,5 +73,16 @@ html_theme_options = {
     'navigation_depth': 4,
     'show_toc_level': 2,
     'navbar_align': 'left',
+    'github_url': 'https://github.com/pythagoras-dev/mixinforge',
+    'logo': {
+        'text': 'mixinforge',
+    },
+    'footer_start': ['copyright'],
+    'footer_end': ['sphinx-version', 'theme-version'],
 }
 html_static_path = ['_static']
+html_title = f'{project} v{version}'
+html_short_title = project
+html_favicon = None  # Add favicon later if needed
+html_show_sourcelink = True
+html_copy_source = True

@@ -360,8 +360,8 @@ def mf_get_stats():
         _print_error_and_exit(e)
 
 
-def mf_clean_cache():
-    """CLI entry point for cleaning Python cache files.
+def mf_clear_cache():
+    """CLI entry point for clearing Python cache files.
 
     Removes all Python cache files and directories from a directory and its subdirectories,
     including __pycache__, .pyc files, and various tool caches (pytest, mypy, ruff, etc.).

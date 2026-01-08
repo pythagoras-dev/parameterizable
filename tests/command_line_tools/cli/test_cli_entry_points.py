@@ -1,7 +1,7 @@
 """Tests for CLI entry point functions.
 
 This module tests the command-line interface entry points for the project,
-including mf-stats and mf-clean-cache commands along with their helper functions.
+including mf-stats and mf-clear-cache commands along with their helper functions.
 """
 import sys
 import pytest
@@ -14,7 +14,7 @@ from mixinforge.command_line_tools._cli_entry_points import (
     _validate_output_filename_and_warn_if_exists,
     _print_error_and_exit,
     mf_get_stats,
-    mf_clean_cache
+    mf_clear_cache
 )
 
 
@@ -269,11 +269,11 @@ def test_mf_stats_file_write_error(mock_analyze, tmp_path):
                 assert "Error saving file" in mock_stderr.getvalue()
 
 
-# Tests for mf_clean_cache CLI command
+# Tests for mf_clear_cache CLI command
 
 @patch('mixinforge.command_line_tools._cli_entry_points.remove_python_cache_files')
-def test_mf_clean_cache_success_with_items(mock_remove, tmp_path):
-    """Test successful execution of mf_clean_cache with items removed."""
+def test_mf_clear_cache_success_with_items(mock_remove, tmp_path):
+    """Test successful execution of mf_clear_cache with items removed."""
     project_dir = tmp_path / "clean_project"
     project_dir.mkdir()
     (project_dir / "pyproject.toml").write_text("[project]\nname = 'test'")
@@ -281,10 +281,10 @@ def test_mf_clean_cache_success_with_items(mock_remove, tmp_path):
     # Mock remove function to return some removed items
     mock_remove.return_value = (3, ["__pycache__", "file.pyc", ".pytest_cache"])
 
-    with patch.object(sys, 'argv', ['mf-clean-cache', str(project_dir)]):
+    with patch.object(sys, 'argv', ['mf-clear-cache', str(project_dir)]):
         with patch('builtins.open', mock_open()) as mock_file:
             with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-                mf_clean_cache()
+                mf_clear_cache()
 
             # Verify remove function was called
             mock_remove.assert_called_once_with(project_dir)
@@ -303,8 +303,8 @@ def test_mf_clean_cache_success_with_items(mock_remove, tmp_path):
 
 
 @patch('mixinforge.command_line_tools._cli_entry_points.remove_python_cache_files')
-def test_mf_clean_cache_success_no_items(mock_remove, tmp_path):
-    """Test mf_clean_cache when no cache items found."""
+def test_mf_clear_cache_success_no_items(mock_remove, tmp_path):
+    """Test mf_clear_cache when no cache items found."""
     project_dir = tmp_path / "clean_empty_project"
     project_dir.mkdir()
     (project_dir / "pyproject.toml").write_text("[project]\nname = 'test'")
@@ -312,10 +312,10 @@ def test_mf_clean_cache_success_no_items(mock_remove, tmp_path):
     # Mock remove function to return no items
     mock_remove.return_value = (0, [])
 
-    with patch.object(sys, 'argv', ['mf-clean-cache', str(project_dir)]):
+    with patch.object(sys, 'argv', ['mf-clear-cache', str(project_dir)]):
         with patch('builtins.open', mock_open()) as mock_file:
             with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-                mf_clean_cache()
+                mf_clear_cache()
 
             # Verify console output
             stdout_output = mock_stdout.getvalue()
@@ -328,8 +328,8 @@ def test_mf_clean_cache_success_no_items(mock_remove, tmp_path):
 
 
 @patch('mixinforge.command_line_tools._cli_entry_points.remove_python_cache_files')
-def test_mf_clean_cache_value_error(mock_remove, tmp_path):
-    """Test mf_clean_cache with ValueError from remove function."""
+def test_mf_clear_cache_value_error(mock_remove, tmp_path):
+    """Test mf_clear_cache with ValueError from remove function."""
     project_dir = tmp_path / "error_clean_project"
     project_dir.mkdir()
     (project_dir / "pyproject.toml").write_text("[project]\nname = 'test'")
@@ -337,18 +337,18 @@ def test_mf_clean_cache_value_error(mock_remove, tmp_path):
     # Mock remove function to raise ValueError
     mock_remove.side_effect = ValueError("Cannot clean system directories")
 
-    with patch.object(sys, 'argv', ['mf-clean-cache', str(project_dir)]):
+    with patch.object(sys, 'argv', ['mf-clear-cache', str(project_dir)]):
         with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
             with pytest.raises(SystemExit) as exc_info:
-                mf_clean_cache()
+                mf_clear_cache()
 
             assert exc_info.value.code == 1
             assert "Error: Cannot clean system directories" in mock_stderr.getvalue()
 
 
 @patch('mixinforge.command_line_tools._cli_entry_points.remove_python_cache_files')
-def test_mf_clean_cache_file_write_error(mock_remove, tmp_path):
-    """Test mf_clean_cache with IOError when writing report."""
+def test_mf_clear_cache_file_write_error(mock_remove, tmp_path):
+    """Test mf_clear_cache with IOError when writing report."""
     project_dir = tmp_path / "write_error_clean_project"
     project_dir.mkdir()
     (project_dir / "pyproject.toml").write_text("[project]\nname = 'test'")
@@ -356,29 +356,29 @@ def test_mf_clean_cache_file_write_error(mock_remove, tmp_path):
     # Mock successful removal
     mock_remove.return_value = (2, ["item1", "item2"])
 
-    with patch.object(sys, 'argv', ['mf-clean-cache', str(project_dir)]):
+    with patch.object(sys, 'argv', ['mf-clear-cache', str(project_dir)]):
         with patch('builtins.open', side_effect=IOError("Disk full")):
             with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
                 with pytest.raises(SystemExit) as exc_info:
-                    mf_clean_cache()
+                    mf_clear_cache()
 
                 assert exc_info.value.code == 1
                 assert "Error saving file" in mock_stderr.getvalue()
 
 
 @patch('mixinforge.command_line_tools._cli_entry_points.remove_python_cache_files')
-def test_mf_clean_cache_custom_output_filename(mock_remove, tmp_path):
-    """Test mf_clean_cache with custom output filename."""
+def test_mf_clear_cache_custom_output_filename(mock_remove, tmp_path):
+    """Test mf_clear_cache with custom output filename."""
     project_dir = tmp_path / "custom_clean_project"
     project_dir.mkdir()
     (project_dir / "pyproject.toml").write_text("[project]\nname = 'test'")
 
     mock_remove.return_value = (1, ["cache_dir"])
 
-    with patch.object(sys, 'argv', ['mf-clean-cache', str(project_dir), '-o', 'my_report.md']):
+    with patch.object(sys, 'argv', ['mf-clear-cache', str(project_dir), '-o', 'my_report.md']):
         with patch('builtins.open', mock_open()) as mock_file:
             with patch('sys.stdout', new_callable=StringIO):
-                mf_clean_cache()
+                mf_clear_cache()
 
             # Verify correct filename was used
             call_args = mock_file.call_args[0][0]
