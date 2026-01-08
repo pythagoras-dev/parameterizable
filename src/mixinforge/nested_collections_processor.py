@@ -8,6 +8,10 @@ from collections import deque
 from collections.abc import Iterable, Iterator, Mapping
 from typing import Any, TypeVar
 from itertools import chain
+from collections import defaultdict, OrderedDict, Counter, ChainMap
+from weakref import WeakKeyDictionary, WeakValueDictionary
+from types import GetSetDescriptorType, MappingProxyType
+
 
 from .atomics_detector import is_atomic_object, is_atomic_type
 
@@ -39,13 +43,18 @@ def _get_all_slots(cls: type) -> list[str]:
         Slot names from all base classes, excluding __dict__ and __weakref__.
     """
     slots = []
+    seen = set()
     for base_cls in cls.__mro__:
         if hasattr(base_cls, '__slots__'):
             cls_slots = base_cls.__slots__
             if isinstance(cls_slots, str):
                 cls_slots = [cls_slots]
-            slots.extend(cls_slots)
-    return [s for s in slots if s not in ('__dict__', '__weakref__')]
+
+            for s in cls_slots:
+                if s not in seen and s not in ('__dict__', '__weakref__'):
+                    slots.append(s)
+                    seen.add(s)
+    return slots
 
 
 def _is_standard_mapping(obj: Any) -> bool:
@@ -62,11 +71,7 @@ def _is_standard_mapping(obj: Any) -> bool:
     Returns:
         True if object is a standard library mapping type.
     """
-    from collections import defaultdict, OrderedDict, Counter, ChainMap
-    from weakref import WeakKeyDictionary, WeakValueDictionary
-    from types import MappingProxyType
-
-    return isinstance(obj, (
+    return type(obj) in {
         dict,
         defaultdict,
         OrderedDict,
@@ -74,8 +79,7 @@ def _is_standard_mapping(obj: Any) -> bool:
         ChainMap,
         WeakKeyDictionary,
         WeakValueDictionary,
-        MappingProxyType,
-    ))
+        MappingProxyType}
 
 
 def _is_standard_iterable(obj: Any) -> bool:
@@ -91,32 +95,65 @@ def _is_standard_iterable(obj: Any) -> bool:
     Returns:
         True if object is a standard library iterable type.
     """
-    return isinstance(obj, (list, tuple, set, frozenset, deque))
+    return type(obj) in {list, tuple, set, frozenset, deque}
 
+
+_MISSING = object()  # private sentinel
 
 def _yield_attributes(obj: Any) -> Iterator[Any]:
-    """Yield attribute values from object's __dict__ or __slots__.
+    """Safely yield attribute values from an object's __dict__ and/or __slots__.
 
-    Extracts all accessible attributes from an object, checking __dict__
-    first, then falling back to __slots__ if present. This is used to
-    traverse custom objects that may contain child objects in their
-    attributes.
+    The function is defensive against expensive or side-effect-prone attribute
+    access:
 
-    Args:
-        obj: Object to extract attributes from.
+    * Attributes obtained directly from ``__dict__`` are yielded as-is.
+    * For ``__slots__`` we:
+        1. Collect *all* slot names from the MRO (`_get_all_slots`).
+        2. Check the descriptor on the class *before* access to skip properties
+           and other active descriptors.
+        3. Fetch the attribute via ``getattr`` safely.
 
-    Yields:
-        Attribute values from __dict__ or __slots__.
+    Note that *data* descriptors defined at class level (e.g. ``@property``)
+    are intentionally skipped because reading them could trigger arbitrary
+    code execution.
     """
-    if hasattr(obj, '__dict__'):
+    # 1. Attributes stored in __dict__ are always safe to yield
+    if hasattr(obj, "__dict__"):
         yield from obj.__dict__.values()
-    elif hasattr(obj.__class__, '__slots__'):
+
+    # 2. Handle __slots__ (may also appear in parent classes)
+    if hasattr(obj.__class__, "__slots__"):
         for slot_name in _get_all_slots(obj.__class__):
-            try:
-                yield getattr(obj, slot_name)
-            except AttributeError:
+            # Fast path: ignore special/dunder names
+            if slot_name.startswith("__"):
                 continue
 
+            # Skip class-level descriptors that aren't per-instance data
+            # Check descriptor BEFORE triggering potential property side-effects
+            class_attr = getattr(obj.__class__, slot_name, _MISSING)
+            if isinstance(
+                class_attr,
+                (
+                    property,
+                    staticmethod,
+                    classmethod,
+                    # MemberDescriptorType is intentionally NOT skipped because
+                    # it represents the actual slots we want to read.
+                    GetSetDescriptorType,
+                ),
+            ):
+                continue
+
+            try:
+                value = getattr(obj, slot_name, _MISSING)
+            except Exception:
+                continue
+
+            if value is _MISSING or value is class_attr:
+                # Slot not initialised on this instance
+                continue
+
+            yield value
 
 def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[Any]:
     """Extract child objects for traversal from any object type.
@@ -144,6 +181,8 @@ def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[An
         yield from _create_mapping_iterator(obj, traverse_dict_keys)
     elif _is_standard_iterable(obj):
         yield from obj
+    elif isinstance(obj, Mapping):
+        yield from chain(_yield_attributes(obj), _create_mapping_iterator(obj, traverse_dict_keys))
     elif isinstance(obj, Iterable):
         yield from chain(_yield_attributes(obj), obj)
     else:
@@ -174,7 +213,7 @@ def find_atomics_in_nested_collections(
     """Yield atomic elements from nested collections with weak deduplication.
 
     Atomic elements are indivisible leaf values such as numbers, strings,
-    matrices, or paths. The function raverses nested iterables, yielding
+    matrices, or paths. The function traverses nested iterables, yielding
     only atomic elements. Their exact order and complete deduplication
     are not guaranteed.
 
@@ -189,8 +228,9 @@ def find_atomics_in_nested_collections(
         TypeError: If obj is not an iterable.
         ValueError: If a cycle is detected.
     """
-    if not isinstance(obj, Iterable):
-        raise TypeError(f"Expected an Iterable as input, "
+
+    if not isinstance(obj, Iterable) or is_atomic_object(obj):
+        raise TypeError(f"Expected a non-atomic Iterable as input, "
                         f"got {type(obj).__name__} instead")
 
     root_iter = _create_mapping_iterator(obj, traverse_dict_keys) if isinstance(obj, Mapping) else iter(obj)
@@ -214,8 +254,8 @@ def find_atomics_in_nested_collections(
             if obj_id in seen_ids:
                 continue
 
-            seen_ids.add(obj_id)
             item_iter = _create_mapping_iterator(item, traverse_dict_keys) if isinstance(item, Mapping) else iter(item)
+            seen_ids.add(obj_id)
             stack.append((item_iter, path | {obj_id}))
         else:
             if obj_id in seen_ids:
@@ -277,7 +317,9 @@ def find_nonatomics_inside_composite_object(
         obj_id = id(current)
 
         if obj_id in path:
-            raise ValueError(f"Cyclic reference detected at object id {obj_id}")
+            raise ValueError(
+                f"Cyclic reference detected at object {repr(current)} "
+                f"(id={obj_id})")
 
         if obj_id in seen_ids:
             continue

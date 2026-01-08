@@ -295,13 +295,11 @@ def test_none_input_raises_typeerror():
 
 
 def test_string_as_input_is_atomic_iterable():
-    """String as top-level input iterates over characters (which are deduplicated)."""
-    # Strings are atomic, but string as input is still an iterable
-    # The function iterates over the string, yielding each character
-    result = list(find_atomics_in_nested_collections("hello"))
-    # Single-character strings are interned, so duplicates are deduplicated
-    # 'h', 'e', 'l', 'l', 'o' -> 'h', 'e', 'l', 'o' (second 'l' deduplicated)
-    assert result == ['h', 'e', 'l', 'o']
+    """String as top-level input is rejected because strings are atomic."""
+    # Strings are atomic and cannot be used as the top-level input collection
+    # The function requires a non-atomic iterable as input
+    with pytest.raises(TypeError):
+        list(find_atomics_in_nested_collections("hello"))
 
 
 # ============================================================================
