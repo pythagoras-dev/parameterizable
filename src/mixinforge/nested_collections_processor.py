@@ -171,12 +171,12 @@ def find_atomics_in_nested_collections(
     *,
     traverse_dict_keys: bool = False
 ) -> Iterator[Any]:
-    """Yield atomic elements from nested collection with deduplication.
+    """Yield atomic elements from nested collections with weak deduplication.
 
     Atomic elements are indivisible leaf values such as numbers, strings,
-    matrices, or paths. Traverses nested iterables depth-first, yielding
-    only atomic elements. Each object is yielded at most once based on
-    identity.
+    matrices, or paths. The function raverses nested iterables, yielding
+    only atomic elements. Their exact order and complete deduplication
+    are not guaranteed.
 
     Args:
         obj: The root collection to traverse.
@@ -232,9 +232,10 @@ def find_nonatomics_inside_composite_object(
 ) -> Iterator[T]:
     """Find all instances of a composite type within any object.
 
-    Performs depth-first traversal of iterables, mappings, and custom objects
+    Performs traversal of iterables, mappings, and custom objects
     (via __dict__ and __slots__). Yields all instances of target_type,
     continuing to search inside matched objects for nested instances.
+    Exact return order and complete deduplication are not guaranteed.
 
     Args:
         obj: The object to search within.
