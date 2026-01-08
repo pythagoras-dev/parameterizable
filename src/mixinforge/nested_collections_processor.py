@@ -9,9 +9,9 @@ from collections.abc import Iterable, Iterator, Mapping
 from typing import Any, TypeVar
 from itertools import chain
 
-T = TypeVar('T')
+from .atomics_detector import is_atomic_object, is_atomic_type
 
-from .atomics_detector import is_atomic_object
+T = TypeVar('T')
 
 
 def _create_mapping_iterator(mapping: Mapping, traverse_dict_keys: bool) -> Iterator[Any]:
@@ -48,8 +48,87 @@ def _get_all_slots(cls: type) -> list[str]:
     return [s for s in slots if s not in ('__dict__', '__weakref__')]
 
 
+def _is_standard_mapping(obj: Any) -> bool:
+    """Check if object is a standard mapping type.
+
+    Standard mappings include built-in dict and common stdlib mapping types
+    from collections, weakref, and types modules. These are treated as pure
+    data containers and only their keys/values are traversed, not their
+    internal attributes.
+
+    Args:
+        obj: Object to check.
+
+    Returns:
+        True if object is a standard library mapping type.
+    """
+    from collections import defaultdict, OrderedDict, Counter, ChainMap
+    from weakref import WeakKeyDictionary, WeakValueDictionary
+    from types import MappingProxyType
+
+    return isinstance(obj, (
+        dict,
+        defaultdict,
+        OrderedDict,
+        Counter,
+        ChainMap,
+        WeakKeyDictionary,
+        WeakValueDictionary,
+        MappingProxyType,
+    ))
+
+
+def _is_standard_iterable(obj: Any) -> bool:
+    """Check if object is a standard iterable collection type.
+
+    Standard iterables include built-in sequences and sets, plus common
+    stdlib collection types. These are treated as pure data containers
+    and only their items are traversed, not their internal attributes.
+
+    Args:
+        obj: Object to check.
+
+    Returns:
+        True if object is a standard library iterable type.
+    """
+    return isinstance(obj, (list, tuple, set, frozenset, deque))
+
+
+def _yield_attributes(obj: Any) -> Iterator[Any]:
+    """Yield attribute values from object's __dict__ or __slots__.
+
+    Extracts all accessible attributes from an object, checking __dict__
+    first, then falling back to __slots__ if present. This is used to
+    traverse custom objects that may contain child objects in their
+    attributes.
+
+    Args:
+        obj: Object to extract attributes from.
+
+    Yields:
+        Attribute values from __dict__ or __slots__.
+    """
+    if hasattr(obj, '__dict__'):
+        yield from obj.__dict__.values()
+    elif hasattr(obj.__class__, '__slots__'):
+        for slot_name in _get_all_slots(obj.__class__):
+            try:
+                yield getattr(obj, slot_name)
+            except AttributeError:
+                continue
+
+
 def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[Any]:
     """Extract child objects for traversal from any object type.
+
+    Uses a refined traversal strategy:
+    - Standard collections (dict, list, set, deque, etc.): iterate only
+    - Custom iterables: yield attributes + iterated items
+    - Non-iterable objects: yield attributes only
+
+    This ensures standard library collections are treated as pure data
+    containers, while custom objects with both iteration and attributes
+    get full introspection.
 
     Args:
         obj: Object to extract children from.
@@ -61,18 +140,18 @@ def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[An
     if is_atomic_object(obj):
         return
 
-    if isinstance(obj, Mapping):
+    # Standard mappings: iterate with key control
+    if _is_standard_mapping(obj):
         yield from _create_mapping_iterator(obj, traverse_dict_keys)
-    elif isinstance(obj, Iterable):
+    # Standard iterables: iterate only
+    elif _is_standard_iterable(obj):
         yield from obj
-    elif hasattr(obj, '__dict__'):
-        yield from obj.__dict__.values()
-    elif hasattr(obj.__class__, '__slots__'):
-        for slot_name in _get_all_slots(obj.__class__):
-            try:
-                yield getattr(obj, slot_name)
-            except AttributeError:
-                continue
+    # Custom iterables: attributes + iteration
+    elif isinstance(obj, Iterable):
+        yield from chain(_yield_attributes(obj), obj)
+    # Non-iterable objects: attributes only
+    else:
+        yield from _yield_attributes(obj)
 
 
 def _is_traversable_collection(obj: Any) -> bool:
@@ -186,7 +265,6 @@ def find_nonatomics_inside_composite_object(
         >>> len(configs)
         2
     """
-    from .atomics_detector import is_atomic_type
 
     if is_atomic_type(target_type):
         raise TypeError(
