@@ -168,7 +168,11 @@ def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> Path | 
     Note:
         This function silently returns None if README doesn't exist
         or doesn't contain the required markers. No errors are raised.
+        Markers must be on their own line to be recognized (prevents
+        matching markers in code examples or inline code).
     """
+    import re
+
     readme_file = _find_readme(target_dir)
 
     # Check if README exists
@@ -180,19 +184,23 @@ def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> Path | 
     except (IOError, UnicodeDecodeError):
         return None
 
-    # Check if markers exist
-    start_marker = '<!-- MIXINFORGE_STATS_START -->'
-    end_marker = '<!-- MIXINFORGE_STATS_END -->'
+    # Check if markers exist on their own lines (prevents matching in code examples)
+    start_pattern = r'^<!-- MIXINFORGE_STATS_START -->\s*$'
+    end_pattern = r'^<!-- MIXINFORGE_STATS_END -->\s*$'
 
-    if start_marker not in content or end_marker not in content:
+    start_matches = list(re.finditer(start_pattern, content, re.MULTILINE))
+    end_matches = list(re.finditer(end_pattern, content, re.MULTILINE))
+
+    # Require exactly one occurrence of each marker
+    if len(start_matches) != 1 or len(end_matches) != 1:
         return None
 
     # Update the section between markers
     try:
-        start_idx = content.index(start_marker) + len(start_marker)
-        end_idx = content.index(end_marker)
+        start_idx = start_matches[0].end()
+        end_idx = end_matches[0].start()
 
-        # Build the new content
+        # Build the new content (one newline before/after since end() includes trailing newline)
         new_stats_section = f"\n{markdown_table}\n"
         new_content = content[:start_idx] + new_stats_section + content[end_idx:]
 
@@ -267,7 +275,11 @@ def _update_rst_docs_if_possible(target_dir: Path, rst_table: str) -> Path | Non
     Note:
         This function silently returns None if index.rst doesn't exist
         or doesn't contain the required markers. No errors are raised.
+        Markers must be on their own line to be recognized (prevents
+        matching markers in code examples or inline code).
     """
+    import re
+
     index_rst_path = _find_sphinx_index_rst(target_dir)
 
     if index_rst_path is None:
@@ -278,20 +290,24 @@ def _update_rst_docs_if_possible(target_dir: Path, rst_table: str) -> Path | Non
     except (IOError, UnicodeDecodeError):
         return None
 
-    # Check if markers exist
-    start_marker = '.. MIXINFORGE_STATS_START'
-    end_marker = '.. MIXINFORGE_STATS_END'
+    # Check if markers exist on their own lines (prevents matching in code examples)
+    start_pattern = r'^\.\. MIXINFORGE_STATS_START\s*$'
+    end_pattern = r'^\.\. MIXINFORGE_STATS_END\s*$'
 
-    if start_marker not in content or end_marker not in content:
+    start_matches = list(re.finditer(start_pattern, content, re.MULTILINE))
+    end_matches = list(re.finditer(end_pattern, content, re.MULTILINE))
+
+    # Require exactly one occurrence of each marker
+    if len(start_matches) != 1 or len(end_matches) != 1:
         return None
 
     # Update the section between markers
     try:
-        start_idx = content.index(start_marker) + len(start_marker)
-        end_idx = content.index(end_marker)
+        start_idx = start_matches[0].end()
+        end_idx = end_matches[0].start()
 
-        # Build the new content
-        new_stats_section = f"\n\n{rst_table}\n\n"
+        # Build the new content (one newline before, two after for proper RST spacing)
+        new_stats_section = f"\n{rst_table}\n\n"
         new_content = content[:start_idx] + new_stats_section + content[end_idx:]
 
         # Check if content actually changed

@@ -91,11 +91,20 @@ def test_live_stats_update(pytestconfig):
         status_readme = "already up-to-date"
 
     # Verify README.md has valid stats content (whether updated or already there)
+    import re
     new_readme_content = readme_path.read_text()
-    start_marker = '<!-- MIXINFORGE_STATS_START -->'
-    end_marker = '<!-- MIXINFORGE_STATS_END -->'
-    start_idx = new_readme_content.index(start_marker) + len(start_marker)
-    end_idx = new_readme_content.index(end_marker)
+
+    # Use regex to find markers on their own lines (same logic as the update function)
+    start_pattern = r'^<!-- MIXINFORGE_STATS_START -->\s*$'
+    end_pattern = r'^<!-- MIXINFORGE_STATS_END -->\s*$'
+    start_matches = list(re.finditer(start_pattern, new_readme_content, re.MULTILINE))
+    end_matches = list(re.finditer(end_pattern, new_readme_content, re.MULTILINE))
+
+    assert len(start_matches) == 1, "README.md should have exactly one standalone START marker"
+    assert len(end_matches) == 1, "README.md should have exactly one standalone END marker"
+
+    start_idx = start_matches[0].end()
+    end_idx = end_matches[0].start()
     readme_stats_section = new_readme_content[start_idx:end_idx].strip()
 
     assert len(readme_stats_section) > 0, "README.md stats section is empty"
@@ -114,10 +123,18 @@ def test_live_stats_update(pytestconfig):
 
     # Verify index.rst has valid stats content (whether updated or already there)
     new_index_rst_content = index_rst_path.read_text()
-    start_marker = '.. MIXINFORGE_STATS_START'
-    end_marker = '.. MIXINFORGE_STATS_END'
-    start_idx = new_index_rst_content.index(start_marker) + len(start_marker)
-    end_idx = new_index_rst_content.index(end_marker)
+
+    # Use regex to find markers on their own lines (same logic as the update function)
+    start_pattern = r'^\.\. MIXINFORGE_STATS_START\s*$'
+    end_pattern = r'^\.\. MIXINFORGE_STATS_END\s*$'
+    start_matches = list(re.finditer(start_pattern, new_index_rst_content, re.MULTILINE))
+    end_matches = list(re.finditer(end_pattern, new_index_rst_content, re.MULTILINE))
+
+    assert len(start_matches) == 1, "index.rst should have exactly one standalone START marker"
+    assert len(end_matches) == 1, "index.rst should have exactly one standalone END marker"
+
+    start_idx = start_matches[0].end()
+    end_idx = end_matches[0].start()
     rst_stats_section = new_index_rst_content[start_idx:end_idx].strip()
 
     assert len(rst_stats_section) > 0, "index.rst stats section is empty"
