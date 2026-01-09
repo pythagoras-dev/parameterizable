@@ -367,7 +367,7 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 
 ## Project Statistics
 
-<!-- STATS_START -->
+<!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
 | Lines Of Code (LOC) | 3189 | 5959 | 9148 |
@@ -375,7 +375,7 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 | Classes | 13 | 133 | 146 |
 | Functions / Methods | 98 | 557 | 655 |
 | Files | 15 | 38 | 53 |
-<!-- STATS_END -->
+<!-- MIXINFORGE_STATS_END -->
 
 ## Development
 

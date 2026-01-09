@@ -150,7 +150,7 @@ def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> Path | 
     """Update README with stats table if it exists and contains markers.
 
     Locates a README file and checks if it contains the required
-    <!-- STATS_START --> and <!-- STATS_END --> markers. If both
+    <!-- MIXINFORGE_STATS_START --> and <!-- MIXINFORGE_STATS_END --> markers. If both
     conditions are met, updates the section between the markers with the
     new stats table.
 
@@ -177,8 +177,8 @@ def _update_readme_if_possible(target_dir: Path, markdown_table: str) -> Path | 
         return None
 
     # Check if markers exist
-    start_marker = '<!-- STATS_START -->'
-    end_marker = '<!-- STATS_END -->'
+    start_marker = '<!-- MIXINFORGE_STATS_START -->'
+    end_marker = '<!-- MIXINFORGE_STATS_END -->'
 
     if start_marker not in content or end_marker not in content:
         return None
@@ -250,7 +250,7 @@ def _update_rst_docs_if_possible(target_dir: Path, rst_table: str) -> Path | Non
     """Update Sphinx index.rst with stats table if it exists and contains markers.
 
     Locates the Sphinx index.rst file and checks if it contains the required
-    .. STATS_START and .. STATS_END markers. If both conditions are met,
+    .. MIXINFORGE_STATS_START and .. MIXINFORGE_STATS_END markers. If both conditions are met,
     updates the section between the markers with the new stats table.
 
     Args:
@@ -275,8 +275,8 @@ def _update_rst_docs_if_possible(target_dir: Path, rst_table: str) -> Path | Non
         return None
 
     # Check if markers exist
-    start_marker = '.. STATS_START'
-    end_marker = '.. STATS_END'
+    start_marker = '.. MIXINFORGE_STATS_START'
+    end_marker = '.. MIXINFORGE_STATS_END'
 
     if start_marker not in content or end_marker not in content:
         return None

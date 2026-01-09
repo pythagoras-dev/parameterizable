@@ -463,7 +463,7 @@ Types
 Project Statistics
 -------------------
 
-.. STATS_START
+.. MIXINFORGE_STATS_START
 
 .. list-table::
    :header-rows: 1
@@ -494,7 +494,7 @@ Project Statistics
      - 38
      - 53
 
-.. STATS_END
+.. MIXINFORGE_STATS_END
 
 Full API Documentation
 ----------------------
