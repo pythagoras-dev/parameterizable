@@ -374,38 +374,7 @@ Analyzes Python projects and generates comprehensive code metrics.
 
   * ``<!-- MIXINFORGE_STATS_START -->`` and
     ``<!-- MIXINFORGE_STATS_END -->`` for markdown
-  * ``.. MIXINFORGE_STATS_START
-
-.. list-table::
-   :header-rows: 1
-   :widths: 40 20 20 20
-
-   * - Metric
-     - Main code
-     - Unit Tests
-     - Total
-   * - Lines Of Code (LOC)
-     - 3314
-     - 6624
-     - 9938
-   * - Source Lines Of Code (SLOC)
-     - 1475
-     - 3925
-     - 5400
-   * - Classes
-     - 13
-     - 133
-     - 146
-   * - Functions / Methods
-     - 100
-     - 582
-     - 682
-   * - Files
-     - 15
-     - 48
-     - 63
-
-.. MIXINFORGE_STATS_END`` for
+  * ``.. MIXINFORGE_STATS_START`` and ``.. MIXINFORGE_STATS_END`` for
     reStructuredText
 
 * Returns list of updated files for CI/CD integration
