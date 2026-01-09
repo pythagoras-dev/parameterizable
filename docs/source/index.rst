@@ -6,7 +6,7 @@ mixinforge
    :alt: PyPI version
 
 .. image:: https://img.shields.io/pypi/pyversions/mixinforge.svg
-   :target: https://pypi.org/project/mixinforge/
+   :target: https://github.com/pythagoras-dev/mixinforge
    :alt: Python versions
 
 .. image:: https://img.shields.io/badge/License-MIT-blue.svg

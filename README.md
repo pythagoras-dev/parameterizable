@@ -1,6 +1,6 @@
 # mixinforge
 [![PyPI version](https://img.shields.io/pypi/v/mixinforge.svg)](https://pypi.org/project/mixinforge/)
-[![Python versions](https://img.shields.io/pypi/pyversions/mixinforge.svg)](https://pypi.org/project/mixinforge/)
+[![Python versions](https://img.shields.io/pypi/pyversions/mixinforge.svg)](https://github.com/pythagoras-dev/mixinforge)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pythagoras-dev/mixinforge/blob/master/LICENSE)
 [![Downloads](https://img.shields.io/pypi/dm/mixinforge?color=blue)](https://pypistats.org/packages/mixinforge)
 [![Documentation Status](https://app.readthedocs.org/projects/mixinforge/badge/?version=latest)](https://mixinforge.readthedocs.io/en/latest/)
