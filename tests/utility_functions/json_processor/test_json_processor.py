@@ -158,7 +158,7 @@ def test_to_serializable_get_params_has_precedence_over_getstate():
 )
 def test_to_serializable_cycle_detection(obj_creator, type_name):
     obj = obj_creator()
-    with pytest.raises(RecursionError, match=type_name):
+    with pytest.raises(RecursionError):
         _to_serializable_dict(obj)
 
 

@@ -108,3 +108,73 @@ def test_pid_change_resets_ownership():
     assert ste._owner_thread_native_id == threading.get_native_id()
     assert ste._owner_process_id == os.getpid()
     assert ste._owner_process_id != fake_new_pid
+
+
+def test_mixin_init_thread_restriction():
+    """Test that SingleThreadEnforcerMixin.__init__ enforces thread restriction."""
+    from mixinforge.mixins_and_metaclasses.single_thread_enforcer_mixin import SingleThreadEnforcerMixin
+
+    # Reset to ensure clean state
+    _reset_thread_ownership()
+
+    class MyClass(SingleThreadEnforcerMixin):
+        def __init__(self):
+            super().__init__()
+            self.value = 42
+
+    # Main thread creates instance successfully
+    obj = MyClass()
+    assert obj.value == 42
+
+    # New thread should fail to create instance
+    exception_caught = False
+
+    def thread_init():
+        nonlocal exception_caught
+        try:
+            MyClass()
+        except RuntimeError:
+            exception_caught = True
+
+    t = threading.Thread(target=thread_init)
+    t.start()
+    t.join()
+
+    assert exception_caught
+
+
+def test_mixin_method_thread_restriction():
+    """Test that SingleThreadEnforcerMixin._restrict_to_single_thread method works."""
+    from mixinforge.mixins_and_metaclasses.single_thread_enforcer_mixin import SingleThreadEnforcerMixin
+
+    # Reset to ensure clean state
+    _reset_thread_ownership()
+
+    class MyClass(SingleThreadEnforcerMixin):
+        def __init__(self):
+            super().__init__()
+            self.value = 42
+
+        def check_thread(self):
+            self._restrict_to_single_thread()
+            return self.value
+
+    # Main thread creates instance and calls method
+    obj = MyClass()
+    assert obj.check_thread() == 42
+
+    # New thread should fail to call the method
+    exception_caught = False
+
+    def thread_call_method():
+        nonlocal exception_caught
+        try:
+            obj.check_thread()
+        except RuntimeError:
+            exception_caught = True
+
+    t = threading.Thread(target=thread_call_method)
+    t.start()
+    t.join()
+
+    assert exception_caught

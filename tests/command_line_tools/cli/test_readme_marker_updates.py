@@ -108,3 +108,71 @@ More content here.
     assert "## Next Section" in updated_content
     assert "More content here." in updated_content
     assert "old stats" not in updated_content
+
+
+def test_update_readme_read_error(tmp_path, monkeypatch):
+    """Test that IOError during README read returns None."""
+    project_dir = tmp_path / "project"
+    project_dir.mkdir()
+    readme_file = project_dir / "README.md"
+    readme_file.write_text("# Project\n<!-- MIXINFORGE_STATS_START -->\n<!-- MIXINFORGE_STATS_END -->")
+
+    # Mock read_text to raise IOError
+    original_read_text = Path.read_text
+
+    def mock_read_text(self, *args, **kwargs):
+        if self.resolve() == readme_file.resolve():
+            raise IOError("Simulated read error")
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", mock_read_text)
+
+    result = _update_readme_if_possible(project_dir, "table")
+    assert result is None
+
+
+def test_update_readme_unicode_decode_error(tmp_path, monkeypatch):
+    """Test that UnicodeDecodeError during README read returns None."""
+    project_dir = tmp_path / "project"
+    project_dir.mkdir()
+    readme_file = project_dir / "README.md"
+    readme_file.write_text("# Project\n<!-- MIXINFORGE_STATS_START -->\n<!-- MIXINFORGE_STATS_END -->")
+
+    # Mock read_text to raise UnicodeDecodeError
+    original_read_text = Path.read_text
+
+    def mock_read_text(self, *args, **kwargs):
+        if self.resolve() == readme_file.resolve():
+            raise UnicodeDecodeError("utf-8", b"", 0, 1, "Simulated decode error")
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", mock_read_text)
+
+    result = _update_readme_if_possible(project_dir, "table")
+    assert result is None
+
+
+def test_update_readme_write_error(tmp_path, monkeypatch):
+    """Test that IOError during README write returns None."""
+    project_dir = tmp_path / "project"
+    project_dir.mkdir()
+    readme_content = """# Project
+<!-- MIXINFORGE_STATS_START -->
+old content
+<!-- MIXINFORGE_STATS_END -->
+"""
+    readme_file = project_dir / "README.md"
+    readme_file.write_text(readme_content)
+
+    # Mock write_text to raise IOError
+    original_write_text = Path.write_text
+
+    def mock_write_text(self, *args, **kwargs):
+        if self.resolve() == readme_file.resolve():
+            raise IOError("Simulated write error")
+        return original_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", mock_write_text)
+
+    result = _update_readme_if_possible(project_dir, "new table")
+    assert result is None

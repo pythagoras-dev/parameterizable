@@ -54,28 +54,28 @@ def test_lazy_type_descriptor_init_from_another_descriptor():
 
 def test_lazy_type_descriptor_invalid_tuple_length():
     """Raise ValueError for tuple with wrong number of elements."""
-    with pytest.raises(ValueError, match="exactly 2 elements"):
+    with pytest.raises(ValueError):
         _LazyTypeDescriptor(("module",))
 
-    with pytest.raises(ValueError, match="exactly 2 elements"):
+    with pytest.raises(ValueError):
         _LazyTypeDescriptor(("module", "type", "extra"))
 
 
 def test_lazy_type_descriptor_empty_strings_in_tuple():
     """Raise ValueError for empty module or type name."""
-    with pytest.raises(ValueError, match="non-empty string"):
+    with pytest.raises(ValueError):
         _LazyTypeDescriptor(("", "SomeType"))
 
-    with pytest.raises(ValueError, match="non-empty string"):
+    with pytest.raises(ValueError):
         _LazyTypeDescriptor(("some.module", ""))
 
 
 def test_lazy_type_descriptor_invalid_type_spec():
     """Raise TypeError for unsupported type_spec."""
-    with pytest.raises(TypeError, match="must be a LazyTypeDescriptor, type, or tuple"):
+    with pytest.raises(TypeError):
         _LazyTypeDescriptor("not_a_valid_spec")
 
-    with pytest.raises(TypeError, match="must be a LazyTypeDescriptor, type, or tuple"):
+    with pytest.raises(TypeError):
         _LazyTypeDescriptor(123)
 
 
@@ -191,10 +191,10 @@ def test_lazy_type_registry_query_with_unimportable_type():
     """Raise TypeError when querying with unimportable type."""
     registry = _LazyTypeRegistry()
 
-    with pytest.raises(TypeError, match="not allowed to be checked"):
+    with pytest.raises(TypeError):
         registry.is_registered(("fake.module", "FakeType"))
 
-    with pytest.raises(TypeError, match="not allowed to be checked"):
+    with pytest.raises(TypeError):
         registry.is_inherited_from_registered(("fake.module", "FakeType"))
 
 

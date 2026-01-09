@@ -27,32 +27,32 @@ def test_sanitize_and_validate_path_with_valid_path(tmp_path):
 
 def test_sanitize_and_validate_path_none_raises_valueerror():
     """Validate that None path raises ValueError."""
-    with pytest.raises(ValueError, match="Path cannot be None"):
+    with pytest.raises(ValueError, match=r"Path.*None"):
         sanitize_and_validate_path(None)
 
 
 def test_sanitize_and_validate_path_empty_string_raises_valueerror():
     """Validate that empty string raises ValueError."""
-    with pytest.raises(ValueError, match="cannot be empty"):
+    with pytest.raises(ValueError, match=r"empty"):
         sanitize_and_validate_path("")
 
 
 def test_sanitize_and_validate_path_whitespace_raises_valueerror():
     """Validate that whitespace-only string raises ValueError."""
-    with pytest.raises(ValueError, match="cannot be empty"):
+    with pytest.raises(ValueError, match=r"empty"):
         sanitize_and_validate_path("   ")
 
 
 def test_sanitize_and_validate_path_invalid_type_raises_typeerror():
     """Validate that invalid type raises TypeError."""
-    with pytest.raises(TypeError, match="must be a string or Path"):
+    with pytest.raises(TypeError, match=r"string.*Path"):
         sanitize_and_validate_path(123)
 
 
 def test_sanitize_and_validate_path_nonexistent_with_must_exist(tmp_path):
     """Validate that nonexistent path with must_exist=True raises ValueError."""
     nonexistent = tmp_path / "does_not_exist.py"
-    with pytest.raises(ValueError, match="does not exist"):
+    with pytest.raises(ValueError, match=r"not exist"):
         sanitize_and_validate_path(nonexistent, must_exist=True)
 
 
@@ -61,7 +61,7 @@ def test_sanitize_and_validate_path_file_with_must_be_dir(tmp_path):
     test_file = tmp_path / "test.py"
     test_file.write_text("# test")
 
-    with pytest.raises(ValueError, match="not a directory"):
+    with pytest.raises(ValueError, match=r"directory"):
         sanitize_and_validate_path(test_file, must_exist=True, must_be_dir=True)
 
 

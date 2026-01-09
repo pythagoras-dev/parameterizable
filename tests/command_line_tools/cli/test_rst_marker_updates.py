@@ -129,3 +129,72 @@ More content.
     assert "Next Section" in updated_content
     assert "More content." in updated_content
     assert "old stats" not in updated_content
+
+
+def test_update_rst_read_error(sphinx_docs_structure, monkeypatch):
+    """Test that IOError during index.rst read returns None."""
+    project_dir, docs_dir, _ = sphinx_docs_structure
+    index_file = docs_dir / "index.rst"
+    index_file.write_text(".. MIXINFORGE_STATS_START\n.. MIXINFORGE_STATS_END")
+
+    # Mock read_text to raise IOError
+    original_read_text = Path.read_text
+
+    def mock_read_text(self, *args, **kwargs):
+        if self.resolve() == index_file.resolve():
+            raise IOError("Simulated read error")
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", mock_read_text)
+
+    result = _update_rst_docs_if_possible(project_dir, "table")
+    assert result is None
+
+
+def test_update_rst_unicode_decode_error(sphinx_docs_structure, monkeypatch):
+    """Test that UnicodeDecodeError during index.rst read returns None."""
+    project_dir, docs_dir, _ = sphinx_docs_structure
+    index_file = docs_dir / "index.rst"
+    index_file.write_text(".. MIXINFORGE_STATS_START\n.. MIXINFORGE_STATS_END")
+
+    # Mock read_text to raise UnicodeDecodeError
+    original_read_text = Path.read_text
+
+    def mock_read_text(self, *args, **kwargs):
+        if self.resolve() == index_file.resolve():
+            raise UnicodeDecodeError("utf-8", b"", 0, 1, "Simulated decode error")
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", mock_read_text)
+
+    result = _update_rst_docs_if_possible(project_dir, "table")
+    assert result is None
+
+
+def test_update_rst_write_error(sphinx_docs_structure, monkeypatch):
+    """Test that IOError during index.rst write returns None."""
+    project_dir, docs_dir, _ = sphinx_docs_structure
+    index_content = """Documentation
+=============
+
+.. MIXINFORGE_STATS_START
+
+old table
+
+.. MIXINFORGE_STATS_END
+"""
+    index_file = docs_dir / "index.rst"
+    index_file.write_text(index_content)
+
+    # Mock write_text to raise IOError
+    original_write_text = Path.write_text
+
+    def mock_write_text(self, *args, **kwargs):
+        if self.resolve() == index_file.resolve():
+            raise IOError("Simulated write error")
+        return original_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", mock_write_text)
+
+    result = _update_rst_docs_if_possible(project_dir, "new table")
+    assert result is None

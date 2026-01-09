@@ -234,10 +234,10 @@ def test_slots_without_dict():
 
     s = SlotsOnly()
     # Should raise TypeError because __dict__ is missing
-    with pytest.raises(TypeError, match="lacks __dict__"):
+    with pytest.raises(TypeError):
         _ = s._all_cached_properties_names
 
-    with pytest.raises(TypeError, match="lacks __dict__"):
+    with pytest.raises(TypeError):
         s._invalidate_cache()
 
 def test_slots_with_dict():

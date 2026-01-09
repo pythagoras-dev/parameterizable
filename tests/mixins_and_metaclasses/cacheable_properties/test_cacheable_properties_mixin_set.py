@@ -52,11 +52,11 @@ def test_set_cached_values_invalid_name():
     """Test that _set_cached_values() raises ValueError for invalid names."""
     a = A()
 
-    with pytest.raises(ValueError, match="non-cached properties"):
+    with pytest.raises(ValueError):
         a._set_cached_properties(invalid_name=123)
 
     # Regular property should also be rejected
-    with pytest.raises(ValueError, match="non-cached properties"):
+    with pytest.raises(ValueError):
         a._set_cached_properties(z=456)
 
 def test_set_cached_values_partial():

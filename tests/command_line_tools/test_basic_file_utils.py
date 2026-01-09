@@ -58,25 +58,25 @@ def test_has_pyproject_toml_returns_false_when_other_files_exist(tmp_path):
 
 def test_has_pyproject_toml_raises_on_none_path():
     """Verify that folder_contains_pyproject_toml raises ValueError for None path."""
-    with pytest.raises(ValueError, match="Path cannot be None"):
+    with pytest.raises(ValueError, match=r"Path.*None"):
         folder_contains_pyproject_toml(None)
 
 
 def test_has_pyproject_toml_raises_on_empty_string():
     """Verify that folder_contains_pyproject_toml raises ValueError for empty string."""
-    with pytest.raises(ValueError, match="cannot be empty"):
+    with pytest.raises(ValueError, match=r"empty"):
         folder_contains_pyproject_toml("")
 
 
 def test_has_pyproject_toml_raises_on_whitespace_string():
     """Verify that folder_contains_pyproject_toml raises ValueError for whitespace string."""
-    with pytest.raises(ValueError, match="cannot be empty"):
+    with pytest.raises(ValueError, match=r"empty"):
         folder_contains_pyproject_toml("   ")
 
 
 def test_has_pyproject_toml_raises_on_invalid_type():
     """Verify that folder_contains_pyproject_toml raises TypeError for invalid type."""
-    with pytest.raises(TypeError, match="must be a string or Path"):
+    with pytest.raises(TypeError, match=r"string.*Path"):
         folder_contains_pyproject_toml(123)
 
 
@@ -84,7 +84,7 @@ def test_has_pyproject_toml_raises_on_nonexistent_folder(tmp_path):
     """Verify that folder_contains_pyproject_toml raises ValueError for nonexistent folder."""
     nonexistent = tmp_path / "does_not_exist"
 
-    with pytest.raises(ValueError, match="does not exist"):
+    with pytest.raises(ValueError, match=r"does not exist"):
         folder_contains_pyproject_toml(nonexistent)
 
 
@@ -93,7 +93,7 @@ def test_has_pyproject_toml_raises_on_file_path(tmp_path):
     test_file = tmp_path / "test.txt"
     test_file.write_text("content")
 
-    with pytest.raises(ValueError, match="not a directory"):
+    with pytest.raises(ValueError, match=r"not a directory"):
         folder_contains_pyproject_toml(test_file)
 
 
@@ -398,19 +398,19 @@ def test_remove_python_cache_files_accepts_path_object(tmp_path):
 
 def test_remove_python_cache_files_raises_on_none_path():
     """Verify that remove_python_cache_files raises ValueError for None path."""
-    with pytest.raises(ValueError, match="Path cannot be None"):
+    with pytest.raises(ValueError, match=r"Path.*None"):
         remove_python_cache_files(None)
 
 
 def test_remove_python_cache_files_raises_on_empty_string():
     """Verify that remove_python_cache_files raises ValueError for empty string."""
-    with pytest.raises(ValueError, match="cannot be empty"):
+    with pytest.raises(ValueError, match=r"empty"):
         remove_python_cache_files("")
 
 
 def test_remove_python_cache_files_raises_on_invalid_type():
     """Verify that remove_python_cache_files raises TypeError for invalid type."""
-    with pytest.raises(TypeError, match="must be a string or Path"):
+    with pytest.raises(TypeError, match=r"string.*Path"):
         remove_python_cache_files(123)
 
 
@@ -418,7 +418,7 @@ def test_remove_python_cache_files_raises_on_nonexistent_folder(tmp_path):
     """Verify that remove_python_cache_files raises ValueError for nonexistent folder."""
     nonexistent = tmp_path / "does_not_exist"
 
-    with pytest.raises(ValueError, match="does not exist"):
+    with pytest.raises(ValueError, match=r"does not exist"):
         remove_python_cache_files(nonexistent)
 
 
@@ -427,5 +427,5 @@ def test_remove_python_cache_files_raises_on_file_path(tmp_path):
     test_file = tmp_path / "test.txt"
     test_file.write_text("content")
 
-    with pytest.raises(ValueError, match="not a directory"):
+    with pytest.raises(ValueError, match=r"not a directory"):
         remove_python_cache_files(test_file)

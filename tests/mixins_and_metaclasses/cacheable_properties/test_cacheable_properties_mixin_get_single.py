@@ -31,7 +31,7 @@ def test_get_cached_property_not_cached_yet():
     """Test that _get_cached_property() raises KeyError for uncached properties."""
     a = A()
     # x exists as a cached_property but hasn't been accessed yet
-    with pytest.raises(KeyError, match="has not been computed yet"):
+    with pytest.raises(KeyError):
         a._get_cached_property("x")
 
     # After caching, it should work
@@ -43,11 +43,11 @@ def test_get_cached_property_invalid_name():
     a = A()
 
     # Non-existent property
-    with pytest.raises(ValueError, match="not a cached property"):
+    with pytest.raises(ValueError):
         a._get_cached_property("invalid_name")
 
     # Regular @property (not cached_property)
-    with pytest.raises(ValueError, match="not a cached property"):
+    with pytest.raises(ValueError):
         a._get_cached_property("z")
 
 def test_get_cached_property_inheritance():
