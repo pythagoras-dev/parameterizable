@@ -183,3 +183,127 @@ def remove_python_cache_files(folder_path: Path | str) -> tuple[int, list[str]]:
             continue
 
     return removed_count, removed_items
+
+
+def categorize_cache_items(removed_items: list[str]) -> dict[str, dict[str, int]]:
+    """Categorize removed cache items by type and location.
+
+    Analyzes a list of removed cache file paths and categorizes them by:
+    - Cache type (e.g., __pycache__, .pyc files, .pytest_cache)
+    - Top-level directory location
+
+    Args:
+        removed_items: List of relative paths to removed cache items.
+
+    Returns:
+        Dictionary with two keys:
+        - 'by_type': Dict mapping cache type names to counts
+        - 'by_location': Dict mapping top-level directory names to counts
+
+    Example:
+        >>> items = ['tests/__pycache__/foo.pyc', 'src/__pycache__/bar.pyc', 'tests/.pytest_cache']
+        >>> result = categorize_cache_items(items)
+        >>> result['by_type']
+        {'__pycache__': 2, '.pytest_cache': 1}
+        >>> result['by_location']
+        {'tests': 2, 'src': 1}
+    """
+    categories = {
+        '__pycache__': 0,
+        '.pyc/.pyo files': 0,
+        '.pytest_cache': 0,
+        '.ruff_cache': 0,
+        '.mypy_cache': 0,
+        '.hypothesis': 0,
+        '.tox': 0,
+        '.eggs': 0,
+        '.coverage': 0
+    }
+
+    top_level_dirs = {}
+
+    for item in removed_items:
+        # Categorize by cache type
+        if '__pycache__' in item:
+            categories['__pycache__'] += 1
+        elif item.endswith('.pyc') or item.endswith('.pyo'):
+            categories['.pyc/.pyo files'] += 1
+        elif '.pytest_cache' in item:
+            categories['.pytest_cache'] += 1
+        elif '.ruff_cache' in item:
+            categories['.ruff_cache'] += 1
+        elif '.mypy_cache' in item:
+            categories['.mypy_cache'] += 1
+        elif '.hypothesis' in item:
+            categories['.hypothesis'] += 1
+        elif '.tox' in item:
+            categories['.tox'] += 1
+        elif '.eggs' in item:
+            categories['.eggs'] += 1
+        elif '.coverage' in item:
+            categories['.coverage'] += 1
+
+        # Track by top-level directory (handle both / and \ separators)
+        top_dir = item.split('/')[0] if '/' in item else item.split('\\')[0]
+        top_level_dirs[top_dir] = top_level_dirs.get(top_dir, 0) + 1
+
+    return {
+        'by_type': {k: v for k, v in categories.items() if v > 0},
+        'by_location': top_level_dirs
+    }
+
+
+def format_cache_statistics(removed_count: int, removed_items: list[str]) -> str:
+    """Format cache cleaning statistics for console output.
+
+    Creates a human-readable formatted string showing statistics about
+    removed cache items, categorized by type and location.
+
+    Args:
+        removed_count: Total number of items removed.
+        removed_items: List of relative paths to removed cache items.
+
+    Returns:
+        Formatted multi-line string ready for printing to console.
+        Returns a single-line message if no items were removed.
+
+    Example:
+        >>> output = format_cache_statistics(15, ['tests/__pycache__', 'src/__pycache__', ...])
+        >>> print(output)
+        ✓ Cache clearing: 15 items removed
+
+          By type:
+            __pycache__: 10
+            .pyc/.pyo files: 5
+
+          By location:
+            tests: 8
+            src: 7
+    """
+    if removed_count == 0:
+        return "✓ Cache clearing: project is clean (0 items removed)"
+
+    stats = categorize_cache_items(removed_items)
+
+    # Build type statistics
+    type_lines = []
+    for cache_type, count in stats['by_type'].items():
+        type_lines.append(f"    {cache_type}: {count}")
+
+    # Build location statistics (sorted by count, descending)
+    dir_stats = sorted(stats['by_location'].items(), key=lambda x: x[1], reverse=True)
+    dir_lines = []
+    for dir_name, count in dir_stats[:5]:  # Top 5
+        dir_lines.append(f"    {dir_name}: {count}")
+    if len(dir_stats) > 5:
+        remaining = sum(count for _, count in dir_stats[5:])
+        dir_lines.append(f"    (others): {remaining}")
+
+    # Build final output
+    output = [f"✓ Cache clearing: {removed_count} items removed"]
+    output.append("\n  By type:")
+    output.extend(type_lines)
+    output.append("\n  By location:")
+    output.extend(dir_lines)
+
+    return '\n'.join(output)

@@ -20,8 +20,8 @@ from mixinforge.command_line_tools._cli_entry_points import (
 )
 
 
-@pytest.mark.ci_cd
-def test_live_stats_update():
+@pytest.mark.live_actions
+def test_live_stats_update(pytestconfig):
     """Test that mf_get_stats() can update actual project documentation files.
 
     This is a live-on-self test that validates:
@@ -30,9 +30,12 @@ def test_live_stats_update():
     - analyze_project() generates valid stats
     - Both files can be successfully updated with current stats
     - Content is actually inserted between markers
+
+    Args:
+        pytestconfig: Pytest config fixture providing rootdir.
     """
-    # Get project root (3 levels up from this test file)
-    project_root = Path(__file__).parent.parent.parent.resolve()
+    # Get project root from pytest's rootdir
+    project_root = Path(pytestconfig.rootdir)
 
     # Validate README.md exists
     readme_path = project_root / "README.md"
@@ -77,44 +80,57 @@ def test_live_stats_update():
 
     # Attempt to update README.md
     updated_readme_path = _update_readme_if_possible(project_root, markdown_content)
-    assert updated_readme_path is not None, \
-        "Failed to update README.md - _update_readme_if_possible returned None"
-    assert updated_readme_path == readme_path, \
-        f"Updated path mismatch: expected {readme_path}, got {updated_readme_path}"
 
-    # Verify README.md was actually modified
+    # Function returns None if content didn't change (already up-to-date)
+    # This is valid and expected - verify the content is there regardless
+    if updated_readme_path is not None:
+        assert updated_readme_path == readme_path, \
+            f"Updated path mismatch: expected {readme_path}, got {updated_readme_path}"
+        status_readme = "updated"
+    else:
+        status_readme = "already up-to-date"
+
+    # Verify README.md has valid stats content (whether updated or already there)
     new_readme_content = readme_path.read_text()
-    # Extract content between markers to verify update
     start_marker = '<!-- MIXINFORGE_STATS_START -->'
     end_marker = '<!-- MIXINFORGE_STATS_END -->'
     start_idx = new_readme_content.index(start_marker) + len(start_marker)
     end_idx = new_readme_content.index(end_marker)
     readme_stats_section = new_readme_content[start_idx:end_idx].strip()
 
-    assert len(readme_stats_section) > 0, "README.md stats section is empty after update"
+    assert len(readme_stats_section) > 0, "README.md stats section is empty"
     assert '|' in readme_stats_section, "README.md stats section should contain table"
 
     # Attempt to update index.rst
     updated_rst_path = _update_rst_docs_if_possible(project_root, rst_content)
-    assert updated_rst_path is not None, \
-        "Failed to update index.rst - _update_rst_docs_if_possible returned None"
-    assert updated_rst_path == index_rst_path, \
-        f"Updated path mismatch: expected {index_rst_path}, got {updated_rst_path}"
 
-    # Verify index.rst was actually modified
+    # Function returns None if content didn't change (already up-to-date)
+    if updated_rst_path is not None:
+        assert updated_rst_path == index_rst_path, \
+            f"Updated path mismatch: expected {index_rst_path}, got {updated_rst_path}"
+        status_rst = "updated"
+    else:
+        status_rst = "already up-to-date"
+
+    # Verify index.rst has valid stats content (whether updated or already there)
     new_index_rst_content = index_rst_path.read_text()
-    # Extract content between markers to verify update
     start_marker = '.. MIXINFORGE_STATS_START'
     end_marker = '.. MIXINFORGE_STATS_END'
     start_idx = new_index_rst_content.index(start_marker) + len(start_marker)
     end_idx = new_index_rst_content.index(end_marker)
     rst_stats_section = new_index_rst_content[start_idx:end_idx].strip()
 
-    assert len(rst_stats_section) > 0, "index.rst stats section is empty after update"
+    assert len(rst_stats_section) > 0, "index.rst stats section is empty"
     assert '.. list-table::' in rst_stats_section, \
         "index.rst stats section should contain list-table directive"
 
-    # Success message
-    print(f"\n✓ Live stats update successful:")
-    print(f"  - README.md updated at {readme_path}")
-    print(f"  - index.rst updated at {index_rst_path}")
+    # Display results with visual distinction
+    print("\n")
+    print("=" * 70)
+    print("📊 STATS UPDATE (Live Action on Project)")
+    print("=" * 70)
+    print(f"✓ Validation successful:")
+    print(f"  • README.md: {status_readme}")
+    print(f"  • index.rst: {status_rst}")
+    print("=" * 70)
+    print()

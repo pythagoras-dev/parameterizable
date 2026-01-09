@@ -75,9 +75,9 @@ addopts = [
     "--cache-clear",          # Clear cache before each run
 ]
 testpaths = ["tests"]
-python_files = ["test_*.py", "*_live.py"]
+python_files = ["test_*.py", "*_live_action.py"]
 markers = [
-    """ci_cd: marks tests as CI/CD live-on-self "tests" (deselect with '-m \"not ci_cd\"')""",
+    """live_actions: marks tests as live actions that operate on the actual project (deselect with '-m \"not live_actions\"')""",
 ]
 
 [tool.coverage.run]

@@ -370,11 +370,11 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3189 | 6450 | 9639 |
-| Source Lines Of Code (SLOC) | 1416 | 3856 | 5272 |
+| Lines Of Code (LOC) | 3314 | 6627 | 9941 |
+| Source Lines Of Code (SLOC) | 1475 | 3925 | 5400 |
 | Classes | 13 | 133 | 146 |
-| Functions / Methods | 98 | 581 | 679 |
-| Files | 15 | 44 | 59 |
+| Functions / Methods | 100 | 582 | 682 |
+| Files | 15 | 48 | 63 |
 <!-- MIXINFORGE_STATS_END -->
 
 ## Development

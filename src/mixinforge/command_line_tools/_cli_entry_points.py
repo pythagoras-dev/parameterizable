@@ -3,7 +3,11 @@ import argparse
 from pathlib import Path
 
 from ..command_line_tools.project_analyzer import analyze_project
-from ..command_line_tools.basic_file_utils import remove_python_cache_files, folder_contains_pyproject_toml
+from ..command_line_tools.basic_file_utils import (
+    remove_python_cache_files,
+    folder_contains_pyproject_toml,
+    format_cache_statistics
+)
 
 
 def _parse_cli_arguments_with_optional_output(
@@ -408,11 +412,8 @@ def mf_clear_cache():
             print(f'\n✗ Error saving file: {e}', file=sys.stderr)
             sys.exit(1)
 
-        # Print summary to console
-        if removed_count > 0:
-            print(f'✓ Successfully removed {removed_count} cache items')
-        else:
-            print('✓ No cache files found')
+        # Print formatted statistics to console
+        print('\n' + format_cache_statistics(removed_count, removed_items))
 
     except (ValueError, Exception) as e:
         _print_error_and_exit(e)

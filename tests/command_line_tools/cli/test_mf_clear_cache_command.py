@@ -37,9 +37,11 @@ def test_mf_clear_cache_success_with_items(mock_remove, project_with_pyproject):
             assert "**Items removed:** 3" in written_content
             assert "__pycache__" in written_content
 
-            # Verify console output
+            # Verify console output (new format with statistics)
             stdout_output = mock_stdout.getvalue()
-            assert "Successfully removed 3 cache items" in stdout_output
+            assert "Cache clearing: 3 items removed" in stdout_output
+            assert "By type:" in stdout_output
+            assert "By location:" in stdout_output
 
 
 @patch('mixinforge.command_line_tools._cli_entry_points.remove_python_cache_files')
@@ -53,9 +55,9 @@ def test_mf_clear_cache_success_no_items(mock_remove, project_with_pyproject):
             with capture_stdout() as mock_stdout:
                 mf_clear_cache()
 
-            # Verify console output
+            # Verify console output (new format)
             stdout_output = mock_stdout.getvalue()
-            assert "No cache files found" in stdout_output
+            assert "Cache clearing: project is clean (0 items removed)" in stdout_output
 
             # Verify report content
             handle = mock_file()
