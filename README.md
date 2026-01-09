@@ -7,45 +7,51 @@
 [![Code style: pep8](https://img.shields.io/badge/code_style-pep8-blue.svg)](https://peps.python.org/pep-0008/)
 [![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
 
-A collection of Python mixins and utilities for building robust, configurable classes.
+A collection of Python mixins, metaclasses, utility functions, and CLI
+tools for building robust, configurable classes.
 
 ## What Is It?
 
-`mixinforge` is a lightweight library providing reusable mixins and utility functions that help you build well-structured Python classes. It offers tools for:
+`mixinforge` is a lightweight library providing three key areas of
+functionality:
 
-- **Parameter management** — Track, serialize, and deserialize class configuration parameters
-- **Cache management** — Automatically discover and invalidate `cached_property` attributes
-- **Initialization control** — Enforce strict initialization contracts with lifecycle hooks
-- **Thread safety** — Enforce single-threaded execution with multi-process support
-- **Singleton pattern** — Ensure each subclass maintains exactly one instance
-- **Pickle prevention** — Explicitly prevent objects from being pickled when serialization is unsafe
-- **JSON serialization** — Convert objects and parameters to/from portable JSON representations
-- **Dictionary utilities** — Helper functions for consistent dictionary handling
+1. **Mixins & Metaclasses** — Reusable components for parameter
+   management, cache control, initialization contracts, thread safety,
+   singleton pattern, and pickle prevention
+2. **Utility Functions** — Tools for JSON serialization, nested
+   collection processing, and dictionary operations
+3. **CLI Tools** — Command-line utilities for project analysis and
+   maintenance
 
 ## Quick Example
 
-Here's a quick example demonstrating parameter management and JSON serialization:
+Here's an example showing thread safety enforcement:
 
 ```python
-from mixinforge import ParameterizableMixin, dumpjs, loadjs
+from mixinforge import SingleThreadEnforcerMixin
 
-class MyModel(ParameterizableMixin):
-    def __init__(self, n_trees=10, depth=3):
-        self.n_trees = n_trees
-        self.depth = depth
+class DatabaseConnection(SingleThreadEnforcerMixin):
+    def __init__(self, connection_string: str):
+        super().__init__()
+        self.connection_string = connection_string
+        self.connection = self._connect()
 
-    def get_params(self) -> dict:
-        return {"n_trees": self.n_trees, "depth": self.depth}
+    def _connect(self):
+        return f"Connected to {self.connection_string}"
 
-# Create and configure
-model = MyModel(n_trees=50, depth=5)
+    def query(self, sql: str):
+        self._restrict_to_single_thread()  # Enforces thread safety
+        return f"Executing: {sql}"
 
-# Serialize to JSON
-js = dumpjs(model)
+# Works fine on the owner thread
+db = DatabaseConnection("localhost:5432")
+result = db.query("SELECT * FROM users")
 
-# Recreate from JSON
-model2 = loadjs(js)
-assert model2.get_params() == model.get_params()
+# Calling from another thread raises RuntimeError
+import threading
+threading.Thread(
+    target=lambda: db.query("SELECT *")
+).start()  # Raises RuntimeError!
 ```
 
 ## Installation
@@ -53,7 +59,8 @@ assert model2.get_params() == model.get_params()
 The source code is hosted on GitHub at:
 [https://github.com/pythagoras-dev/mixinforge](https://github.com/pythagoras-dev/mixinforge)
 
-Binary installers for the latest released version are available at the Python package index at:
+Binary installers for the latest released version are available at the
+Python package index at:
 [https://pypi.org/project/mixinforge](https://pypi.org/project/mixinforge)
 
 Using uv:
@@ -75,190 +82,194 @@ pip install mixinforge
 For development:
 - pytest (optional)
 
-## Available Mixins and Metaclasses
+## API Overview
+
+### Mixins & Metaclasses
+
+| Component | Description |
+|-----------|-------------|
+| `ParameterizableMixin` | Base class for parameterizable objects with JSON serialization |
+| `CacheablePropertiesMixin` | Auto discovery and invalidation of `cached_property` |
+| `NotPicklableMixin` | Prevents pickling/unpickling of objects |
+| `GuardedInitMeta` | Strict initialization control with lifecycle hooks |
+| `SingleThreadEnforcerMixin` | Enforces single-threaded execution |
+| `SingletonMixin` | Ensures each subclass has exactly one instance |
+
+### Utility Functions
+
+| Function | Description |
+|----------|-------------|
+| `dumpjs(obj)` | Serialize object to JSON string |
+| `loadjs(js)` | Deserialize JSON string to object |
+| `update_jsparams(js, **updates)` | Update params in JSON |
+| `access_jsparams(js, *names)` | Extract params from JSON |
+| `sort_dict_by_keys(d)` | Sort dictionary keys alphabetically |
+| `find_atomics_in_nested_collections(obj)` | Find atomics in nested collections |
+| `find_nonatomics_inside_composite_object(obj, type)` | Find instances of type in composite |
+
+### CLI Tools
+
+| Command | Description |
+|---------|-------------|
+| `mf-get-stats` | Analyze project metrics and generate reports |
+| `mf-clear-cache` | Remove Python cache files and directories |
+
+## Mixins & Metaclasses
 
 ### ParameterizableMixin
 
-A base class for objects with configuration parameters. Enables standardized parameter access, JSON serialization, and distinguishes between essential and auxiliary parameters.
+A base class for objects with configuration parameters. Enables
+standardized parameter access, JSON serialization, and distinguishes
+between essential and auxiliary parameters.
 
-```python
-from mixinforge import ParameterizableMixin, dumpjs, loadjs
-
-
-class MyModel(ParameterizableMixin):
-    def __init__(self, n_trees=10, depth=3, verbose=False):
-        self.n_trees = n_trees
-        self.depth = depth
-        self.verbose = verbose
-
-    def get_params(self) -> dict:
-        return {"n_trees": self.n_trees, "depth": self.depth, "verbose": self.verbose}
-
-    @property
-    def essential_param_names(self) -> set[str]:
-        return {"n_trees", "depth"}  # verbose is auxiliary
-
-
-model = MyModel(n_trees=50, depth=5, verbose=True)
-
-# Get parameters
-model.get_params()              # {"n_trees": 50, "depth": 5, "verbose": True}
-model.get_essential_params()    # {"n_trees": 50, "depth": 5}
-model.get_auxiliary_params()    # {"verbose": True}
-
-# Serialize to JSON
-js = dumpjs(model)
-
-# Recreate from JSON
-model2 = loadjs(js)
-assert model2.get_params() == model.get_params()
-```
+**Key features:**
+- `get_params()` — Returns all parameters as a dictionary
+- `get_default_params()` — Class method to get default parameter
+  values from `__init__` signature
+- `get_essential_params()` — Returns only essential configuration
+  parameters
+- `get_auxiliary_params()` — Returns auxiliary parameters (logging,
+  verbosity, etc.)
+- `essential_param_names` — Property to specify which parameters are
+  core to the object's identity
+- `get_jsparams()` — Get parameters as JSON string
+- `get_essential_jsparams()` / `get_auxiliary_jsparams()` — Get
+  filtered parameters as JSON
+- Works seamlessly with `dumpjs()` and `loadjs()` for full object
+  serialization
 
 ### CacheablePropertiesMixin
 
-A mixin for managing `functools.cached_property` attributes with automatic discovery and invalidation across the class hierarchy.
+A mixin for managing `functools.cached_property` attributes with
+automatic discovery and invalidation across the class hierarchy.
 
-```python
-from functools import cached_property
-from mixinforge import CacheablePropertiesMixin
+**Key methods:**
+- `_get_all_cached_properties_status()` — Check which cached
+  properties are currently cached (returns dict)
+- `_get_cached_property_status(name)` — Check if a specific property
+  is cached
+- `_get_all_cached_properties()` — Retrieve all currently cached
+  values
+- `_get_cached_property(name)` — Get a specific cached value
+- `_set_cached_properties(**kwargs)` — Manually set cached values
+  (useful for testing/restoration)
+- `_invalidate_cache()` — Clear all cached properties across the
+  entire class hierarchy
+- `_all_cached_properties_names` — Property returning all cached
+  property names
 
-
-class DataProcessor(CacheablePropertiesMixin):
-    def __init__(self, data):
-        self._data = data
-
-    @cached_property
-    def processed(self):
-        print("Processing...")
-        return [x * 2 for x in self._data]
-
-    @cached_property
-    def summary(self):
-        return sum(self.processed)
-
-
-processor = DataProcessor([1, 2, 3])
-
-# Check cache status
-processor._get_all_cached_properties_status()  # {"processed": False, "summary": False}
-
-# Access triggers caching
-_ = processor.processed  # prints "Processing..."
-processor._get_all_cached_properties_status()  # {"processed": True, "summary": False}
-
-# Invalidate all caches
-processor._invalidate_cache()
-processor._get_all_cached_properties_status()  # {"processed": False, "summary": False}
-```
+Automatically discovers cached properties from all classes in the MRO,
+including decorator-wrapped properties, making it reliable for complex
+inheritance structures.
 
 ### NotPicklableMixin
 
-A mixin that explicitly prevents objects from being pickled or unpickled. Useful for objects that hold non-serializable resources like database connections, file handles, or network sockets.
+A mixin that explicitly prevents objects from being pickled or
+unpickled. Useful for objects that hold non-serializable resources like
+database connections, file handles, or network sockets.
 
-```python
-import pickle
-from mixinforge import NotPicklableMixin
-
-
-class DatabaseConnection(NotPicklableMixin):
-    def __init__(self, connection_string):
-        self.connection_string = connection_string
-        # ... establish connection
-
-
-conn = DatabaseConnection("postgresql://localhost/mydb")
-
-# Any attempt to pickle raises TypeError
-try:
-    pickle.dumps(conn)
-except TypeError as e:
-    print(e)  # "Pickling is not allowed for DatabaseConnection objects"
-```
+Raises `TypeError` on any pickling attempt, providing clear error
+messages about why serialization is blocked.
 
 ### GuardedInitMeta
 
-A metaclass that enforces strict initialization control and provides lifecycle hooks. It ensures that `_init_finished` is `False` during `__init__` and automatically sets it to `True` afterward, enabling reliable initialization state checks.
+A metaclass that enforces strict initialization control and provides
+lifecycle hooks. It ensures that `_init_finished` is `False` during
+`__init__` and automatically sets it to `True` afterward, enabling
+reliable initialization state checks.
 
-```python
-from mixinforge import GuardedInitMeta
+**Key features:**
+- Automatic `_init_finished` flag management (False during init, True
+  after)
+- `__post_init__()` hook — Called automatically after `__init__`
+  completes
+- `__post_setstate__()` hook — Called after unpickling when restoring
+  object state
+- Automatic `__setstate__` wrapping for proper unpickling behavior
+- Validates `_init_finished=False` in pickled state to prevent
+  corruption
+- Compatible with `ABCMeta` for abstract base classes
+- Prevents use with dataclasses (incompatible)
+- Validates single GuardedInitMeta base in multiple inheritance
 
-
-class MyService(metaclass=GuardedInitMeta):
-    def __init__(self, name):
-        self._init_finished = False  # Required by the contract
-        self.name = name
-        # _init_finished is automatically set to True after __init__
-
-    def __post_init__(self):
-        # Optional hook called after initialization completes
-        print(f"Service '{self.name}' initialized")
-
-
-service = MyService("worker")  # prints "Service 'worker' initialized"
-print(service._init_finished)  # True
-```
+Enforces initialization contracts and provides clear error messages when
+contracts are violated, making initialization bugs easier to catch.
 
 ### SingleThreadEnforcerMixin
 
-A mixin to enforce single-threaded execution with multi-process support. Ensures methods are called only from the thread that first instantiated the object, while automatically supporting process-based parallelism through fork detection.
+A mixin to enforce single-threaded execution with multi-process support.
+Ensures methods are called only from the thread that first instantiated
+the object, while automatically supporting process-based parallelism
+through fork detection.
 
-```python
-from mixinforge import SingleThreadEnforcerMixin
+**Key method:**
+- `_restrict_to_single_thread()` — Call this at the start of methods
+  that need thread enforcement
 
-
-class MyProcessor(SingleThreadEnforcerMixin):
-    def __init__(self):
-        super().__init__()
-        self.data = []
-
-    def process(self, item):
-        self.restrict_to_single_thread()
-        self.data.append(item)
-        return item * 2
-
-
-processor = MyProcessor()
-processor.process(5)  # Works on the owner thread
-
-# Calling from a different thread raises RuntimeError
-```
+Automatically detects process forks and resets ownership, making it safe
+for multiprocessing workflows.
 
 ### SingletonMixin
 
-A mixin for implementing the singleton pattern. Ensures each subclass maintains exactly one instance that is returned on every instantiation attempt. Useful for classes that should have only a single instance throughout the application lifetime, such as configuration managers or resource coordinators.
+A mixin for implementing the singleton pattern. Ensures each subclass
+maintains exactly one instance that is returned on every instantiation
+attempt.
 
-```python
-from mixinforge import SingletonMixin
+Useful for classes that should have only a single instance throughout
+the application lifetime, such as configuration managers or resource
+coordinators. Each subclass gets its own singleton instance.
 
+## Utility Functions
 
-class ConfigManager(SingletonMixin):
-    def __init__(self):
-        if not hasattr(self, 'initialized'):
-            self.config = {}
-            self.initialized = True
+### JSON Serialization
 
-    def get_params(self) -> dict:
-        return self.config
+mixinforge provides a complete JSON serialization system for Python
+objects:
 
+- **`dumpjs(obj)`** — Serialize any Python object (including classes,
+  instances, nested structures) to a JSON string
+- **`loadjs(js)`** — Deserialize a JSON string back to its original
+  Python object
+- **`update_jsparams(js, **kwargs)`** — Modify parameters in serialized
+  JSON without full deserialization
+- **`access_jsparams(js, *names)`** — Extract specific parameters from
+  serialized JSON
 
-# Both variables reference the same instance
-config1 = ConfigManager()
-config2 = ConfigManager()
-assert config1 is config2  # True
+This system handles complex objects including class hierarchies,
+`__slots__`, nested collections, and maintains object identity. It
+integrates seamlessly with `ParameterizableMixin` for configuration
+management.
 
-# Modifications affect all references
-config1.config['key'] = 'value'
-assert config2.config['key'] == 'value'  # True
-```
+### Nested Collection Processing
 
-## CLI Commands
+Tools for working with nested data structures:
 
-mixinforge provides command-line tools for project analysis and maintenance.
+- **`find_atomics_in_nested_collections(obj)`** — Recursively find all
+  atomic-type objects (primitives, strings, etc.) within nested
+  collections (returns iterator)
+- **`find_nonatomics_inside_composite_object(obj, target_type)`** —
+  Recursively find all instances of a specific non-atomic type within
+  composite structures (returns iterator)
+
+These functions handle arbitrary nesting depths and complex object
+graphs, useful for introspection and validation.
+
+### Dictionary Utilities
+
+- **`sort_dict_by_keys(d)`** — Returns a new dictionary with keys
+  sorted alphabetically, useful for consistent serialization and
+  comparison
+
+## CLI Tools
+
+mixinforge provides two command-line tools for project analysis and
+maintenance.
 
 ### mf-get-stats
 
-Generate project metrics and save to file:
+Analyzes Python projects and generates comprehensive code metrics.
 
+**Usage:**
 ```bash
 # Analyze current directory
 mf-get-stats
@@ -270,12 +281,29 @@ mf-get-stats /path/to/project
 mf-get-stats --output my_metrics.md
 ```
 
-Generates a markdown report with code statistics including lines of code (LOC), source lines of code (SLOC), class counts, function counts, and file counts, broken down by main code and unit tests. Also displays a formatted summary table in the console.
+**Features:**
+- Generates markdown report with detailed statistics:
+  - Lines of Code (LOC) and Source Lines of Code (SLOC)
+  - Class and function counts
+  - File counts
+  - Breakdown by main code vs. unit tests
+- Displays formatted summary table in console
+- Auto-updates `README.md` and Sphinx documentation if special markers
+  are present:
+  - `<!-- MIXINFORGE_STATS_START -->` and
+    `<!-- MIXINFORGE_STATS_END -->` for markdown
+  - `.. MIXINFORGE_STATS_START` and `.. MIXINFORGE_STATS_END` for
+    reStructuredText
+- Returns list of updated files for CI/CD integration
+
+This tool is ideal for tracking project growth, maintaining
+documentation, and integrating metrics into automated workflows.
 
 ### mf-clear-cache
 
-Remove Python cache files from a directory and its subdirectories:
+Removes all Python cache files and directories from a project.
 
+**Usage:**
 ```bash
 # Clean current directory
 mf-clear-cache
@@ -287,83 +315,19 @@ mf-clear-cache /path/to/project
 mf-clear-cache --output cleanup_report.md
 ```
 
-Removes `__pycache__` directories, `.pyc` files, `.pyo` files, and cache directories from pytest, mypy, ruff, hypothesis, tox, and coverage tools. Generates a detailed markdown report of removed items.
+**What it removes:**
+- `__pycache__` directories
+- `.pyc` and `.pyo` compiled bytecode files
+- Cache directories from:
+  - pytest (`.pytest_cache`)
+  - mypy (`.mypy_cache`)
+  - ruff (`.ruff_cache`)
+  - hypothesis (`.hypothesis`)
+  - tox (`.tox`)
+  - coverage (`.coverage`, `htmlcov`)
 
-## Utility Functions
-
-### JSON Serialization
-
-```python
-from mixinforge import ParameterizableMixin, dumpjs, loadjs, update_jsparams, access_jsparams
-
-
-class MyModel(ParameterizableMixin):
-    def __init__(self, n_trees=10, depth=3):
-        self.n_trees = n_trees
-        self.depth = depth
-
-    def get_params(self) -> dict:
-        return {"n_trees": self.n_trees, "depth": self.depth}
-
-
-model = MyModel(n_trees=50, depth=5)
-
-# Serialize an object to JSON
-js = dumpjs(model)
-
-# Deserialize back to an object
-model2 = loadjs(js)
-
-# Update parameters in JSON without full deserialization
-js_updated = update_jsparams(js, n_trees=100)
-
-# Access specific parameters from JSON
-subset = access_jsparams(js, "n_trees", "depth")  # {"n_trees": 50, "depth": 5}
-```
-
-### Dictionary Sorting
-
-```python
-from mixinforge import sort_dict_by_keys
-
-# Sort dictionary keys alphabetically
-sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
-# {"apple": 2, "mango": 3, "zebra": 1}
-```
-
-## API Reference
-
-### Mixins
-
-| Mixin | Description |
-|-------|-------------|
-| `ParameterizableMixin` | Base class for parameterizable objects with JSON serialization support |
-| `CacheablePropertiesMixin` | Automatic discovery and invalidation of `cached_property` attributes |
-| `NotPicklableMixin` | Prevents pickling/unpickling of objects |
-| `SingleThreadEnforcerMixin` | Enforces single-threaded execution with multi-process support |
-| `SingletonMixin` | Ensures each subclass maintains exactly one instance |
-
-### Metaclasses
-
-| Metaclass | Description |
-|-----------|-------------|
-| `GuardedInitMeta` | Metaclass for strict initialization control and lifecycle hooks (`__post_init__`, `__post_setstate__`) |
-
-### Functions
-
-| Function | Description |
-|----------|-------------|
-| `dumpjs(obj)` | Serialize an object to a JSON string |
-| `loadjs(js)` | Deserialize a JSON string back to an object |
-| `update_jsparams(js, **updates)` | Update parameters in a JSON string without full deserialization |
-| `access_jsparams(js, *names)` | Extract specific parameters from a JSON string |
-| `sort_dict_by_keys(d)` | Return a new dictionary with keys sorted alphabetically |
-
-### Types
-
-| Type | Description |
-|------|-------------|
-| `JsonSerializedObject` | Type alias for JSON strings produced by `dumpjs` |
+Generates a detailed markdown report categorizing removed items. Useful
+for cleaning build artifacts before commits or releases.
 
 ## Project Statistics
 
@@ -383,14 +347,20 @@ sorted_dict = sort_dict_by_keys({"zebra": 1, "apple": 2, "mango": 3})
   - With pytest: `pytest`
   - Or via Python: `python -m pytest`
 - Supported Python versions: 3.11+
-- See contributing guidelines: [contributing.md](https://github.com/pythagoras-dev/mixinforge/blob/master/CONTRIBUTING.md)
-- See docstrings and comments guidelines: [docstrings_comments.md](https://github.com/pythagoras-dev/mixinforge/blob/master/docstrings_comments.md)
-- See type hints guidelines: [type_hints.md](https://github.com/pythagoras-dev/mixinforge/blob/master/type_hints.md)
-- See Read the Docs configuration guide: [readthedocs.md](https://github.com/pythagoras-dev/mixinforge/blob/master/readthedocs.md)
+- See contributing guidelines:
+  [contributing.md](https://github.com/pythagoras-dev/mixinforge/blob/master/CONTRIBUTING.md)
+- See docstrings and comments guidelines:
+  [docstrings_comments.md](https://github.com/pythagoras-dev/mixinforge/blob/master/docstrings_comments.md)
+- See type hints guidelines:
+  [type_hints.md](https://github.com/pythagoras-dev/mixinforge/blob/master/type_hints.md)
+- See Read the Docs configuration guide:
+  [readthedocs.md](https://github.com/pythagoras-dev/mixinforge/blob/master/readthedocs.md)
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](https://github.com/pythagoras-dev/mixinforge/blob/master/LICENSE) for details.
+This project is licensed under the MIT License — see
+[LICENSE](https://github.com/pythagoras-dev/mixinforge/blob/master/LICENSE)
+for details.
 
 ## Contact
 
