@@ -1,7 +1,7 @@
 mixinforge
 ==========
 
-.. image:: https://img.shields.io/pypi/v/mixinforge.svg
+.. image:: https://img.shields.io/pypi/v/mixinforge.svg?color=green
    :target: https://pypi.org/project/mixinforge/
    :alt: PyPI version
 
