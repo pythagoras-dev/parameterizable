@@ -416,6 +416,15 @@ Removes all Python cache files and directories from a project.
 Generates a detailed markdown report categorizing removed items. Useful
 for cleaning build artifacts before commits or releases.
 
+Full API Documentation
+----------------------
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Documentation:
+
+   api/modules
+
 Project Statistics
 ------------------
 
@@ -455,14 +464,6 @@ Project Statistics
 
 .. MIXINFORGE_STATS_END
 
-Full API Documentation
-----------------------
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API Documentation:
-
-   api/modules
 
 Development
 -----------
