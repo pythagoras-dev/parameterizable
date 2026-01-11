@@ -23,7 +23,7 @@ class SingletonMixin(ParameterizableMixin):
     """
     _instances: dict[type, SingletonMixin] = {}
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         """Create or return the singleton instance for this class.
 
         Returns:

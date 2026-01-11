@@ -51,7 +51,7 @@ def _parse_pickle_state(state: Any, cls_name: str) -> tuple[dict | None, dict | 
     elif (isinstance(state, tuple) and len(state) == 2
           and (state[0] is None or isinstance(state[0], dict))
           and (state[1] is None or isinstance(state[1], dict))):
-        return state
+        return state[0], state[1]
     else:
         raise RuntimeError(
             f"Unsupported pickle state for {cls_name}: {state!r}")
