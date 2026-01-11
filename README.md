@@ -333,10 +333,10 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3330 | 7303 | 10633 |
-| Source Lines Of Code (SLOC) | 1481 | 4326 | 5807 |
-| Classes | 13 | 135 | 148 |
-| Functions / Methods | 100 | 627 | 727 |
+| Lines Of Code (LOC) | 3330 | 7314 | 10644 |
+| Source Lines Of Code (SLOC) | 1481 | 4333 | 5814 |
+| Classes | 13 | 136 | 149 |
+| Functions / Methods | 100 | 629 | 729 |
 | Files | 15 | 51 | 66 |
 <!-- MIXINFORGE_STATS_END -->
 

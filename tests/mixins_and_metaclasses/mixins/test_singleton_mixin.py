@@ -23,6 +23,26 @@ class AnotherSingleton(SingletonMixin):
         self.data = "test"
 
 
+class InheritedSingleton(SimpleSingleton):
+    """A singleton that inherits from another singleton."""
+    pass
+
+
+class OneArgSingleton(SingletonMixin):
+    """Singleton that takes one argument in its constructor."""
+
+    def __init__(self, arg1):
+        super().__init__()
+        self.arg1 = arg1
+
+class ManyArgsSingleton(SingletonMixin):
+    """Singleton that takes many arguments in its constructor."""
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.args = args
+        self.kwargs = kwargs
+
+
 def test_singleton_returns_same_instance():
     """Test that multiple instantiations return the same instance."""
     instance1 = SimpleSingleton()
@@ -39,6 +59,40 @@ def test_singleton_different_classes_have_different_instances():
 
     assert singleton1 is not singleton2
     assert type(singleton1) != type(singleton2)
+
+def test_singleton_inheritance():
+    """Test that singleton behavior is maintained in subclasses."""
+    base_instance = SimpleSingleton()
+    inherited_instance1 = InheritedSingleton()
+    inherited_instance2 = InheritedSingleton()
+
+    assert inherited_instance1 is inherited_instance2
+    assert inherited_instance1 is not base_instance
+
+
+def test_singleton_accepts_one_constructor_arg():
+    class OneArgSingleton(SingletonMixin):
+        def __init__(self, x: int):
+            self.x = x
+
+    s1 = OneArgSingleton(1)
+    s2 = OneArgSingleton(2)
+
+    assert s1 is s2
+
+
+def test_singleton_accepts_many_constructor_args():
+    class ManyArgsSingleton(SingletonMixin):
+        def __init__(self, x: int, y: str):
+            self.x = x
+            self.y = y
+
+    s1 = ManyArgsSingleton(1, "a")
+    s2 = ManyArgsSingleton(2, y="b")
+    s3 = ManyArgsSingleton(x=3, y="c")
+
+    assert s1 is s2
+    assert s2 is s3
 
 
 def test_singleton_maintains_state():
