@@ -178,3 +178,25 @@ def test_mixin_method_thread_restriction():
     t.join()
 
     assert exception_caught
+
+
+def test_mixin_init_forwards_args_and_kwargs():
+    """SingleThreadEnforcerMixin.__init__ should forward positional and keyword args."""
+    from mixinforge import SingleThreadEnforcerMixin
+
+    _reset_thread_ownership()
+
+    class RequiresArgs:
+        def __init__(self, a, b, *, c):
+            self.received = (a, b, c)
+
+    class MyClass(SingleThreadEnforcerMixin, RequiresArgs):
+        def __init__(self, a, b, *, c):
+            super().__init__(a, b, c=c)
+            self.ready = True
+
+    obj = MyClass(1, 2, c=3)
+
+    assert obj.received == (1, 2, 3)
+    assert obj.ready is True
+    assert ste._owner_thread_native_id == threading.get_native_id()
