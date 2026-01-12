@@ -85,3 +85,9 @@ markers = [
 [tool.coverage.run]
 source = ["src/mixinforge"]
 branch = true
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".venv*",
+    "*.egg-info",
+]
