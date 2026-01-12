@@ -14,7 +14,7 @@ license = {text = "MIT"}
 authors = [
     {name = "Vlad (Volodymyr) Pavlov", email = "vlpavlov@ieee.org"}
 ]
-keywords = ["parameters", "mixins", "utilities", "python", "singleton", "metaclass", "json",
+keywords = ["parameters", "mixins", "utilities", "singleton", "metaclass", "json",
     "serialization", "caching", "thread-safety", "cached-property"]
 
 classifiers = [
