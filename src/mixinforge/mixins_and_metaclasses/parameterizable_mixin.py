@@ -1,9 +1,9 @@
 """Basic infrastructure for parameterizable classes.
 
 This module provides functionality for working with parameterizable classes:
-classes that have (hyper)parameters which define an object's configuration,
-but not its internal contents or data. Such parameters are typically
-passed to the __init__ method.
+classes that have (hyper)parameters which define an object's
+configuration/identity, but not its internal contents or data.
+Such parameters are typically passed to the __init__ method.
 
 The module provides an API for getting parameter values from an object,
 and for converting the parameters to and from a portable dictionary
@@ -21,9 +21,9 @@ class ParameterizableMixin:
     """Base class for parameterizable classes.
 
     Classes deriving from this base expose a stable set of configuration
-    parameters that define their behavior. Subclasses implement get_params
-    to return these parameters, which can then be serialized to and from
-    a portable JSON representation.
+    parameters that define their behavior and identity. Subclasses implement
+    get_params to return these parameters, which can then be serialized to
+    and from a portable JSON representation.
 
     Note:
         This class is intended to be subclassed. The default implementation of
