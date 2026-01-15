@@ -22,6 +22,7 @@ Public API:
 - access_jsparams: Access parameters in a JSON-serialized string.
 - JsonSerializedObject: NewType alias for JSON strings produced by dumpjs.
 - is_executed_in_notebook: Detect if running in Jupyter/IPython notebook.
+- reset_notebook_detection: Clear cached notebook detection result.
 """
 
 from ._version_info import __version__
@@ -44,6 +45,7 @@ from .utility_functions import (
     find_nonatomics_inside_composite_object,
     is_executed_in_notebook,
     loadjs,
+    reset_notebook_detection,
     sort_dict_by_keys,
     update_jsparams,
 )
@@ -66,6 +68,7 @@ __all__ = [
     'find_nonatomics_inside_composite_object',
     'is_executed_in_notebook',
     'loadjs',
+    'reset_notebook_detection',
     'sort_dict_by_keys',
     'update_jsparams',
 ]

@@ -386,10 +386,10 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3696 | 7821 | 11517 |
-| Source Lines Of Code (SLOC) | 1625 | 4639 | 6264 |
+| Lines Of Code (LOC) | 3707 | 7961 | 11668 |
+| Source Lines Of Code (SLOC) | 1627 | 4701 | 6328 |
 | Classes | 18 | 155 | 173 |
-| Functions / Methods | 121 | 692 | 813 |
+| Functions / Methods | 122 | 704 | 826 |
 | Files | 23 | 66 | 89 |
 <!-- MIXINFORGE_STATS_END -->
 
