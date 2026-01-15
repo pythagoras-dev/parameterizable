@@ -331,11 +331,11 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3331 | 7379 | 10710 |
-| Source Lines Of Code (SLOC) | 1482 | 4374 | 5856 |
-| Classes | 13 | 142 | 155 |
-| Functions / Methods | 100 | 637 | 737 |
-| Files | 15 | 51 | 66 |
+| Lines Of Code (LOC) | 3355 | 7379 | 10734 |
+| Source Lines Of Code (SLOC) | 1499 | 4374 | 5873 |
+| Classes | 14 | 142 | 156 |
+| Functions / Methods | 103 | 637 | 740 |
+| Files | 16 | 51 | 67 |
 <!-- MIXINFORGE_STATS_END -->
 
 ## Development

@@ -23,14 +23,15 @@ Public API:
 from ._version_info import __version__
 
 from .utility_functions.dict_sorter import *
-from .mixins_and_metaclasses.not_picklable_mixin import *
 from .utility_functions.json_processor import *
-from .mixins_and_metaclasses.parameterizable_mixin import *
-from .mixins_and_metaclasses.cacheable_properties_mixin import *
+from .utility_functions.nested_collections_processor import *
+from .mixins_and_metaclasses.not_picklable_mixin import *
 from .mixins_and_metaclasses.guarded_init_metaclass import *
+from .mixins_and_metaclasses.parameterizable_mixin import *
+from .mixins_and_metaclasses.immutable_parameterizable_mixin import *
+from .mixins_and_metaclasses.cacheable_properties_mixin import *
 from .mixins_and_metaclasses.single_thread_enforcer_mixin import *
 from .mixins_and_metaclasses.singleton_mixin import *
-from .utility_functions.nested_collections_processor import *
 
 __all__ = [
     'CacheablePropertiesMixin',
@@ -38,6 +39,7 @@ __all__ = [
     'JsonSerializedObject',
     'NotPicklableMixin',
     'ParameterizableMixin',
+    'ImmutableParameterizableMixin',
     'SingleThreadEnforcerMixin',
     'SingletonMixin',
     '__version__',
