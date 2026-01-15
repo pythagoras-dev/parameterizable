@@ -77,3 +77,18 @@ def test_instance_jsparams_is_dump_of_params_dict():
     # And dumpjs/loadjs are indeed JSON – the payload is a JSON string
     # Validate it parses with the stdlib json loader too
     json.loads(js)
+
+
+def test_repr_includes_class_name_and_params():
+    # Base class (no params)
+    base = ParameterizableMixin()
+    assert repr(base) == "ParameterizableMixin({})"
+
+    # Subclass (with params)
+    obj = MyParam(a=1)
+    # The repr should look like "MyParam({'a': 1, 'b': 2, ...})"
+    r = repr(obj)
+    assert r.startswith("MyParam(")
+    assert "'a': 1" in r
+    assert "'b': 2" in r
+    assert "'verbose': False" in r

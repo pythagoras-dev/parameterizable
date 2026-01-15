@@ -117,6 +117,26 @@ class SlotsMismatchClass(metaclass=GuardedInitMeta):
         # Return a dict to trigger the mismatch error during setstate
         return {'x': 1}
 
+
+class PlainBaseWithSetState:
+    def __init__(self):
+        self.state_restored = False
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.state_restored = True
+
+
+class GuardedChildInheritingPlain(PlainBaseWithSetState, metaclass=GuardedInitMeta):
+    def __init__(self):
+        self._init_finished = False
+        super().__init__()
+
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        d.pop('_init_finished', None)
+        return d
+
 # --- Tests ---
 
 def test_basic_initialization():
@@ -305,3 +325,21 @@ def test_inherited_setstate_already_wrapped():
 
     assert restored._init_finished is True
     assert getattr(restored, 'setstate_called', False) is True
+
+
+def test_inherited_unwrapped_setstate_is_wrapped():
+    """Test that an inherited, unwrapped __setstate__ from a plain class is wrapped."""
+    obj = GuardedChildInheritingPlain()
+    obj.x = 100
+
+    data = pickle.dumps(obj)
+    loaded = pickle.loads(data)
+
+    # Original logic ran
+    assert loaded.state_restored is True
+    assert loaded.x == 100
+    # Wrapper logic ran
+    assert hasattr(loaded, "_init_finished")
+    assert loaded._init_finished is True
+    # Verify wrapper presence
+    assert getattr(GuardedChildInheritingPlain.__setstate__, "__guarded_init_meta_wrapped__", False)
