@@ -119,8 +119,7 @@ For development:
 ### ParameterizableMixin
 
 A base class for objects with configuration parameters. Enables
-standardized parameter access, JSON serialization, and distinguishes
-between essential and auxiliary parameters.
+standardized parameter access and JSON serialization.
 
 **Key features:**
 - `get_params()` — Returns all parameters as a dictionary
@@ -236,9 +235,8 @@ objects:
   serialized JSON
 
 This system handles complex objects including class hierarchies,
-`__slots__`, nested collections, and maintains object identity. It
-integrates seamlessly with `ParameterizableMixin` for configuration
-management.
+`__slots__`, nested collections, and maintains object identity; it
+seamlessly integrates with `ParameterizableMixin`.
 
 ### Nested Collection Processing
 
