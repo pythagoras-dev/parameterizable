@@ -6,7 +6,7 @@ These tests verify the semantic contract of the notebook detection functions:
 - reset_notebook_detection() allows re-evaluation of the environment
 """
 import sys
-from unittest.mock import Mock
+from types import ModuleType
 
 import pytest
 
@@ -14,6 +14,31 @@ from mixinforge.utility_functions.notebook_checker import (
     is_executed_in_notebook,
     reset_notebook_detection,
 )
+
+
+# ---------------------------------------------------------------------------
+# Test Doubles (simple fakes instead of unittest.mock)
+# ---------------------------------------------------------------------------
+
+class FakeIPythonShell:
+    """Fake IPython shell that has the set_custom_exc attribute."""
+
+    def set_custom_exc(self, *args, **kwargs):
+        """Fake method that exists in real IPython shells."""
+        pass
+
+
+class FakeIPythonShellWithoutCustomExc:
+    """Fake IPython shell that lacks the set_custom_exc attribute."""
+
+    pass
+
+
+def _create_fake_ipython_module(get_ipython_return_value):
+    """Create a fake IPython module with a configurable get_ipython function."""
+    fake_module = ModuleType("IPython")
+    fake_module.get_ipython = lambda: get_ipython_return_value
+    return fake_module
 
 
 # ---------------------------------------------------------------------------
@@ -29,40 +54,30 @@ def isolate_cache():
 
 
 @pytest.fixture
-def mock_notebook_environment(monkeypatch):
-    """Simulate an IPython/Jupyter notebook environment.
-
-    Yields the mock shell object for additional assertions if needed.
-    """
-    mock_ipython_module = Mock()
-    mock_shell = Mock()
-    mock_shell.set_custom_exc = Mock()
-    mock_ipython_module.get_ipython = Mock(return_value=mock_shell)
-
-    monkeypatch.setitem(sys.modules, "IPython", mock_ipython_module)
+def fake_notebook_environment(monkeypatch):
+    """Simulate an IPython/Jupyter notebook environment."""
+    fake_shell = FakeIPythonShell()
+    fake_ipython = _create_fake_ipython_module(fake_shell)
+    monkeypatch.setitem(sys.modules, "IPython", fake_ipython)
     reset_notebook_detection()
-    yield mock_shell
+    yield fake_shell
 
 
 @pytest.fixture
-def mock_inactive_ipython(monkeypatch):
+def fake_inactive_ipython(monkeypatch):
     """Simulate IPython installed but not active (get_ipython returns None)."""
-    mock_ipython_module = Mock()
-    mock_ipython_module.get_ipython = Mock(return_value=None)
-
-    monkeypatch.setitem(sys.modules, "IPython", mock_ipython_module)
+    fake_ipython = _create_fake_ipython_module(None)
+    monkeypatch.setitem(sys.modules, "IPython", fake_ipython)
     reset_notebook_detection()
     yield
 
 
 @pytest.fixture
-def mock_shell_without_custom_exc(monkeypatch):
+def fake_shell_without_custom_exc(monkeypatch):
     """Simulate a shell that lacks the set_custom_exc attribute."""
-    mock_ipython_module = Mock()
-    mock_shell = Mock(spec=[])  # Empty spec = no attributes
-    mock_ipython_module.get_ipython = Mock(return_value=mock_shell)
-
-    monkeypatch.setitem(sys.modules, "IPython", mock_ipython_module)
+    fake_shell = FakeIPythonShellWithoutCustomExc()
+    fake_ipython = _create_fake_ipython_module(fake_shell)
+    monkeypatch.setitem(sys.modules, "IPython", fake_ipython)
     reset_notebook_detection()
     yield
 
@@ -106,21 +121,21 @@ def test_returns_false_in_standard_python():
 
 
 # ---------------------------------------------------------------------------
-# Behavior Tests: Notebook environment (mocked)
+# Behavior Tests: Notebook environment (faked)
 # ---------------------------------------------------------------------------
 
-def test_returns_true_in_notebook_environment(mock_notebook_environment):
+def test_returns_true_in_notebook_environment(fake_notebook_environment):
     """Verify detection returns True in IPython/Jupyter environment."""
     assert is_executed_in_notebook() is True
 
 
-def test_returns_false_when_ipython_inactive(mock_inactive_ipython):
+def test_returns_false_when_ipython_inactive(fake_inactive_ipython):
     """Verify detection returns False when IPython installed but not active."""
     assert is_executed_in_notebook() is False
 
 
 def test_returns_false_when_shell_lacks_required_attribute(
-    mock_shell_without_custom_exc
+    fake_shell_without_custom_exc,
 ):
     """Verify detection returns False when shell lacks set_custom_exc."""
     assert is_executed_in_notebook() is False
@@ -130,15 +145,15 @@ def test_returns_false_when_shell_lacks_required_attribute(
 # Behavior Tests: Reset functionality
 # ---------------------------------------------------------------------------
 
-def test_reset_allows_environment_change_detection(mock_notebook_environment):
+def test_reset_allows_environment_change_detection(fake_notebook_environment):
     """Verify reset enables detecting a changed environment."""
-    # With mock active, should detect notebook
+    # With fake active, should detect notebook
     assert is_executed_in_notebook() is True
 
 
-def test_cached_result_persists_without_reset(mock_notebook_environment):
+def test_cached_result_persists_without_reset(fake_notebook_environment):
     """Verify that without reset, cached result persists."""
-    # First call with mock active
+    # First call with fake active
     first = is_executed_in_notebook()
     # Second call should return same cached value
     second = is_executed_in_notebook()
