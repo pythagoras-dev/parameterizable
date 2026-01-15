@@ -363,10 +363,10 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3480 | 7695 | 11175 |
-| Source Lines Of Code (SLOC) | 1533 | 4554 | 6087 |
+| Lines Of Code (LOC) | 3490 | 7695 | 11185 |
+| Source Lines Of Code (SLOC) | 1537 | 4554 | 6091 |
 | Classes | 15 | 153 | 168 |
-| Functions / Methods | 110 | 677 | 787 |
+| Functions / Methods | 111 | 677 | 788 |
 | Files | 17 | 53 | 70 |
 <!-- MIXINFORGE_STATS_END -->
 
