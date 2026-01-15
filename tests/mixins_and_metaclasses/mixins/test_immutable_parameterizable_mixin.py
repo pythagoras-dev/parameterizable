@@ -67,11 +67,11 @@ def test_hash_fails_during_initialization():
             super().__init__()
             # Accessing hash before init is done
             hash(self)
-            
+
         def get_params(self):
             return {}
 
-    with pytest.raises(RuntimeError, match="Cannot hash uninitialized object"):
+    with pytest.raises(RuntimeError, match="Cannot get identity key of uninitialized object"):
         PrematureHasher()
 
 def test_initialization_guard_compliance():

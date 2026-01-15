@@ -89,6 +89,7 @@ For development:
 | Component | Description |
 |-----------|-------------|
 | `ParameterizableMixin` | Base class for parameterizable objects with JSON serialization |
+| `ImmutableMixin` | Base class for immutable objects with customizable identity keys |
 | `ImmutableParameterizableMixin` | Immutable objects with params-based identity |
 | `CacheablePropertiesMixin` | Auto discovery and invalidation of `cached_property` |
 | `NotPicklableMixin` | Prevents pickling/unpickling of objects |
@@ -138,20 +139,35 @@ standardized parameter access and JSON serialization.
 - Works seamlessly with `dumpjs()` and `loadjs()` for full object
   serialization
 
-### ImmutableParameterizableMixin
+### ImmutableMixin
 
-A mixin for creating immutable objects defined by their parameters.
-Ensures strict initialization and value-based equality
-and hashing.
+A base class for creating immutable objects with customizable identity
+keys. Provides immutability guarantees through the `GuardedInitMeta`
+metaclass and enables value-based hashing and equality.
 
 **Key features:**
-- Extends `ParameterizableMixin` with immutability guarantees
-- `__hash__` / `__eq__` — Implements value-based identity using JSON
-  parameters
+- `identity_key()` — Abstract method that subclasses override to define
+  what makes an object unique
+- `__hash__` / `__eq__` — Implements identity-based hashing and equality
+  using cached identity keys
 - `GuardedInitMeta` — Uses guarded initialization to prevent hash
   computation on uninitialized objects
-- Useful for creating parameterizable objects that can be used as dictionary
-  keys or in sets
+- `__copy__` / `__deepcopy__` — Returns self since immutable objects
+  don't need copying
+- Flexible design allows any hashable value as identity key (strings,
+  tuples, JSON, etc.)
+
+### ImmutableParameterizableMixin
+
+A mixin combining `ParameterizableMixin` and `ImmutableMixin` for
+creating immutable objects defined by their parameters. Uses
+JSON-serialized parameters as the identity key.
+
+**Key features:**
+- Inherits from both `ParameterizableMixin` and `ImmutableMixin`
+- Automatically uses JSON-serialized parameters for hashing and equality
+- Enables parameter-based identity for dictionary keys and set membership
+- Combines parameter management with immutability guarantees
 
 ### CacheablePropertiesMixin
 
@@ -347,11 +363,11 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3430 | 7479 | 10909 |
-| Source Lines Of Code (SLOC) | 1521 | 4432 | 5953 |
-| Classes | 14 | 146 | 160 |
-| Functions / Methods | 109 | 651 | 760 |
-| Files | 16 | 52 | 68 |
+| Lines Of Code (LOC) | 3480 | 7695 | 11175 |
+| Source Lines Of Code (SLOC) | 1533 | 4554 | 6087 |
+| Classes | 15 | 153 | 168 |
+| Functions / Methods | 110 | 677 | 787 |
+| Files | 17 | 53 | 70 |
 <!-- MIXINFORGE_STATS_END -->
 
 ## Development

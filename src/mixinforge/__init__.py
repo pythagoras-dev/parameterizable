@@ -7,6 +7,7 @@ serialization, and dictionary utilities.
 
 Public API:
 - ParameterizableMixin: Base class for parameterizable objects with JSON serialization.
+- ImmutableMixin: Base class for immutable objects with customizable identity keys.
 - ImmutableParameterizableMixin: Immutable objects with params-based identity.
 - CacheablePropertiesMixin: Automatic discovery and invalidation of cached_property attributes.
 - NotPicklableMixin: Mixin that prevents pickling/unpickling.
@@ -29,6 +30,7 @@ from .utility_functions.nested_collections_processor import *
 from .mixins_and_metaclasses.not_picklable_mixin import *
 from .mixins_and_metaclasses.guarded_init_metaclass import *
 from .mixins_and_metaclasses.parameterizable_mixin import *
+from .mixins_and_metaclasses.immutable_mixin import *
 from .mixins_and_metaclasses.immutable_parameterizable_mixin import *
 from .mixins_and_metaclasses.cacheable_properties_mixin import *
 from .mixins_and_metaclasses.single_thread_enforcer_mixin import *
@@ -37,10 +39,11 @@ from .mixins_and_metaclasses.singleton_mixin import *
 __all__ = [
     'CacheablePropertiesMixin',
     'GuardedInitMeta',
+    'ImmutableMixin',
+    'ImmutableParameterizableMixin',
     'JsonSerializedObject',
     'NotPicklableMixin',
     'ParameterizableMixin',
-    'ImmutableParameterizableMixin',
     'SingleThreadEnforcerMixin',
     'SingletonMixin',
     '__version__',
