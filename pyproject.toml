@@ -76,6 +76,7 @@ addopts = [
     "--verbose",              # Verbose output
     "--cache-clear",          # Clear cache before each run
 ]
+
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_live_action.py"]
 markers = [

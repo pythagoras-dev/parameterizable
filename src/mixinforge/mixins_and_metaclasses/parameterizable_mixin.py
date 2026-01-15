@@ -30,6 +30,8 @@ class ParameterizableMixin:
         get_params returns an empty mapping.
     """
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.get_params()})"
 
     def get_params(self) -> dict[str, Any]:
         """Return this instance's configuration parameters.
