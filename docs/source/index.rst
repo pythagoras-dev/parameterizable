@@ -35,7 +35,7 @@ tools for building robust, configurable classes.
 What Is It?
 -----------
 
-``mixinforge`` is a lightweight library providing three key areas of
+``mixinforge`` is a lightweight library providing four key areas of
 functionality:
 
 1. **Mixins & Metaclasses** — Reusable components for parameter
@@ -43,7 +43,8 @@ functionality:
    singleton pattern, and pickle prevention
 2. **Utility Functions** — Tools for JSON serialization, nested
    collection processing, and dictionary operations
-3. **CLI Tools** — Command-line utilities for project analysis and
+3. **Context Managers** — Helpers for temporary state/behavior changes
+4. **CLI Tools** — Command-line utilities for project analysis and
    maintenance
 
 
@@ -163,6 +164,18 @@ Utility Functions
      - Find atomics in nested collections
    * - ``find_nonatomics_inside_composite_object(obj, type)``
      - Find instances of type in composite
+
+Context Managers
+~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Component
+     - Description
+   * - ``OutputCapturer``
+     - Captures stdout, stderr, and logging output while preserving display
 
 CLI Tools
 ~~~~~~~~~
@@ -370,6 +383,24 @@ Dictionary Utilities
 * **sort_dict_by_keys(d)** — Returns a new dictionary with keys
   sorted alphabetically, useful for consistent serialization and
   comparison
+
+Context Managers
+----------------
+
+OutputCapturer
+~~~~~~~~~~~~~~
+
+A context manager that simultaneously captures and displays stdout, stderr,
+and logging output. Uses a "tee" strategy where output is duplicated: sent
+to both the original destination (for normal display) and to an internal
+buffer (for storage).
+
+**Key features:**
+
+* Captures ``sys.stdout``, ``sys.stderr``, and ``logging`` output
+* Preserves normal output behavior (output is still visible in console)
+* ``get_output()`` — Retrieve all captured output as a single string
+* Ideal for testing CLI tools or logging execution traces without suppressing output
 
 CLI Tools
 ---------

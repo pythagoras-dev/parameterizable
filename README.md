@@ -21,7 +21,7 @@ functionality:
 2. **Utility Functions** — Tools for JSON serialization, nested
    collection processing, and dictionary operations
 3. **Context Managers** — Helpers for temporary state/behavior changes
-3. **CLI Tools** — Command-line utilities for project analysis and
+4. **CLI Tools** — Command-line utilities for project analysis and
    maintenance
 
 ## Quick Example
@@ -109,6 +109,12 @@ For development:
 | `sort_dict_by_keys(d)` | Sort dictionary keys alphabetically |
 | `find_atomics_in_nested_collections(obj)` | Find atomics in nested collections |
 | `find_nonatomics_inside_composite_object(obj, type)` | Find instances of type in composite |
+
+### Context Managers
+
+| Component | Description |
+|-----------|-------------|
+| `OutputCapturer` | Captures stdout, stderr, and logging output while preserving display |
 
 ### CLI Tools
 
@@ -290,6 +296,21 @@ graphs, useful for introspection and validation.
 - **`sort_dict_by_keys(d)`** — Returns a new dictionary with keys
   sorted alphabetically, useful for consistent serialization and
   comparison
+
+## Context Managers
+
+### OutputCapturer
+
+A context manager that simultaneously captures and displays stdout, stderr,
+and logging output. Uses a "tee" strategy where output is duplicated: sent
+to both the original destination (for normal display) and to an internal
+buffer (for storage).
+
+**Key features:**
+- Captures `sys.stdout`, `sys.stderr`, and `logging` output
+- Preserves normal output behavior (output is still visible in console)
+- `get_output()` — Retrieve all captured output as a single string
+- Ideal for testing CLI tools or logging execution traces without suppressing output
 
 ## CLI Tools
 
