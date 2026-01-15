@@ -12,6 +12,7 @@ Mixins and Metaclasses
 The library provides several mixins and metaclasses for common design patterns:
 
 * **ParameterizableMixin** - Parameter management and JSON serialization
+* **ImmutableParameterizableMixin** - Immutable objects with params-based identity
 * **CacheablePropertiesMixin** - Automatic cached property management
 * **NotPicklableMixin** - Prevent object pickling
 * **SingleThreadEnforcerMixin** - Thread safety enforcement

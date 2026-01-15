@@ -7,6 +7,7 @@ serialization, and dictionary utilities.
 
 Public API:
 - ParameterizableMixin: Base class for parameterizable objects with JSON serialization.
+- ImmutableParameterizableMixin: Immutable objects with params-based identity.
 - CacheablePropertiesMixin: Automatic discovery and invalidation of cached_property attributes.
 - NotPicklableMixin: Mixin that prevents pickling/unpickling.
 - SingleThreadEnforcerMixin: Enforces single-threaded execution with multi-process support.

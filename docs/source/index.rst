@@ -125,6 +125,8 @@ Mixins & Metaclasses
      - Description
    * - ``ParameterizableMixin``
      - Base class for parameterizable objects with JSON serialization
+   * - ``ImmutableParameterizableMixin``
+     - Immutable objects with params-based identity
    * - ``CacheablePropertiesMixin``
      - Auto discovery and invalidation of ``cached_property``
    * - ``NotPicklableMixin``
@@ -199,6 +201,23 @@ standardized parameter access and JSON serialization.
   filtered parameters as JSON
 * Works seamlessly with ``dumpjs()`` and ``loadjs()`` for full object
   serialization
+
+ImmutableParameterizableMixin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A mixin for creating immutable objects defined by their parameters.
+Ensures strict initialization and params-based equality
+and hashing.
+
+**Key features:**
+
+* Extends ``ParameterizableMixin`` with immutability guarantees
+* ``__hash__`` / ``__eq__`` — Implements value-based identity using JSON
+  parameters
+* ``GuardedInitMeta`` — Uses guarded initialization to prevent hash
+  computation on uninitialized objects
+* Useful for creating parameterizable objects that can be used as dictionary
+  keys or in sets
 
 CacheablePropertiesMixin
 ~~~~~~~~~~~~~~~~~~~~~~~~
