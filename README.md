@@ -12,7 +12,7 @@ tools for building robust, configurable classes.
 
 ## What Is It?
 
-`mixinforge` is a lightweight library providing three key areas of
+`mixinforge` is a lightweight library providing four key areas of
 functionality:
 
 1. **Mixins & Metaclasses** — Reusable components for parameter
@@ -20,6 +20,7 @@ functionality:
    singleton pattern, and pickle prevention
 2. **Utility Functions** — Tools for JSON serialization, nested
    collection processing, and dictionary operations
+3. **Context Managers** — Helpers for temporary state/behavior changes
 3. **CLI Tools** — Command-line utilities for project analysis and
    maintenance
 
