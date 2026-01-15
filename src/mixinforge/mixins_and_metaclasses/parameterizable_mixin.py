@@ -56,7 +56,7 @@ class ParameterizableMixin:
         Returns:
             JSON string produced by dumpjs.
         """
-        return dumpjs(self.get_params())
+        return dumpjs(sort_dict_by_keys(self.get_params()))
 
 
     @classmethod
