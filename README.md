@@ -109,6 +109,7 @@ For development:
 | `sort_dict_by_keys(d)` | Sort dictionary keys alphabetically |
 | `find_atomics_in_nested_collections(obj)` | Find atomics in nested collections |
 | `find_nonatomics_inside_composite_object(obj, type)` | Find instances of type in composite |
+| `is_executed_in_notebook()` | Detect if running in Jupyter/IPython notebook |
 
 ### Context Managers
 
@@ -385,11 +386,11 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3659 | 7816 | 11475 |
-| Source Lines Of Code (SLOC) | 1609 | 4636 | 6245 |
+| Lines Of Code (LOC) | 3696 | 7821 | 11517 |
+| Source Lines Of Code (SLOC) | 1625 | 4639 | 6264 |
 | Classes | 18 | 155 | 173 |
-| Functions / Methods | 120 | 691 | 811 |
-| Files | 22 | 65 | 87 |
+| Functions / Methods | 121 | 692 | 813 |
+| Files | 23 | 66 | 89 |
 <!-- MIXINFORGE_STATS_END -->
 
 ## Development

@@ -21,6 +21,7 @@ Public API:
 - update_jsparams: Update parameters in a JSON-serialized string.
 - access_jsparams: Access parameters in a JSON-serialized string.
 - JsonSerializedObject: NewType alias for JSON strings produced by dumpjs.
+- is_executed_in_notebook: Detect if running in Jupyter/IPython notebook.
 """
 
 from ._version_info import __version__
@@ -41,6 +42,7 @@ from .utility_functions import (
     dumpjs,
     find_atomics_in_nested_collections,
     find_nonatomics_inside_composite_object,
+    is_executed_in_notebook,
     loadjs,
     sort_dict_by_keys,
     update_jsparams,
@@ -62,6 +64,7 @@ __all__ = [
     'dumpjs',
     'find_atomics_in_nested_collections',
     'find_nonatomics_inside_composite_object',
+    'is_executed_in_notebook',
     'loadjs',
     'sort_dict_by_keys',
     'update_jsparams',

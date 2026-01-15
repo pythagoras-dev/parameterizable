@@ -164,6 +164,8 @@ Utility Functions
      - Find atomics in nested collections
    * - ``find_nonatomics_inside_composite_object(obj, type)``
      - Find instances of type in composite
+   * - ``is_executed_in_notebook()``
+     - Detect if running in Jupyter/IPython notebook
 
 Context Managers
 ~~~~~~~~~~~~~~~~
@@ -509,25 +511,25 @@ Project Statistics
      - Unit Tests
      - Total
    * - Lines Of Code (LOC)
-     - 3659
-     - 7816
-     - 11475
+     - 3696
+     - 7821
+     - 11517
    * - Source Lines Of Code (SLOC)
-     - 1609
-     - 4636
-     - 6245
+     - 1625
+     - 4639
+     - 6264
    * - Classes
      - 18
      - 155
      - 173
    * - Functions / Methods
-     - 120
-     - 691
-     - 811
+     - 121
+     - 692
+     - 813
    * - Files
-     - 22
-     - 65
-     - 87
+     - 23
+     - 66
+     - 89
 
 .. MIXINFORGE_STATS_END
 
