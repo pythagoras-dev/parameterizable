@@ -10,10 +10,7 @@ from types import ModuleType
 
 import pytest
 
-from mixinforge.utility_functions.notebook_checker import (
-    is_executed_in_notebook,
-    reset_notebook_detection,
-)
+from mixinforge import (is_executed_in_notebook, reset_notebook_detection)
 
 
 # ---------------------------------------------------------------------------
