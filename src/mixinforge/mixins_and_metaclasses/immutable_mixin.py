@@ -8,15 +8,16 @@ from .guarded_init_metaclass import GuardedInitMeta
 
 
 class ImmutableMixin(metaclass=GuardedInitMeta):
-    """Provides immutability support with customizable identity keys.
+    """Support objects known to never change after creation.
 
-    Objects are immutable after initialization and define their identity
-    through a customizable get_identity_key() method. This enables safe use
-    as dictionary keys and set members while preventing post-construction
-    modification.
+    The mixin provides a number of convenience features and optimizations
+    for immutable objects, primarily around hashing and equality comparisons
+    based on a customizable identity key. It does not guarantee or check
+    actual immutability; the subclass is responsible for ensuring its instances
+    are truly immutable.
 
     Subclasses must override get_identity_key() to return a hashable value
-    that uniquely identifies the object's identity.
+    that uniquely defines the object's identity based on its immutable state.
     """
 
     def __init__(self, *args, **kwargs):
@@ -55,10 +56,10 @@ class ImmutableMixin(metaclass=GuardedInitMeta):
         return self.get_identity_key()
 
     def __hash__(self) -> int:
-        """Return hash based on cached identity key.
+        """Return hash based on the cached identity key.
 
         Returns:
-            Hash value derived from identity key.
+            Hash value derived from the identity key.
 
         Raises:
             RuntimeError: If initialization is incomplete.
