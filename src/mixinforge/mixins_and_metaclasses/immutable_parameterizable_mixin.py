@@ -16,8 +16,8 @@ class ImmutableParameterizableMixin(ParameterizableMixin, ImmutableMixin):
     immutability support. Objects use their JSON-serialized parameters as
     their identity key, enabling parameter-based equality comparisons and hashing.
 
-    This makes parameterizable objects safe to use as dictionary keys and set
-    members while preventing post-construction modification.
+    This makes it possible to use parameterizable objects as dictionary keys
+    and set members.
     """
 
 
