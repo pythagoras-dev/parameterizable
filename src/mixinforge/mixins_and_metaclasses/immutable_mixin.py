@@ -1,4 +1,10 @@
-"""Base mixin for immutable objects with value-based hashing and equality."""
+"""Mixin for immutable objects with optimized hashing and equality.
+
+Provides the ImmutableMixin class that enables value-based identity,
+cached hashing, and optimized equality comparisons for objects that never
+change after initialization. Subclasses define their identity through a
+customizable key rather than through Python's id() function.
+"""
 from __future__ import annotations
 
 from functools import cached_property
@@ -8,31 +14,50 @@ from .guarded_init_metaclass import GuardedInitMeta
 
 
 class ImmutableMixin(metaclass=GuardedInitMeta):
-    """Support for objects known to never change after creation.
+    """Base mixin for objects that never change after initialization.
 
-    The mixin provides a number of convenience features and optimizations
-    for immutable objects, primarily around hashing and equality comparisons
-    based on a customizable identity key. The mixin does not guarantee or check
-    actual immutability; the subclass is responsible for ensuring its instances
-    are truly immutable.
+    Provides value-based identity semantics with optimized hashing and
+    equality comparisons. Instead of using object identity (id), instances
+    are compared based on a customizable identity key that represents their
+    immutable state. This enables efficient use in sets and dictionaries
+    while supporting value equality semantics.
+
+    The mixin caches the hash value for O(1) lookups and uses hash-based
+    short-circuiting in equality checks to avoid expensive comparisons.
+    This is particularly beneficial for complex objects with many fields.
+
+    Note that this mixin does not enforce immutability; subclasses are
+    responsible for ensuring their instances truly never change after
+    initialization.
 
     Subclasses must override get_identity_key() to return a hashable value
     that uniquely defines the object's identity based on its immutable state.
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialize the mixin with an initialization guard.
+
+        Sets up the _init_finished flag to prevent premature access to the
+        identity key during object construction. The GuardedInitMeta
+        metaclass sets this flag to True after initialization completes.
+        """
         self._init_finished = False
         super().__init__(*args, **kwargs)
 
     def get_identity_key(self) -> Any:
         """Return a hashable value defining this object's identity.
 
-        This method must be overridden by subclasses to provide the value
-        used for hashing and equality comparisons. The returned value must
-        be hashable and should remain constant for the object's lifetime.
+        Subclasses must override this method to specify what makes an
+        instance unique. The returned value is used for hashing and equality
+        comparisons, enabling value-based semantics. Common implementations
+        return a tuple of the object's immutable fields.
+
+        The returned value must be hashable and must remain constant for
+        the object's lifetime to maintain hash consistency.
 
         Returns:
-            A hashable value uniquely identifying this object.
+            A hashable value uniquely identifying this object based on its
+            immutable state.
 
         Raises:
             NotImplementedError: If not overridden by subclass.
@@ -43,7 +68,12 @@ class ImmutableMixin(metaclass=GuardedInitMeta):
 
     @cached_property
     def identity_key(self) -> Any:
-        """Cache the identity key for consistent hashing.
+        """Cached identity key for consistent hashing and equality checks.
+
+        Caches the result of get_identity_key() to ensure the same value
+        is used throughout the object's lifetime. This guarantees hash
+        stability and enables efficient repeated comparisons without
+        recomputing the identity key.
 
         Returns:
             The cached identity key.
@@ -58,6 +88,10 @@ class ImmutableMixin(metaclass=GuardedInitMeta):
     def __hash__(self) -> int:
         """Return hash based on the cached identity key.
 
+        Uses the cached identity key to compute the hash, ensuring O(1)
+        performance for repeated hash operations. This enables efficient
+        use in sets and dictionaries.
+
         Returns:
             Hash value derived from the identity key.
 
@@ -69,8 +103,10 @@ class ImmutableMixin(metaclass=GuardedInitMeta):
     def __eq__(self, other: Any) -> bool:
         """Check equality based on type and identity key.
 
-        Objects are equal if they share the same type and identity key value.
-        Uses hash comparison first for optimization.
+        Implements optimized equality checking with multiple short-circuit
+        paths: identity check, type check, hash comparison, and finally
+        identity key comparison. The hash comparison provides fast rejection
+        for unequal objects without comparing full identity keys.
 
         Args:
             other: Object to compare against.
@@ -91,6 +127,9 @@ class ImmutableMixin(metaclass=GuardedInitMeta):
     def __ne__(self, other: Any) -> bool:
         """Check inequality based on type and identity key.
 
+        Delegates to __eq__ and inverts the result, maintaining consistency
+        with equality semantics and properly handling NotImplemented.
+
         Args:
             other: Object to compare against.
 
@@ -104,9 +143,17 @@ class ImmutableMixin(metaclass=GuardedInitMeta):
         return not eq_result
 
     def __copy__(self) -> Self:
-        """Return self since immutable objects need no copying."""
+        """Return self since immutable objects need no copying.
+        
+        Immutable objects can safely share references instead of creating
+        copies, improving memory efficiency and performance.
+        """
         return self
 
     def __deepcopy__(self, memo: dict) -> Self:
-        """Return self since immutable objects need no deep copying."""
+        """Return self since immutable objects need no deep copying.
+        
+        Immutable objects can safely share references instead of creating
+        deep copies, improving memory efficiency and performance.
+        """
         return self
