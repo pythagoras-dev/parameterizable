@@ -1,4 +1,4 @@
-"""Base mixin for immutable objects with identity-based hashing and equality."""
+"""Base mixin for immutable objects with value-based hashing and equality."""
 from __future__ import annotations
 
 from functools import cached_property
@@ -8,11 +8,11 @@ from .guarded_init_metaclass import GuardedInitMeta
 
 
 class ImmutableMixin(metaclass=GuardedInitMeta):
-    """Support objects known to never change after creation.
+    """Support for objects known to never change after creation.
 
     The mixin provides a number of convenience features and optimizations
     for immutable objects, primarily around hashing and equality comparisons
-    based on a customizable identity key. It does not guarantee or check
+    based on a customizable identity key. The mixin does not guarantee or check
     actual immutability; the subclass is responsible for ensuring its instances
     are truly immutable.
 
