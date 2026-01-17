@@ -4,7 +4,7 @@ Provides functionality to transform specific instances within deeply nested
 structures while preserving the overall object graph and handling cycles.
 """
 from collections import defaultdict
-from collections.abc import Iterable, Mapping, Callable
+from collections.abc import Iterable, Iterator, Mapping, Callable
 from typing import Any, TypeVar
 from dataclasses import replace, fields
 from itertools import islice
@@ -175,7 +175,17 @@ class _ObjectReconstructor:
             new_dict[new_k] = new_v
 
         if changed:
-            result = _safe_recreate_container(type(original), new_dict.items())
+            original_type = type(original)
+            # For dict subclasses, use __new__ to bypass custom __init__
+            if issubclass(original_type, dict):
+                result = original_type.__new__(original_type)
+                dict.update(result, new_dict)
+                # Copy instance attributes from original
+                if hasattr(original, '__dict__'):
+                    for attr, val in original.__dict__.items():
+                        setattr(result, attr, val)
+            else:
+                result = _safe_recreate_container(original_type, new_dict.items())
             self.seen_ids[obj_id] = result
             return result
 
@@ -290,6 +300,10 @@ def transform_instances_inside_composite_object(
 
     if is_atomic_type(target_type):
         raise TypeError(f"target_type must be a composite type, got {target_type.__name__}")
+
+    # If obj is an iterator, convert to list to prevent consumption during probe
+    if isinstance(obj, Iterator):
+        obj = list(obj)
 
     # Optimization: check if any targets exist before attempting reconstruction
     probe = find_instances_inside_composite_object(obj, target_type)
