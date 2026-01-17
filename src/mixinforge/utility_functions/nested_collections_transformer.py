@@ -20,9 +20,29 @@ T = TypeVar('T')
 # ==============================================================================
 # Internal helpers
 # ==============================================================================
-def _safe_recreate_container(original_type: type, items: Iterable[Any]) -> Any:
-    """Best-effort reconstruction that won't explode for exotic containers."""
+def _safe_recreate_container(original_type: type, items: Iterable[Any], *, original: Any = None) -> Any:
+    """Best-effort reconstruction that won't explode for exotic containers.
+
+    Args:
+        original_type: The type to recreate.
+        items: The items to populate the container with.
+        original: Optional original object, used to preserve special attributes
+            like defaultdict.default_factory.
+    """
     try:
+        # Preserve defaultdict.default_factory if applicable
+        if issubclass(original_type, defaultdict):
+            factory = original.default_factory if original is not None else None
+            result = defaultdict(factory, items)
+            # For subclasses, we need to create the proper type
+            if original_type is not defaultdict:
+                subclass_result = original_type.__new__(original_type)
+                defaultdict.__init__(subclass_result, factory)
+                subclass_result.update(result)
+                if original is not None:
+                    _copy_instance_attributes(original, subclass_result)
+                return subclass_result
+            return result
         return original_type(items)
     except Exception:
         if issubclass(original_type, tuple):
@@ -197,7 +217,7 @@ class _ObjectReconstructor:
             result.clear()
             result.update(new_dict)
         else:
-            result = _safe_recreate_container(type(original), new_dict.items())
+            result = _safe_recreate_container(type(original), new_dict.items(), original=original)
 
         self.seen_ids[obj_id] = result
         return result
