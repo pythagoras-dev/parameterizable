@@ -3,7 +3,7 @@ import pytest
 from dataclasses import dataclass
 from typing import Optional
 
-from mixinforge.utility_functions.nested_collections_processor import find_instances_inside_composite_object
+from mixinforge.utility_functions.nested_collections_inspector import find_instances_inside_composite_object
 
 
 @dataclass(frozen=True)

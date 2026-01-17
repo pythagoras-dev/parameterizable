@@ -10,7 +10,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from mixinforge.utility_functions.nested_collections_processor import (
+from mixinforge.utility_functions.nested_collections_inspector import (
     flatten_nested_collection,
     _is_traversable_collection,
 )

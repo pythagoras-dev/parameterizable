@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from collections.abc import Mapping
 from typing import Any
 
-from mixinforge.utility_functions.nested_collections_processor import find_instances_inside_composite_object
+from mixinforge.utility_functions.nested_collections_inspector import find_instances_inside_composite_object
 
 
 @dataclass(frozen=True)
