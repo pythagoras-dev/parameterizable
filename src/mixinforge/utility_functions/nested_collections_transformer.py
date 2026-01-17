@@ -80,7 +80,16 @@ class _ObjectReconstructor:
         # Mark as being processed to handle cycles
         # Special handling for defaultdict to preserve default_factory
         if isinstance(original, defaultdict):
-            result = defaultdict(original.default_factory)
+            if type(original) is defaultdict:
+                result = defaultdict(original.default_factory)
+            else:
+                # Subclass: bypass __init__, use defaultdict's init directly
+                result = type(original).__new__(type(original))
+                defaultdict.__init__(result, original.default_factory)
+                # Copy extra instance attributes
+                if hasattr(original, '__dict__'):
+                    for k, v in original.__dict__.items():
+                        setattr(result, k, v)
         else:
             result = type(original)()
         self.seen_ids[obj_id] = result

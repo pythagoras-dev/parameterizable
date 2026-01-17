@@ -53,7 +53,7 @@ def _is_standard_mapping(obj: Any) -> bool:
         ChainMap,
         WeakKeyDictionary,
         WeakValueDictionary,
-        MappingProxyType}
+        MappingProxyType} or isinstance(obj, defaultdict)
 
 
 def _is_standard_iterable(obj: Any) -> bool:
