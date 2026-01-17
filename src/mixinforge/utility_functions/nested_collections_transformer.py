@@ -19,6 +19,20 @@ from .nested_collections_inspector import (
 
 T = TypeVar('T')
 
+# ==============================================================================
+# Internal helpers
+# ==============================================================================
+def _safe_recreate_container(original_type: type, items: Iterable[Any]) -> Any:
+    """Best-effort reconstruction that won’t explode for exotic containers."""
+    try:
+        return original_type(items)
+    except Exception:
+        if issubclass(original_type, tuple):
+            return tuple(items)
+        if issubclass(original_type, set):
+            return set(items)
+        return list(items)
+
 
 # ==============================================================================
 # Reconstruction Logic
@@ -146,7 +160,7 @@ class _ObjectReconstructor:
             if not changed:
                 return original
 
-            result = type(original)(new_items)
+            result = _safe_recreate_container(type(original), new_items)
             self.seen_ids[obj_id] = result
             return result
 
@@ -161,7 +175,7 @@ class _ObjectReconstructor:
             new_dict[new_k] = new_v
 
         if changed:
-            result = type(original)(new_dict)
+            result = _safe_recreate_container(type(original), new_dict.items())
             self.seen_ids[obj_id] = result
             return result
 
@@ -178,7 +192,7 @@ class _ObjectReconstructor:
             new_items.append(new_item)
 
         if changed:
-            result = type(original)(new_items)
+            result = _safe_recreate_container(type(original), new_items)
             self.seen_ids[obj_id] = result
             return result
 
