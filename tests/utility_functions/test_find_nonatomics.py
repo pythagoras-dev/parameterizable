@@ -47,18 +47,14 @@ def test_find_inside_target_objects():
     assert result == [t2, t1]
 
 
-def test_find_with_traverse_dict_keys():
+def test_find_with_dict_keys():
     """Find target objects when they are keys in a dictionary."""
     t1 = Target("key")
     t2 = Target("value")
     data = {t1: t2}
-    
-    # Without keys traversal
-    result = list(find_instances_inside_composite_object(data, Target, traverse_dict_keys=False))
-    assert result == [t2]
-    
-    # With keys traversal
-    result = list(find_instances_inside_composite_object(data, Target, traverse_dict_keys=True))
+
+    # Dict keys are always traversed
+    result = list(find_instances_inside_composite_object(data, Target))
     # Order depends on traversal but both should be present
     assert len(result) == 2
     assert t1 in result

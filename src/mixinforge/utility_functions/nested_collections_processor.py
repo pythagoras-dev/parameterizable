@@ -18,19 +18,16 @@ from ..utility_functions.atomics_detector import is_atomic_object, is_atomic_typ
 T = TypeVar('T')
 
 
-def _create_mapping_iterator(mapping: Mapping, traverse_dict_keys: bool) -> Iterator[Any]:
-    """Create iterator from mapping, optionally including keys.
+def _create_mapping_iterator(mapping: Mapping) -> Iterator[Any]:
+    """Create iterator from mapping, including both keys and values.
 
     Args:
         mapping: Mapping to iterate over.
-        traverse_dict_keys: If True, yields keys then values; otherwise yields values only.
 
     Returns:
-        Iterator over values only, or over keys then values.
+        Iterator over keys then values.
     """
-    if traverse_dict_keys:
-        return chain(mapping.keys(), mapping.values())
-    return iter(mapping.values())
+    return chain(mapping.keys(), mapping.values())
 
 
 def _get_all_slots(cls: type) -> list[str]:
@@ -156,7 +153,7 @@ def _yield_attributes(obj: Any) -> Iterator[Any]:
 
             yield value
 
-def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[Any]:
+def _get_children_from_object(obj: Any) -> Iterator[Any]:
     """Extract child objects for traversal from any object type.
 
     Uses a refined traversal strategy:
@@ -170,7 +167,6 @@ def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[An
 
     Args:
         obj: Object to extract children from.
-        traverse_dict_keys: Whether to include mapping keys along with values.
 
     Yields:
         Child objects to traverse.
@@ -179,11 +175,11 @@ def _get_children_from_object(obj: Any, traverse_dict_keys: bool) -> Iterator[An
         return iter(())
 
     if _is_standard_mapping(obj):
-        yield from _create_mapping_iterator(obj, traverse_dict_keys)
+        yield from _create_mapping_iterator(obj)
     elif _is_standard_iterable(obj):
         yield from obj
     elif isinstance(obj, Mapping):
-        yield from chain(_yield_attributes(obj), _create_mapping_iterator(obj, traverse_dict_keys))
+        yield from chain(_yield_attributes(obj), _create_mapping_iterator(obj))
     elif isinstance(obj, Iterable):
         yield from chain(_yield_attributes(obj), obj)
     else:
@@ -206,11 +202,7 @@ def _is_traversable_collection(obj: Any) -> bool:
     return True
 
 
-def flatten_nested_collection(
-    obj: Iterable[Any],
-    *,
-    traverse_dict_keys: bool = False
-) -> Iterator[Any]:
+def flatten_nested_collection(obj: Iterable[Any]) -> Iterator[Any]:
     """Yield leaf elements from nested collections with weak deduplication.
 
     Atomic elements are indivisible values such as numbers, strings,
@@ -218,9 +210,10 @@ def flatten_nested_collection(
     leaf values, which includes both atomics and non-iterable objects.
     Their exact order and complete deduplication are not guaranteed.
 
+    Mapping keys and values are both traversed.
+
     Args:
         obj: The root collection to traverse.
-        traverse_dict_keys: If True, includes mapping keys in the traversal.
 
     Yields:
         Atomic elements in depth-first order, deduplicated by identity.
@@ -234,7 +227,7 @@ def flatten_nested_collection(
         raise TypeError(f"Expected a non-atomic Iterable as input, "
                         f"got {type(obj).__name__} instead")
 
-    root_iter = _create_mapping_iterator(obj, traverse_dict_keys) if isinstance(obj, Mapping) else iter(obj)
+    root_iter = _create_mapping_iterator(obj) if isinstance(obj, Mapping) else iter(obj)
     root_id   = id(obj)
 
     stack: deque[tuple[Iterator[Any], set[int]]] = deque([(root_iter, {root_id})])
@@ -255,7 +248,7 @@ def flatten_nested_collection(
             if obj_id in seen_ids:
                 continue
 
-            item_iter = _create_mapping_iterator(item, traverse_dict_keys) if isinstance(item, Mapping) else iter(item)
+            item_iter = _create_mapping_iterator(item) if isinstance(item, Mapping) else iter(item)
             seen_ids.add(obj_id)
             stack.append((item_iter, path | {obj_id}))
         else:
@@ -267,9 +260,7 @@ def flatten_nested_collection(
 
 def find_instances_inside_composite_object(
     obj: Any,
-    target_type: type[T],
-    *,
-    traverse_dict_keys: bool = False
+    target_type: type[T]
 ) -> Iterator[T]:
     """Find all instances of a target type within any object.
 
@@ -278,10 +269,11 @@ def find_instances_inside_composite_object(
     continuing to search inside matched objects for nested instances.
     Exact return order and complete deduplication are not guaranteed.
 
+    Mapping keys and values are both traversed.
+
     Args:
         obj: The object to search within.
         target_type: The composite type to search for.
-        traverse_dict_keys: If True, includes mapping keys in the traversal.
 
     Yields:
         Instances of target_type in depth-first order, deduplicated by identity.
@@ -320,5 +312,5 @@ def find_instances_inside_composite_object(
         if is_atomic_object(current):
             continue
 
-        children_iter = _get_children_from_object(current, traverse_dict_keys)
+        children_iter = _get_children_from_object(current)
         stack.append((children_iter, path | {obj_id}))

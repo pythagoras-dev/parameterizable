@@ -75,21 +75,19 @@ def test_flatten_mixed_list_tuple():
     assert result == [1, 2, 3, 4, 5]
 
 
-def test_flatten_dictionary_values_only():
-    """Dictionary flattening traverses values only, ignoring keys."""
+def test_flatten_dictionary_includes_keys():
+    """Dictionary flattening traverses both keys and values."""
     nested = {"a": 1, "b": [2, 3], "c": {"d": 4}}
     result = list(flatten_nested_collection(nested))
-    # Keys "a", "b", "c", "d" are not yielded
-    assert result == [1, 2, 3, 4]
+    # Keys "a", "b", "c" and nested key "d" are yielded along with values
+    assert result == ["a", "b", "c", 1, 2, 3, "d", 4]
 
 
-def test_flatten_dictionary_includes_keys_when_requested():
-    """Dictionary traversal can include keys when requested."""
+def test_flatten_dictionary_nested():
+    """Dictionary traversal with nested structures."""
     nested = {"a": 1, "b": {"c": 2, "d": [3]}}
 
-    result = list(
-        flatten_nested_collection(nested, traverse_dict_keys=True)
-    )
+    result = list(flatten_nested_collection(nested))
 
     assert result == ["a", "b", 1, "c", "d", 2, 3]
 
@@ -103,7 +101,8 @@ def test_flatten_nested_dictionaries():
         }
     }
     result = list(flatten_nested_collection(nested))
-    assert result == [1, 2, 3]
+    # Keys are traversed along with values
+    assert result == ["outer", "inner", "more", 1, 2, "deep", 3]
 
 
 def test_flatten_empty_list():
@@ -336,7 +335,8 @@ def test_mixed_mappings_and_sequences():
         {"c": {"d": [5, 6]}}
     ]
     result = list(flatten_nested_collection(nested))
-    assert result == [1, 2, 3, 4, 5, 6]
+    # Keys are traversed along with values
+    assert result == ["a", 1, 2, "b", 3, 4, "c", "d", 5, 6]
 
 
 def test_sets_are_flattened():

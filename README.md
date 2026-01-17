@@ -386,8 +386,8 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3759 | 7968 | 11727 |
-| Source Lines Of Code (SLOC) | 1622 | 4700 | 6322 |
+| Lines Of Code (LOC) | 3751 | 7963 | 11714 |
+| Source Lines Of Code (SLOC) | 1614 | 4696 | 6310 |
 | Classes | 18 | 157 | 175 |
 | Functions / Methods | 122 | 705 | 827 |
 | Files | 23 | 66 | 89 |

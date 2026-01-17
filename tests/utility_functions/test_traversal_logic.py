@@ -84,11 +84,10 @@ class CustomMapping(Mapping):
         return len(self._data)
 
 
-def find_leaves(obj: Any, traverse_dict_keys: bool = False) -> list[int]:
+def find_leaves(obj: Any) -> list[int]:
     """Helper to find Leaf objects and return their values."""
     # We search for Leaf objects.
-    # traverse_dict_keys is passed through.
-    found = find_instances_inside_composite_object(obj, Leaf, traverse_dict_keys=traverse_dict_keys)
+    found = find_instances_inside_composite_object(obj, Leaf)
     return sorted(leaf.value for leaf in found)
 
 
@@ -131,18 +130,18 @@ def test_uninitialized_slots_are_skipped():
 
 
 def test_traverse_dict_keys_in_mapping():
-    """Verify traverse_dict_keys=True includes keys."""
+    """Verify that dict keys are traversed."""
     data = {Leaf(1): Leaf(2)}
-    result = find_leaves(data, traverse_dict_keys=True)
+    result = find_leaves(data)
     assert result == [1, 2]
 
 
 def test_traverse_dict_keys_in_mixed_structure():
-    """Verify traverse_dict_keys=True propagates to nested structures."""
+    """Verify dict keys are traversed in nested structures."""
     data = [{"k": Leaf(1)}, {Leaf(2): "v"}]
     # keys in the first dict is string "k", value is Leaf(1) -> found 1
-    # keys in second dict is Leaf(2), value is string "v" -> found 2 if keys traversed
-    result = find_leaves(data, traverse_dict_keys=True)
+    # keys in second dict is Leaf(2), value is string "v" -> found 2 since keys are traversed
+    result = find_leaves(data)
     assert result == [1, 2]
 
 
@@ -156,10 +155,10 @@ def test_iterable_subclass_attributes_and_items_traversed():
 
 
 def test_custom_mapping_traverses_attributes_and_keys():
-    """Custom mappings traverse attributes plus keys/values when requested."""
+    """Custom mappings traverse attributes plus keys/values."""
     data = {Leaf(1): Leaf(2)}
     obj = CustomMapping(data, extra=Leaf(3))
 
-    result = find_leaves(obj, traverse_dict_keys=True)
+    result = find_leaves(obj)
 
     assert result == [1, 2, 3]
