@@ -91,3 +91,38 @@ def test_mapping_subclass_constructor_mismatch():
     assert isinstance(out, StrictDict)
     assert out["k"].value == 2
     assert out.mandatory == "required"
+
+
+# --------------------------------------------------------------------------- #
+# 4.  Multi-field dataclass reconstruction preserves field-value mapping
+# --------------------------------------------------------------------------- #
+@dataclass
+class MultiFieldTarget:
+    """Dataclass with multiple fields to verify correct field-value pairing."""
+    alpha: int
+    beta: str
+    gamma: float
+
+
+def test_dataclass_multifield_reconstruction_preserves_field_mapping():
+    """Verify that multi-field dataclasses maintain correct field-value associations.
+
+    Ensures that field values are matched by name, not by position, preventing
+    silent data corruption if iteration order were to differ from field order.
+    """
+    inner = MultiFieldTarget(alpha=1, beta="two", gamma=3.0)
+    container = {"data": inner}
+
+    def transform(t: MultiFieldTarget) -> MultiFieldTarget:
+        return MultiFieldTarget(
+            alpha=t.alpha * 10,
+            beta=t.beta.upper(),
+            gamma=t.gamma + 0.5,
+        )
+
+    out = transform_instances_inside_composite_object(container, MultiFieldTarget, transform)
+
+    result = out["data"]
+    assert result.alpha == 10
+    assert result.beta == "TWO"
+    assert result.gamma == 3.5

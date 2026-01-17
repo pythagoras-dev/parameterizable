@@ -224,44 +224,49 @@ class _ObjectReconstructor:
 
         # For dataclass or regular objects with __dict__ or __slots__
         if hasattr(obj_to_process, '__dict__') or hasattr(obj_to_process.__class__, '__slots__'):
-            children_list = list(_yield_attributes(obj_to_process))
-
-            new_children = []
-            changed = False
-            for child in children_list:
-                new_child = self.reconstruct(child)
-                new_children.append(new_child)
-                if new_child is not child:
-                    changed = True
-
-            if not changed:
-                return obj_to_process
-
-            # Try to create a new instance with transformed attributes
+            # Handle dataclasses by field name to avoid ordering assumptions
             if hasattr(obj_to_process, '__dataclass_fields__'):
                 field_values = {}
-                field_list = fields(obj_to_process)
-                for field, new_value in zip(field_list, new_children):
+                changed = False
+                for field in fields(obj_to_process):
+                    original_value = getattr(obj_to_process, field.name)
+                    new_value = self.reconstruct(original_value)
+                    if new_value is not original_value:
+                        changed = True
                     field_values[field.name] = new_value
+
+                if not changed:
+                    return obj_to_process
                 return replace(obj_to_process, **field_values)
             else:
-                # Create a new instance for regular objects (with __dict__ or __slots__)
-                new_obj = object.__new__(type(obj_to_process))
-
-                # Get attribute names from __dict__ and/or __slots__
+                # Regular objects with __dict__ or __slots__
+                # Collect attribute names from __dict__ and/or __slots__
                 attr_names = []
                 if hasattr(obj_to_process, '__dict__'):
                     attr_names.extend(obj_to_process.__dict__.keys())
                 if hasattr(obj_to_process.__class__, '__slots__'):
-                    # Get all slots including inherited ones
                     from .nested_collections_inspector import _get_all_slots
                     slots = _get_all_slots(type(obj_to_process))
                     for slot in slots:
                         if hasattr(obj_to_process, slot):
                             attr_names.append(slot)
 
-                # Set the transformed attributes on the new object
-                for attr_name, new_value in zip(attr_names, new_children):
+                # Reconstruct attributes by name
+                new_values = {}
+                changed = False
+                for attr_name in attr_names:
+                    original_value = getattr(obj_to_process, attr_name)
+                    new_value = self.reconstruct(original_value)
+                    if new_value is not original_value:
+                        changed = True
+                    new_values[attr_name] = new_value
+
+                if not changed:
+                    return obj_to_process
+
+                # Create a new instance and set transformed attributes
+                new_obj = object.__new__(type(obj_to_process))
+                for attr_name, new_value in new_values.items():
                     setattr(new_obj, attr_name, new_value)
 
                 return new_obj
