@@ -3,6 +3,7 @@
 Provides functionality to transform specific instances within deeply nested
 structures while preserving the overall object graph and handling cycles.
 """
+from collections import defaultdict
 from collections.abc import Iterable, Mapping, Callable
 from typing import Any, TypeVar
 from dataclasses import replace, fields
@@ -77,7 +78,11 @@ class _ObjectReconstructor:
 
     def _reconstruct_standard_mapping(self, original: Any, obj_id: int) -> Any:
         # Mark as being processed to handle cycles
-        result = type(original)()
+        # Special handling for defaultdict to preserve default_factory
+        if isinstance(original, defaultdict):
+            result = defaultdict(original.default_factory)
+        else:
+            result = type(original)()
         self.seen_ids[obj_id] = result
 
         changed = False
@@ -203,7 +208,26 @@ class _ObjectReconstructor:
                     field_values[field.name] = new_value
                 return replace(obj_to_process, **field_values)
             else:
-                return obj_to_process
+                # Create a new instance for regular objects (with __dict__ or __slots__)
+                new_obj = object.__new__(type(obj_to_process))
+
+                # Get attribute names from __dict__ and/or __slots__
+                attr_names = []
+                if hasattr(obj_to_process, '__dict__'):
+                    attr_names.extend(obj_to_process.__dict__.keys())
+                if hasattr(obj_to_process.__class__, '__slots__'):
+                    # Get all slots including inherited ones
+                    from .nested_collections_inspector import _get_all_slots
+                    slots = _get_all_slots(type(obj_to_process))
+                    for slot in slots:
+                        if hasattr(obj_to_process, slot):
+                            attr_names.append(slot)
+
+                # Set the transformed attributes on the new object
+                for attr_name, new_value in zip(attr_names, new_children):
+                    setattr(new_obj, attr_name, new_value)
+
+                return new_obj
 
         return obj_to_process
 
