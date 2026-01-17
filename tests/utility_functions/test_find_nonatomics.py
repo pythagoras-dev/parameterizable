@@ -61,14 +61,18 @@ def test_find_with_dict_keys():
     assert t2 in result
 
 
-def test_cycle_detection():
-    """Detect cycles when searching for non-atomics."""
+def test_cycle_handling():
+    """Handle cycles gracefully when searching for non-atomics."""
     c1 = Container(None)
     c2 = Container(c1)
     c1.item = c2  # Cycle c1 -> c2 -> c1
-    
-    with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(find_instances_inside_composite_object(c1, Container))
+
+    # Should find both containers without raising an error
+    result = list(find_instances_inside_composite_object(c1, Container))
+    assert len(result) == 2
+    # Use identity check with any() to avoid infinite recursion in __eq__
+    assert any(obj is c1 for obj in result)
+    assert any(obj is c2 for obj in result)
 
 
 def test_deduplication_by_identity():

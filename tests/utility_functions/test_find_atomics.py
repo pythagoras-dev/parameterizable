@@ -243,39 +243,55 @@ def test_shared_substructure_traversed_once():
 # ============================================================================
 
 
-def test_self_referential_list_raises_error():
-    """Self-referential list raises ValueError."""
+def test_self_referential_list_handled():
+    """Self-referential list is handled gracefully."""
     cyclic = [1, 2]
     cyclic.append(cyclic)
-    with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(flatten_nested_collection(cyclic))
+
+    # Should yield atomic values without raising an error
+    result = list(flatten_nested_collection(cyclic))
+    assert 1 in result
+    assert 2 in result
 
 
-def test_circular_reference_between_lists_raises_error():
-    """Circular reference between two lists raises ValueError."""
+def test_circular_reference_between_lists_handled():
+    """Circular reference between two lists is handled gracefully."""
     list_a = [1]
     list_b = [2, list_a]
     list_a.append(list_b)
-    with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(flatten_nested_collection(list_a))
+
+    # Should yield atomic values without raising an error
+    result = list(flatten_nested_collection(list_a))
+    assert 1 in result
+    assert 2 in result
 
 
-def test_circular_reference_in_dict_raises_error():
-    """Circular reference in dictionary values raises ValueError."""
+def test_circular_reference_in_dict_handled():
+    """Circular reference in dictionary values is handled gracefully."""
     d = {"a": 1}
     d["self"] = d
-    with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(flatten_nested_collection(d))
+
+    # Should yield atomic values without raising an error
+    result = list(flatten_nested_collection(d))
+    # Should yield the key "a" and the value 1, and the key "self"
+    assert 1 in result
+    assert "a" in result
+    assert "self" in result
 
 
-def test_deeply_nested_cycle_detected():
-    """Cycles deep in nested structures are detected."""
+def test_deeply_nested_cycle_handled():
+    """Cycles deep in nested structures are handled gracefully."""
     inner = [1]
     middle = [inner, 2]
     outer = [middle, 3]
     inner.append(outer)  # Create cycle: inner -> middle -> outer -> inner
-    with pytest.raises(ValueError, match="Cyclic reference detected"):
-        list(flatten_nested_collection(outer))
+
+    # Should yield atomic values without raising an error
+    result = list(flatten_nested_collection(outer))
+    # Each atomic value should appear once
+    assert 1 in result
+    assert 2 in result
+    assert 3 in result
 
 
 def test_no_false_positive_cycle_with_shared_structure():

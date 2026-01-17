@@ -109,6 +109,7 @@ For development:
 | `sort_dict_by_keys(d)` | Sort dictionary keys alphabetically |
 | `flatten_nested_collection(obj)` | Find atomics in nested collections |
 | `find_instances_inside_composite_object(obj, type)` | Find instances of type in composite |
+| `transform_instances_inside_composite_object(obj, type, fn)` | Transform instances of type in composite |
 | `is_executed_in_notebook()` | Detect if running in Jupyter/IPython notebook |
 
 ### Context Managers
@@ -288,9 +289,16 @@ Tools for working with nested data structures:
 - **`find_instances_inside_composite_object(obj, target_type)`** —
   Recursively find all instances of a specific non-atomic type within
   composite structures (returns iterator)
+- **`transform_instances_inside_composite_object(obj, target_type, transform_fn)`** —
+  Transform all instances of a specific type within composite structures,
+  reconstructing the object graph with transformed instances (returns
+  transformed object)
 
 These functions handle arbitrary nesting depths and complex object
-graphs, useful for introspection and validation.
+graphs including cyclic references. Each object is visited only once
+(deduplication by identity), making them safe for graphs with cycles
+or shared references. Useful for introspection, validation, and
+structural transformations.
 
 ### Dictionary Utilities
 
@@ -386,11 +394,11 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 3751 | 7963 | 11714 |
-| Source Lines Of Code (SLOC) | 1614 | 4696 | 6310 |
-| Classes | 18 | 157 | 175 |
-| Functions / Methods | 122 | 705 | 827 |
-| Files | 23 | 66 | 89 |
+| Lines Of Code (LOC) | 3998 | 8441 | 12439 |
+| Source Lines Of Code (SLOC) | 1754 | 4993 | 6747 |
+| Classes | 18 | 159 | 177 |
+| Functions / Methods | 125 | 730 | 855 |
+| Files | 23 | 67 | 90 |
 <!-- MIXINFORGE_STATS_END -->
 
 ## Development

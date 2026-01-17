@@ -3,7 +3,7 @@
 This package provides reusable mixins, context managers, and utility functions that
 help you build well-structured Python classes. It offers tools for parameter management,
 cache management, initialization control, thread safety, pickle prevention, JSON
-serialization, dictionary utilities, and output capturing.
+serialization, nested collection processing, dictionary utilities, and output capturing.
 
 Public API:
 - ParameterizableMixin: Base class for parameterizable objects with JSON serialization.
@@ -21,6 +21,9 @@ Public API:
 - update_jsparams: Update parameters in a JSON-serialized string.
 - access_jsparams: Access parameters in a JSON-serialized string.
 - JsonSerializedObject: NewType alias for JSON strings produced by dumpjs.
+- flatten_nested_collection: Find all atomic objects in nested collections (handles cycles).
+- find_instances_inside_composite_object: Find instances of a type in composite structures (handles cycles).
+- transform_instances_inside_composite_object: Transform instances of a type in composite structures (handles cycles).
 - is_executed_in_notebook: Detect if running in Jupyter/IPython notebook.
 - reset_notebook_detection: Clear cached notebook detection result.
 """
@@ -43,6 +46,7 @@ from .utility_functions import (
     dumpjs,
     flatten_nested_collection,
     find_instances_inside_composite_object,
+    transform_instances_inside_composite_object,
     is_executed_in_notebook,
     loadjs,
     reset_notebook_detection,
@@ -66,6 +70,7 @@ __all__ = [
     'dumpjs',
     'flatten_nested_collection',
     'find_instances_inside_composite_object',
+    'transform_instances_inside_composite_object',
     'is_executed_in_notebook',
     'loadjs',
     'reset_notebook_detection',
