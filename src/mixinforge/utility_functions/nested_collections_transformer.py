@@ -23,7 +23,7 @@ T = TypeVar('T')
 # Internal helpers
 # ==============================================================================
 def _safe_recreate_container(original_type: type, items: Iterable[Any]) -> Any:
-    """Best-effort reconstruction that won’t explode for exotic containers."""
+    """Best-effort reconstruction that won't explode for exotic containers."""
     try:
         return original_type(items)
     except Exception:
@@ -32,6 +32,22 @@ def _safe_recreate_container(original_type: type, items: Iterable[Any]) -> Any:
         if issubclass(original_type, set):
             return set(items)
         return list(items)
+
+
+def _copy_instance_attributes(source: Any, target: Any) -> None:
+    """Copy instance attributes from source to target via __dict__."""
+    if hasattr(source, '__dict__'):
+        for attr, val in source.__dict__.items():
+            setattr(target, attr, val)
+
+
+def _create_dict_subclass_copy(original: dict) -> dict:
+    """Create a copy of a dict subclass, bypassing __init__ and copying attributes."""
+    original_type = type(original)
+    result = original_type.__new__(original_type)
+    dict.update(result, original)
+    _copy_instance_attributes(original, result)
+    return result
 
 
 # ==============================================================================
@@ -78,6 +94,29 @@ class _ObjectReconstructor:
             case _:
                 return self._reconstruct_custom_object(original, obj_id)
 
+    def _reconstruct_mapping_items(self, original: Mapping) -> tuple[bool, list[tuple[Any, Any]]]:
+        """Reconstruct all key-value pairs, returning (changed, new_items)."""
+        changed = False
+        new_items = []
+        for k, v in original.items():
+            new_k = self.reconstruct(k)
+            new_v = self.reconstruct(v)
+            if new_k is not k or new_v is not v:
+                changed = True
+            new_items.append((new_k, new_v))
+        return changed, new_items
+
+    def _reconstruct_iterable_items(self, original: Iterable) -> tuple[bool, list[Any]]:
+        """Reconstruct all items, returning (changed, new_items)."""
+        changed = False
+        new_items = []
+        for item in original:
+            new_item = self.reconstruct(item)
+            if new_item is not item:
+                changed = True
+            new_items.append(new_item)
+        return changed, new_items
+
     def _reconstruct_target_type(self, original: Any, obj_id: int) -> Any:
         # Mark as being processed to prevent infinite recursion
         self.seen_ids[obj_id] = original  # Temporary placeholder
@@ -92,70 +131,45 @@ class _ObjectReconstructor:
         return transformed_reconstructed
 
     def _reconstruct_standard_mapping(self, original: Any, obj_id: int) -> Any:
-        # Mark as being processed to handle cycles
-        # Special handling for defaultdict to preserve default_factory
+        # Create empty result container, handling defaultdict specially
         if isinstance(original, defaultdict):
             if type(original) is defaultdict:
                 result = defaultdict(original.default_factory)
             else:
-                # Subclass: bypass __init__, use defaultdict's init directly
                 result = type(original).__new__(type(original))
                 defaultdict.__init__(result, original.default_factory)
-                # Copy extra instance attributes
-                if hasattr(original, '__dict__'):
-                    for k, v in original.__dict__.items():
-                        setattr(result, k, v)
+                _copy_instance_attributes(original, result)
         else:
             result = type(original)()
         self.seen_ids[obj_id] = result
 
-        changed = False
-        for k, v in original.items():
-            new_k = self.reconstruct(k)
-            new_v = self.reconstruct(v)
-            if new_k is not k or new_v is not v:
-                changed = True
-            result[new_k] = new_v
+        changed, new_items = self._reconstruct_mapping_items(original)
 
         if not changed:
             self.seen_ids[obj_id] = original
             return original
 
+        for k, v in new_items:
+            result[k] = v
         return result
 
     def _reconstruct_standard_iterable(self, original: Any, obj_id: int) -> Any:
-        # For mutable iterables (list), create placeholder and fill it
-        # For immutable (tuple, frozenset), we'll need to reconstruct after
-        is_mutable = isinstance(original, list)
-
-        if is_mutable:
-            # Create empty list placeholder to handle cycles
+        if isinstance(original, list):
+            # Mutable: create placeholder for cycle handling, then fill
             result = []
             self.seen_ids[obj_id] = result
-
-            changed = False
-            for item in original:
-                new_item = self.reconstruct(item)
-                if new_item is not item:
-                    changed = True
-                result.append(new_item)
+            changed, new_items = self._reconstruct_iterable_items(original)
 
             if not changed:
                 self.seen_ids[obj_id] = original
                 return original
 
+            result.extend(new_items)
             return result
         else:
-            # Immutable types: mark with placeholder, then reconstruct
-            self.seen_ids[obj_id] = original  # Temporary placeholder
-
-            new_items = []
-            changed = False
-            for item in original:
-                new_item = self.reconstruct(item)
-                if new_item is not item:
-                    changed = True
-                new_items.append(new_item)
+            # Immutable: use placeholder, reconstruct after
+            self.seen_ids[obj_id] = original
+            changed, new_items = self._reconstruct_iterable_items(original)
 
             if not changed:
                 return original
@@ -165,49 +179,34 @@ class _ObjectReconstructor:
             return result
 
     def _reconstruct_generic_mapping(self, original: Mapping, obj_id: int) -> Any:
-        new_dict = {}
-        changed = False
-        for k, v in original.items():
-            new_k = self.reconstruct(k)
-            new_v = self.reconstruct(v)
-            if new_k is not k or new_v is not v:
-                changed = True
-            new_dict[new_k] = new_v
+        changed, new_items = self._reconstruct_mapping_items(original)
 
-        if changed:
-            original_type = type(original)
-            # For dict subclasses, use __new__ to bypass custom __init__
-            if issubclass(original_type, dict):
-                result = original_type.__new__(original_type)
-                dict.update(result, new_dict)
-                # Copy instance attributes from original
-                if hasattr(original, '__dict__'):
-                    for attr, val in original.__dict__.items():
-                        setattr(result, attr, val)
-            else:
-                result = _safe_recreate_container(original_type, new_dict.items())
-            self.seen_ids[obj_id] = result
-            return result
+        if not changed:
+            self.seen_ids[obj_id] = original
+            return original
 
-        self.seen_ids[obj_id] = original
-        return original
+        new_dict = dict(new_items)
+        if isinstance(original, dict):
+            # For dict subclasses, bypass __init__ and copy attributes
+            result = _create_dict_subclass_copy(original)
+            result.clear()
+            result.update(new_dict)
+        else:
+            result = _safe_recreate_container(type(original), new_dict.items())
+
+        self.seen_ids[obj_id] = result
+        return result
 
     def _reconstruct_generic_iterable(self, original: Iterable, obj_id: int) -> Any:
-        new_items = []
-        changed = False
-        for item in original:
-            new_item = self.reconstruct(item)
-            if new_item is not item:
-                changed = True
-            new_items.append(new_item)
+        changed, new_items = self._reconstruct_iterable_items(original)
 
-        if changed:
-            result = _safe_recreate_container(type(original), new_items)
-            self.seen_ids[obj_id] = result
-            return result
+        if not changed:
+            self.seen_ids[obj_id] = original
+            return original
 
-        self.seen_ids[obj_id] = original
-        return original
+        result = _safe_recreate_container(type(original), new_items)
+        self.seen_ids[obj_id] = result
+        return result
 
     def _reconstruct_custom_object(self, original: Any, obj_id: int) -> Any:
         result = self._reconstruct_object_attributes(original)
