@@ -203,6 +203,11 @@ class _ObjectReconstructor:
         return result
 
     def _reconstruct_generic_iterable(self, original: Iterable, obj_id: int) -> Any:
+        # Iterator subclasses rebuilt via constructor will re-consume items.
+        # Convert to list first to avoid re-consumption issues.
+        if isinstance(original, Iterator):
+            original = list(original)
+
         changed, new_items = self._reconstruct_iterable_items(original)
 
         if not changed:

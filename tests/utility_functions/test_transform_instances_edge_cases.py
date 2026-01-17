@@ -50,6 +50,29 @@ def test_iterator_consumption_loses_elements():
     assert transformed_items == [Target("solo_done", 11)]
 
 
+def test_nested_iterator_is_converted_to_list():
+    """Nested iterators are converted to lists to avoid re-consumption issues.
+
+    When an iterator is nested inside a container, the reconstruction logic
+    must convert it to a list first, otherwise the iterator would be consumed
+    during traversal and the constructor would receive an exhausted iterator.
+    """
+    nested_iter: Iterator[Target] = iter([Target("a", 1), Target("b", 2)])
+    data = {"items": nested_iter}
+
+    result = transform_instances_inside_composite_object(
+        data,
+        Target,
+        lambda t: Target(t.name.upper(), t.value * 10),
+    )
+
+    # The nested iterator should be converted to a list with transformed items
+    assert isinstance(result["items"], list)
+    assert len(result["items"]) == 2
+    assert result["items"][0] == Target("A", 10)
+    assert result["items"][1] == Target("B", 20)
+
+
 # --------------------------------------------------------------------------- #
 # 2.  Frozen dataclasses cannot be replaced without unsafe=True
 # --------------------------------------------------------------------------- #
