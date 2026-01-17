@@ -394,10 +394,10 @@ for cleaning build artifacts before commits or releases.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 4043 | 8713 | 12756 |
-| Source Lines Of Code (SLOC) | 1795 | 5120 | 6915 |
+| Lines Of Code (LOC) | 4051 | 8845 | 12896 |
+| Source Lines Of Code (SLOC) | 1800 | 5203 | 7003 |
 | Classes | 19 | 167 | 186 |
-| Functions / Methods | 140 | 745 | 885 |
+| Functions / Methods | 140 | 752 | 892 |
 | Files | 24 | 70 | 94 |
 <!-- MIXINFORGE_STATS_END -->
 

@@ -456,3 +456,135 @@ def test_cycle_in_mixed_collection_types():
 
     # Verify cycle: result[1][1]["list"] should be result
     assert result[1][1]["list"] is result
+
+
+# ==============================================================================
+# Tests for deep_transformation parameter
+# ==============================================================================
+
+def test_shallow_transformation_stops_at_nested_target():
+    """With deep_transformation=False, nested targets inside transformed instances are not transformed."""
+    inner = Target("inner", 1)
+    outer = Target("outer", 2, nested=inner)
+
+    result = transform_instances_inside_composite_object(
+        outer, Target, lambda t: Target(t.name + "!", t.value * 2, t.nested),
+        deep_transformation=False
+    )
+
+    assert result.name == "outer!"
+    assert result.value == 4
+    # Inner should NOT be transformed
+    assert result.nested.name == "inner"
+    assert result.nested.value == 1
+
+
+def test_shallow_transformation_traverses_non_target_containers():
+    """With deep_transformation=False, targets in non-target containers are still found and transformed."""
+    t1 = Target("first", 1)
+    t2 = Target("second", 2)
+    data = {"a": t1, "b": [t2]}
+
+    result = transform_instances_inside_composite_object(
+        data, Target, lambda t: Target(t.name + "!", t.value * 10),
+        deep_transformation=False
+    )
+
+    assert result["a"].name == "first!"
+    assert result["a"].value == 10
+    assert result["b"][0].name == "second!"
+    assert result["b"][0].value == 20
+
+
+def test_shallow_transformation_multilevel_nesting():
+    """With deep_transformation=False, only the outermost target is transformed."""
+    level3 = Target("level3", 3)
+    level2 = Target("level2", 2, nested=level3)
+    level1 = Target("level1", 1, nested=level2)
+
+    result = transform_instances_inside_composite_object(
+        level1, Target, lambda t: Target(t.name + "!", t.value * 10, t.nested),
+        deep_transformation=False
+    )
+
+    assert result.name == "level1!"
+    assert result.value == 10
+    # level2 and level3 should NOT be transformed
+    assert result.nested.name == "level2"
+    assert result.nested.value == 2
+    assert result.nested.nested.name == "level3"
+    assert result.nested.nested.value == 3
+
+
+def test_shallow_transformation_sibling_targets_in_container():
+    """With deep_transformation=False, sibling targets in a container are all transformed."""
+    inner1 = Target("inner1", 1)
+    inner2 = Target("inner2", 2)
+    outer1 = Target("outer1", 10, nested=inner1)
+    outer2 = Target("outer2", 20, nested=inner2)
+    data = [outer1, outer2]
+
+    result = transform_instances_inside_composite_object(
+        data, Target, lambda t: Target(t.name + "!", t.value * 2, t.nested),
+        deep_transformation=False
+    )
+
+    # Both outer targets are transformed (they are siblings in the list)
+    assert result[0].name == "outer1!"
+    assert result[1].name == "outer2!"
+    # But their nested children are NOT transformed
+    assert result[0].nested.name == "inner1"
+    assert result[1].nested.name == "inner2"
+
+
+def test_shallow_transformation_shared_nested_target():
+    """With deep_transformation=False, shared nested targets are not transformed."""
+    shared = Target("shared", 99)
+    outer1 = Target("outer1", 1, nested=shared)
+    outer2 = Target("outer2", 2, nested=shared)
+    data = [outer1, outer2]
+
+    result = transform_instances_inside_composite_object(
+        data, Target, lambda t: Target(t.name + "!", t.value, t.nested),
+        deep_transformation=False
+    )
+
+    # Both outers transformed
+    assert result[0].name == "outer1!"
+    assert result[1].name == "outer2!"
+    # Shared nested target NOT transformed
+    assert result[0].nested.name == "shared"
+    assert result[1].nested.name == "shared"
+    # And both still reference the same (untransformed) shared object
+    assert result[0].nested is result[1].nested
+
+
+def test_deep_transformation_default_is_true():
+    """Verify default behavior with no deep_transformation argument matches deep_transformation=True."""
+    inner = Target("inner", 1)
+    outer = Target("outer", 2, nested=inner)
+
+    result_default = transform_instances_inside_composite_object(
+        outer, Target, lambda t: Target(t.name + "!", t.value * 2, t.nested)
+    )
+
+    # Both should be transformed (default deep_transformation=True)
+    assert result_default.name == "outer!"
+    assert result_default.nested.name == "inner!"
+
+
+def test_shallow_transformation_mixed_containers():
+    """With deep_transformation=False, traversal continues through all non-target container types."""
+    nested_target = Target("nested", 1)
+    outer_target = Target("outer", 2, nested=nested_target)
+    data = {"dict": [{"inner_dict": (outer_target,)}]}
+
+    result = transform_instances_inside_composite_object(
+        data, Target, lambda t: Target(t.name + "!", t.value * 10, t.nested),
+        deep_transformation=False
+    )
+
+    # Outer target found and transformed
+    assert result["dict"][0]["inner_dict"][0].name == "outer!"
+    # Nested target NOT transformed
+    assert result["dict"][0]["inner_dict"][0].nested.name == "nested"

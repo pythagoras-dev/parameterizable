@@ -57,9 +57,10 @@ def _create_dict_subclass_copy(original: dict) -> dict:
 class _ObjectReconstructor:
     """Helper class for recursive object reconstruction with cycle handling."""
     
-    def __init__(self, target_type: type[Any], transform_fn: Callable[[Any], Any]):
+    def __init__(self, target_type: type[Any], transform_fn: Callable[[Any], Any], deep_transformation: bool = True):
         self.target_type = target_type
         self.transform_fn = transform_fn
+        self.deep_transformation = deep_transformation
         self.seen_ids: dict[int, Any] = {}
 
     def reconstruct(self, original: Any) -> Any:
@@ -124,8 +125,11 @@ class _ObjectReconstructor:
         # Apply the transformation first
         transformed = self.transform_fn(original)
 
-        # Now recursively process the transformed object's children
-        transformed_reconstructed = self._reconstruct_object_attributes(transformed)
+        # Only recursively process the transformed object's children if deep_transformation is True
+        if self.deep_transformation:
+            transformed_reconstructed = self._reconstruct_object_attributes(transformed)
+        else:
+            transformed_reconstructed = transformed
 
         self.seen_ids[obj_id] = transformed_reconstructed
         return transformed_reconstructed
@@ -268,7 +272,8 @@ class _ObjectReconstructor:
 def transform_instances_inside_composite_object(
     obj: Any,
     target_type: type[T],
-    transform_fn: Callable[[T], Any]
+    transform_fn: Callable[[T], Any],
+    deep_transformation: bool = True
 ) -> Any:
     """Transform all instances of a target type within any object.
 
@@ -289,6 +294,9 @@ def transform_instances_inside_composite_object(
         obj: The object to search within and transform.
         target_type: The composite type to search for and transform.
         transform_fn: Function to apply to each instance of target_type.
+        deep_transformation: If True (default), after transforming an instance,
+            continue recursively processing its children for more target
+            instances. If False, stop traversal at transformed instances.
 
     Returns:
         The transformed composite object, or the original if no matches found.
@@ -309,5 +317,5 @@ def transform_instances_inside_composite_object(
     if not any(True for _ in islice(probe, 1)):
         return obj
 
-    reconstructor = _ObjectReconstructor(target_type, transform_fn)
+    reconstructor = _ObjectReconstructor(target_type, transform_fn, deep_transformation)
     return reconstructor.reconstruct(obj)
