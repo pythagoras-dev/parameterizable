@@ -122,7 +122,7 @@ def _yield_attributes(obj: Any) -> Iterator[Any]:
 # Traversal Logic
 # ==============================================================================
 
-def _create_mapping_iterator(mapping: Mapping) -> Iterator[Any]:
+def _create_standard_mapping_iterator(mapping: Mapping) -> Iterator[Any]:
     return chain(mapping.keys(), mapping.values())
 
 
@@ -142,11 +142,11 @@ def _get_children_from_object(obj: Any) -> Iterator[Any]:
         return iter(())
 
     if _is_standard_mapping(obj):
-        yield from _create_mapping_iterator(obj)
+        yield from _create_standard_mapping_iterator(obj)
     elif _is_standard_iterable(obj):
         yield from obj
     elif isinstance(obj, Mapping):
-        yield from chain(_yield_attributes(obj), _create_mapping_iterator(obj))
+        yield from chain(_yield_attributes(obj), _create_standard_mapping_iterator(obj))
     elif isinstance(obj, Iterable):
         yield from chain(_yield_attributes(obj), obj)
     else:
@@ -233,7 +233,7 @@ def flatten_nested_collection(obj: Iterable[Any]) -> Iterator[Any]:
     def _get_children(item: Any) -> Optional[Iterator[Any]]:
         if _is_traversable_collection(item):
             if isinstance(item, Mapping):
-                return _create_mapping_iterator(item)
+                return _create_standard_mapping_iterator(item)
             return iter(item)
         return None
 
