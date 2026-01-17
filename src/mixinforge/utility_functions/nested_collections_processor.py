@@ -19,14 +19,6 @@ T = TypeVar('T')
 
 
 def _create_mapping_iterator(mapping: Mapping) -> Iterator[Any]:
-    """Create iterator from mapping, including both keys and values.
-
-    Args:
-        mapping: Mapping to iterate over.
-
-    Returns:
-        Iterator over keys then values.
-    """
     return chain(mapping.keys(), mapping.values())
 
 
@@ -34,7 +26,7 @@ def _get_all_slots(cls: type) -> list[str]:
     """Collect slot names from class hierarchy.
 
     Args:
-        cls: Class to inspect for __slots__.
+        cls: Class to inspect.
 
     Returns:
         Slot names from all base classes, excluding __dict__ and __weakref__.
@@ -55,19 +47,7 @@ def _get_all_slots(cls: type) -> list[str]:
 
 
 def _is_standard_mapping(obj: Any) -> bool:
-    """Check if object is a standard mapping type.
-
-    Standard mappings include built-in dict and common stdlib mapping types
-    from collections, weakref, and types modules. These are treated as pure
-    data containers and only their keys/values are traversed, not their
-    internal attributes.
-
-    Args:
-        obj: Object to check.
-
-    Returns:
-        True if object is a standard library mapping type.
-    """
+    """Check if object is a standard mapping type (dict, Counter, etc.)."""
     return type(obj) in {
         dict,
         defaultdict,
@@ -80,18 +60,7 @@ def _is_standard_mapping(obj: Any) -> bool:
 
 
 def _is_standard_iterable(obj: Any) -> bool:
-    """Check if object is a standard iterable collection type.
-
-    Standard iterables include built-in sequences and sets, plus common
-    stdlib collection types. These are treated as pure data containers
-    and only their items are traversed, not their internal attributes.
-
-    Args:
-        obj: Object to check.
-
-    Returns:
-        True if object is a standard library iterable type.
-    """
+    """Check if object is a standard iterable collection type (list, set, etc.)."""
     return type(obj) in {list, tuple, set, frozenset, deque}
 
 
@@ -100,19 +69,16 @@ _MISSING = object()  # private sentinel
 def _yield_attributes(obj: Any) -> Iterator[Any]:
     """Safely yield attribute values from an object's __dict__ and/or __slots__.
 
-    The function is defensive against expensive or side-effect-prone attribute
-    access:
+    Attributes from ``__dict__`` are yielded as-is. For ``__slots__``,
+    descriptors are checked before access to avoid triggering side effects
+    (like properties).
 
-    * Attributes obtained directly from ``__dict__`` are yielded as-is.
-    * For ``__slots__`` we:
-        1. Collect *all* slot names from the MRO (`_get_all_slots`).
-        2. Check the descriptor on the class *before* access to skip properties
-           and other active descriptors.
-        3. Fetch the attribute via ``getattr`` safely.
+    Yields:
+        Attribute values from the object.
 
-    Note that *data* descriptors defined at class level (e.g. ``@property``)
-    are intentionally skipped because reading them could trigger arbitrary
-    code execution.
+    Note:
+        Class-level data descriptors (e.g. @property) are skipped to prevent
+        arbitrary code execution.
     """
     # 1. Attributes stored in __dict__ are always safe to yield
     if hasattr(obj, "__dict__"):
@@ -156,14 +122,8 @@ def _yield_attributes(obj: Any) -> Iterator[Any]:
 def _get_children_from_object(obj: Any) -> Iterator[Any]:
     """Extract child objects for traversal from any object type.
 
-    Uses a refined traversal strategy:
-    - Standard collections (dict, list, set, deque, etc.): iterate only
-    - Custom iterables: yield attributes + iterated items
-    - Non-iterable objects: yield attributes only
-
-    This ensures standard library collections are treated as pure data
-    containers, while custom objects with both iteration and attributes
-    get full introspection.
+    Standard collections are treated as pure data containers (iterated only).
+    Custom objects yield both attributes and iterated items (if iterable).
 
     Args:
         obj: Object to extract children from.
@@ -206,7 +166,6 @@ def _traverse(root: Any, get_children_fn: Callable[[Any], Optional[Iterator[Any]
     """Generic stack-based traversal generator.
     
     Yields every visited object (including root).
-    Uses get_children_fn to determine if and how to traverse children.
     
     Args:
         root: Starting object.
@@ -334,7 +293,6 @@ class _ObjectReconstructor:
             self.seen_ids[obj_id] = original
             return original
 
-        # Check if this is a target type instance
         if isinstance(original, self.target_type):
             # Mark as being processed to prevent infinite recursion
             self.seen_ids[obj_id] = original  # Temporary placeholder
@@ -349,7 +307,6 @@ class _ObjectReconstructor:
             self.seen_ids[obj_id] = transformed_reconstructed
             return transformed_reconstructed
 
-        # Reconstruct collections by recursively processing children
         if _is_standard_mapping(original):
             # Mark as being processed to handle cycles
             result = type(original)()
@@ -364,7 +321,6 @@ class _ObjectReconstructor:
                 result[new_k] = new_v
 
             if not changed:
-                # Nothing changed, return original
                 self.seen_ids[obj_id] = original
                 return original
 
@@ -388,7 +344,6 @@ class _ObjectReconstructor:
                     result.append(new_item)
 
                 if not changed:
-                    # Nothing changed, return original
                     self.seen_ids[obj_id] = original
                     return original
 
@@ -413,7 +368,6 @@ class _ObjectReconstructor:
                 return result
 
         elif isinstance(original, Mapping):
-            # Custom mapping with attributes
             new_dict = {}
             changed = False
             for k, v in original.items():
@@ -432,7 +386,6 @@ class _ObjectReconstructor:
             return original
 
         elif isinstance(original, Iterable):
-            # Custom iterable with attributes
             new_items = []
             changed = False
             for item in original:
@@ -450,8 +403,6 @@ class _ObjectReconstructor:
             return original
 
         else:
-            # Non-iterable object with attributes (__dict__ or __slots__)
-            # Use the same reconstruction logic as for target types
             result = self._reconstruct_object_attributes(original)
             self.seen_ids[obj_id] = result
             return result
@@ -463,10 +414,8 @@ class _ObjectReconstructor:
 
         # For dataclass or regular objects with __dict__ or __slots__
         if hasattr(obj_to_process, '__dict__') or hasattr(obj_to_process.__class__, '__slots__'):
-            # Get all attributes
             children_list = list(_yield_attributes(obj_to_process))
 
-            # Reconstruct each child
             new_children = []
             changed = False
             for child in children_list:
@@ -479,17 +428,13 @@ class _ObjectReconstructor:
                 return obj_to_process
 
             # Try to create a new instance with transformed attributes
-            # For frozen dataclasses, we need to use replace or reconstruct
             if hasattr(obj_to_process, '__dataclass_fields__'):
-                # It's a dataclass - use replace
                 field_values = {}
                 field_list = fields(obj_to_process)
                 for field, new_value in zip(field_list, new_children):
                     field_values[field.name] = new_value
                 return replace(obj_to_process, **field_values)
             else:
-                # For other objects, we can't easily reconstruct, return as-is
-                # (This limitation was present in the original code)
                 return obj_to_process
 
         return obj_to_process
