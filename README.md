@@ -107,8 +107,8 @@ For development:
 | `update_jsparams(js, **updates)` | Update params in JSON |
 | `access_jsparams(js, *names)` | Extract params from JSON |
 | `sort_dict_by_keys(d)` | Sort dictionary keys alphabetically |
-| `find_atomics_in_nested_collections(obj)` | Find atomics in nested collections |
-| `find_nonatomics_inside_composite_object(obj, type)` | Find instances of type in composite |
+| `flatten_nested_collection(obj)` | Find atomics in nested collections |
+| `find_instances_inside_composite_object(obj, type)` | Find instances of type in composite |
 | `is_executed_in_notebook()` | Detect if running in Jupyter/IPython notebook |
 
 ### Context Managers
@@ -282,10 +282,10 @@ seamlessly integrates with `ParameterizableMixin`.
 
 Tools for working with nested data structures:
 
-- **`find_atomics_in_nested_collections(obj)`** — Recursively find all
+- **`flatten_nested_collection(obj)`** — Recursively find all
   atomic-type objects (primitives, strings, etc.) within nested
   collections (returns iterator)
-- **`find_nonatomics_inside_composite_object(obj, target_type)`** —
+- **`find_instances_inside_composite_object(obj, target_type)`** —
   Recursively find all instances of a specific non-atomic type within
   composite structures (returns iterator)
 
