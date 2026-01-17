@@ -106,3 +106,16 @@ def test_various_non_type_targets_raise_typeerror(invalid_target):
 
     with pytest.raises(TypeError):
         list(find_instances_inside_composite_object(data, invalid_target))
+
+
+def test_find_atomic_target_type():
+    """Find works when target_type is an atomic type like str."""
+    data = [1, "hello", 2, "world", {"key": "value"}]
+
+    result = list(find_instances_inside_composite_object(data, str))
+
+    assert len(result) == 4
+    assert "hello" in result
+    assert "world" in result
+    assert "key" in result
+    assert "value" in result

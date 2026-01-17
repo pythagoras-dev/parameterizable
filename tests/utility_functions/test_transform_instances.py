@@ -263,14 +263,20 @@ def test_transform_preserves_non_target_structure():
     assert result["list"] is inner_list
 
 
-def test_atomic_type_raises_error():
-    """Raises TypeError when target_type is atomic."""
-    data = ["test", 123]
+def test_transform_atomic_target_type():
+    """Transform works when target_type is an atomic type like str."""
+    data = [1, "hello", 2, "world", {"key": "value"}]
 
-    with pytest.raises(TypeError, match="composite type"):
-        transform_instances_inside_composite_object(
-            data, str, lambda s: s.upper()
-        )
+    result = transform_instances_inside_composite_object(
+        data, str, lambda s: s.upper()
+    )
+
+    assert result[0] == 1
+    assert result[1] == "HELLO"
+    assert result[2] == 2
+    assert result[3] == "WORLD"
+    # Both dict keys and values are transformed
+    assert result[4]["KEY"] == "VALUE"
 
 
 def test_non_type_target_raises_typeerror():

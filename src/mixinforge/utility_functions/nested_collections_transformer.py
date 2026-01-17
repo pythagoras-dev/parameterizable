@@ -70,15 +70,16 @@ class _ObjectReconstructor:
         if obj_id in self.seen_ids:
             return self.seen_ids[obj_id]
 
-        # Atomic objects don't need reconstruction
+        # Check if this is a target instance BEFORE the atomic early-return
+        if isinstance(original, self.target_type):
+            return self._reconstruct_target_type(original, obj_id)
+
+        # Atomic objects don't need reconstruction (and aren't targets at this point)
         if is_atomic_object(original):
             self.seen_ids[obj_id] = original
             return original
 
         match original:
-            case _ if isinstance(original, self.target_type):
-                return self._reconstruct_target_type(original, obj_id)
-
             case _ if _is_standard_mapping(original):
                 return self._reconstruct_standard_mapping(original, obj_id)
 
@@ -297,24 +298,22 @@ def transform_instances_inside_composite_object(
 
     Args:
         obj: The object to search within and transform.
-        target_type: The composite type to search for and transform.
+        target_type: The type to search for and transform.
         transform_fn: Function to apply to each instance of target_type.
+            Should be idempotent (return the same result for the same input)
+            since objects are deduplicated by identity and the function is
+            called only once per unique object.
         deep_transformation: If True (default), after transforming an instance,
             continue recursively processing its children for more target
             instances. If False, stop traversal at transformed instances.
 
     Returns:
         The transformed composite object, or the original if no matches found.
-
-    Raises:
-        TypeError: If target_type is atomic.
     """
 
     if not isinstance(target_type, type):
         raise TypeError(f"target_type must be a type, got {type(target_type).__name__}")
 
-    if is_atomic_type(target_type):
-        raise TypeError(f"target_type must be a composite type, got {target_type.__name__}")
 
     if not callable(transform_fn):
         raise TypeError(f"transform_fn must be callable, got {type(transform_fn).__name__}")

@@ -259,13 +259,13 @@ def find_instances_inside_composite_object(
 
     Args:
         obj: The object to search within.
-        target_type: The composite type to search for.
+        target_type: The type to search for.
 
     Yields:
         Instances of target_type in depth-first order, deduplicated by identity.
 
     Raises:
-        TypeError: If target_type is not a type or is atomic.
+        TypeError: If target_type is not a type.
     """
     if not isinstance(target_type, type):
         raise TypeError(f"target_type must be a type, got {type(target_type).__name__}")
