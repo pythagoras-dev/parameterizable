@@ -206,17 +206,17 @@ def _is_traversable_collection(obj: Any) -> bool:
     return True
 
 
-def find_atomics_in_nested_collections(
+def flatten_nested_collection(
     obj: Iterable[Any],
     *,
     traverse_dict_keys: bool = False
 ) -> Iterator[Any]:
-    """Yield atomic elements from nested collections with weak deduplication.
+    """Yield leaf elements from nested collections with weak deduplication.
 
-    Atomic elements are indivisible leaf values such as numbers, strings,
+    Atomic elements are indivisible values such as numbers, strings,
     matrices, or paths. The function traverses nested iterables, yielding
-    only atomic elements. Their exact order and complete deduplication
-    are not guaranteed.
+    leaf values, which includes both atomics and non-iterable objects.
+    Their exact order and complete deduplication are not guaranteed.
 
     Args:
         obj: The root collection to traverse.
@@ -265,13 +265,13 @@ def find_atomics_in_nested_collections(
             yield item
 
 
-def find_nonatomics_inside_composite_object(
+def find_instances_inside_composite_object(
     obj: Any,
     target_type: type[T],
     *,
     traverse_dict_keys: bool = False
 ) -> Iterator[T]:
-    """Find all instances of a composite type within any object.
+    """Find all instances of a target type within any object.
 
     Performs traversal of iterables, mappings, and custom objects
     (via __dict__ and __slots__). Yields all instances of target_type,
@@ -289,26 +289,7 @@ def find_nonatomics_inside_composite_object(
     Raises:
         TypeError: If target_type is atomic.
         ValueError: If a cycle is detected.
-
-    Example:
-        >>> class Config:
-        ...     def __init__(self, name):
-        ...         self.name = name
-        ...         self.nested = None
-        >>> c1 = Config("main")
-        >>> c2 = Config("sub")
-        >>> c1.nested = c2
-        >>> obj = {"config": c1, "data": [1, 2, 3]}
-        >>> configs = list(find_nonatomics_inside_composite_object(obj, Config))
-        >>> len(configs)
-        2
     """
-
-    if is_atomic_type(target_type):
-        raise TypeError(
-            f"target_type must be a non-atomic type, "
-            f"got atomic type: {target_type.__name__}"
-        )
 
     stack: deque[tuple[Iterator[Any], set[int]]] = deque([(iter([obj]), set())])
     seen_ids: set[int] = set()

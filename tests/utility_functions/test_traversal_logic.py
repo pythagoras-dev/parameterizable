@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from collections.abc import Mapping
 from typing import Any
 
-from mixinforge.utility_functions.nested_collections_processor import find_nonatomics_inside_composite_object
+from mixinforge.utility_functions.nested_collections_processor import find_instances_inside_composite_object
 
 
 @dataclass(frozen=True)
@@ -88,7 +88,7 @@ def find_leaves(obj: Any, traverse_dict_keys: bool = False) -> list[int]:
     """Helper to find Leaf objects and return their values."""
     # We search for Leaf objects.
     # traverse_dict_keys is passed through.
-    found = find_nonatomics_inside_composite_object(obj, Leaf, traverse_dict_keys=traverse_dict_keys)
+    found = find_instances_inside_composite_object(obj, Leaf, traverse_dict_keys=traverse_dict_keys)
     return sorted(leaf.value for leaf in found)
 
 
