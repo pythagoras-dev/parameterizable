@@ -7,14 +7,12 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, Mapping, Callable
 from typing import Any, TypeVar
 from dataclasses import replace, fields
-from itertools import islice
 
 from ..utility_functions.atomics_detector import is_atomic_object, is_atomic_type
 from .nested_collections_inspector import (
     _is_standard_mapping,
     _is_standard_iterable,
     _yield_attributes,
-    find_instances_inside_composite_object
 )
 
 T = TypeVar('T')
@@ -62,6 +60,7 @@ class _ObjectReconstructor:
         self.transform_fn = transform_fn
         self.deep_transformation = deep_transformation
         self.seen_ids: dict[int, Any] = {}
+        self.any_replacements: bool = False
 
     def reconstruct(self, original: Any) -> Any:
         """Reconstruct an object, replacing transformed children."""
@@ -121,6 +120,7 @@ class _ObjectReconstructor:
     def _reconstruct_target_type(self, original: Any, obj_id: int) -> Any:
         # Mark as being processed to prevent infinite recursion
         self.seen_ids[obj_id] = original  # Temporary placeholder
+        self.any_replacements = True
 
         # Apply the transformation first
         transformed = self.transform_fn(original)
@@ -308,14 +308,10 @@ def transform_instances_inside_composite_object(
     if is_atomic_type(target_type):
         raise TypeError(f"target_type must be a composite type, got {target_type.__name__}")
 
-    # If obj is an iterator, convert to list to prevent consumption during probe
+    # If obj is an iterator, convert to list to allow traversal
     if isinstance(obj, Iterator):
         obj = list(obj)
 
-    # Optimization: check if any targets exist before attempting reconstruction
-    probe = find_instances_inside_composite_object(obj, target_type)
-    if not any(True for _ in islice(probe, 1)):
-        return obj
-
     reconstructor = _ObjectReconstructor(target_type, transform_fn, deep_transformation)
-    return reconstructor.reconstruct(obj)
+    result = reconstructor.reconstruct(obj)
+    return result if reconstructor.any_replacements else obj
