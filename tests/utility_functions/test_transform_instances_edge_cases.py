@@ -1,0 +1,93 @@
+# tests/test_transform_edge_cases.py
+import pytest
+from dataclasses import dataclass, field, FrozenInstanceError
+from collections.abc import Iterator, Mapping
+
+from mixinforge.utility_functions.nested_collections_transformer import (
+    transform_instances_inside_composite_object,
+)
+
+
+# --------------------------------------------------------------------------- #
+# Helper targets
+# --------------------------------------------------------------------------- #
+@dataclass
+class Target:
+    name: str
+    value: int
+
+
+# A *frozen* (immutable) dataclass variant
+@dataclass(frozen=True)
+class FrozenTarget:
+    name: str
+    value: int
+
+
+# --------------------------------------------------------------------------- #
+# 1.  Iterator is consumed by the “has_target” probe
+# --------------------------------------------------------------------------- #
+
+def test_iterator_consumption_loses_elements():
+    """If the root object is an *iterator*, the first traversal consumes it.
+    The subsequent reconstruction therefore sees an exhausted iterator and
+    fails to transform the objects that have already been yielded once.
+    """
+    # iterator with a single Target inside
+    data: Iterator[Target] = iter([Target("solo", 1)])
+
+    result = transform_instances_inside_composite_object(
+        data,
+        Target,
+        lambda t: Target(t.name + "_done", t.value + 10),
+    )
+
+    # Convert the potentially transformed iterator to a list for inspection
+    transformed_items = list(result)
+
+    # We *expect* the inner Target to be modified,
+    # but today the iterator is empty or still original.
+    assert transformed_items == [Target("solo_done", 11)]
+
+
+# --------------------------------------------------------------------------- #
+# 2.  Frozen dataclasses cannot be replaced without unsafe=True
+# --------------------------------------------------------------------------- #
+
+def test_frozen_dataclass_transformation():
+    """Verify the transformer can handle @dataclass(frozen=True) instances."""
+    obj = FrozenTarget("immutable", 3)
+
+    out = transform_instances_inside_composite_object(
+        obj,
+        FrozenTarget,
+        lambda t: FrozenTarget(t.name, t.value + 100),
+    )
+    # Should return the *new* object
+    assert out.value == 103
+    assert out is not obj
+
+
+# --------------------------------------------------------------------------- #
+# 3.  Re-creating custom Mapping subclasses with non-trivial __init__
+# --------------------------------------------------------------------------- #
+class StrictDict(dict):
+    """A dict subclass that requires an extra positional argument."""
+
+    def __init__(self, mandatory: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.mandatory = mandatory
+
+
+
+def test_mapping_subclass_constructor_mismatch():
+    inner = Target("k", 1)
+    original: Mapping = StrictDict("required", {"k": inner})
+
+    transform = lambda t: Target(t.name, t.value + 1)
+
+    out = transform_instances_inside_composite_object(original, Target, transform)
+    # On success we should get back a *StrictDict* with transformed values
+    assert isinstance(out, StrictDict)
+    assert out["k"].value == 2
+    assert out.mandatory == "required"
