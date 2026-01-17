@@ -7,6 +7,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping, Callable
 from typing import Any, TypeVar
 from dataclasses import replace, fields
+from itertools import islice
 
 from ..utility_functions.atomics_detector import is_atomic_object, is_atomic_type
 from .nested_collections_inspector import (
@@ -277,15 +278,9 @@ def transform_instances_inside_composite_object(
         raise TypeError(f"target_type must be a composite type, got {target_type.__name__}")
 
     # Optimization: check if any targets exist before attempting reconstruction
-    has_target = False
-    # Use find_instances logic to check for existence
-    for _ in find_instances_inside_composite_object(obj, target_type):
-        has_target = True
-        break
-        
-    if not has_target:
+    probe = find_instances_inside_composite_object(obj, target_type)
+    if not any(True for _ in islice(probe, 1)):
         return obj
 
-    # Perform reconstruction
     reconstructor = _ObjectReconstructor(target_type, transform_fn)
     return reconstructor.reconstruct(obj)
