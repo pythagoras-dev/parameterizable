@@ -273,6 +273,52 @@ def test_atomic_type_raises_error():
         )
 
 
+def test_non_type_target_raises_typeerror():
+    """Raise TypeError when target_type is not a type."""
+    data = [1, 2, 3]
+
+    with pytest.raises(TypeError, match="target_type"):
+        transform_instances_inside_composite_object(data, "not_a_type", lambda x: x)
+
+
+@pytest.mark.parametrize("invalid_target", [
+    None,
+    42,
+    "str",
+    ["list"],
+    {"dict": "value"},
+])
+def test_various_non_type_targets_raise_typeerror(invalid_target):
+    """Various non-type values should raise TypeError."""
+    data = [1, 2, 3]
+
+    with pytest.raises(TypeError):
+        transform_instances_inside_composite_object(data, invalid_target, lambda x: x)
+
+
+def test_non_callable_transform_fn_raises_typeerror():
+    """Raise TypeError when transform_fn is not callable."""
+    data = [Target("a", 1)]
+
+    with pytest.raises(TypeError, match="transform_fn"):
+        transform_instances_inside_composite_object(data, Target, "not_callable")
+
+
+@pytest.mark.parametrize("invalid_fn", [
+    None,
+    42,
+    "string",
+    [1, 2, 3],
+    {"key": "value"},
+])
+def test_various_non_callable_transform_fn_raise_typeerror(invalid_fn):
+    """Various non-callable values should raise TypeError."""
+    data = [Target("a", 1)]
+
+    with pytest.raises(TypeError):
+        transform_instances_inside_composite_object(data, Target, invalid_fn)
+
+
 def test_transform_applies_to_root_object():
     """Transform works when root object itself is target type."""
     root = Target("root", 99)

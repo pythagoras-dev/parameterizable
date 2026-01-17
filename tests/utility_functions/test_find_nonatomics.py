@@ -79,7 +79,30 @@ def test_deduplication_by_identity():
     """Same object yielded only once even if referenced multiple times."""
     t1 = Target("1")
     data = [t1, t1, {"a": t1}]
-    
+
     result = list(find_instances_inside_composite_object(data, Target))
     assert result == [t1]
 
+
+def test_non_type_target_raises_typeerror():
+    """Raise TypeError when target_type is not a type."""
+    data = [1, 2, 3]
+
+    with pytest.raises(TypeError, match="target_type"):
+        list(find_instances_inside_composite_object(data, "not_a_type"))
+
+
+@pytest.mark.parametrize("invalid_target", [
+    None,
+    42,
+    "str",
+    ["list"],
+    {"dict": "value"},
+    lambda x: x,
+])
+def test_various_non_type_targets_raise_typeerror(invalid_target):
+    """Various non-type values should raise TypeError."""
+    data = [1, 2, 3]
+
+    with pytest.raises(TypeError):
+        list(find_instances_inside_composite_object(data, invalid_target))

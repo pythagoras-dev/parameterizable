@@ -265,9 +265,11 @@ def find_instances_inside_composite_object(
         Instances of target_type in depth-first order, deduplicated by identity.
 
     Raises:
-        TypeError: If target_type is atomic.
+        TypeError: If target_type is not a type or is atomic.
     """
-    
+    if not isinstance(target_type, type):
+        raise TypeError(f"target_type must be a type, got {type(target_type).__name__}")
+
     def _get_children(item: Any) -> Optional[Iterator[Any]]:
         if is_atomic_object(item):
             return None

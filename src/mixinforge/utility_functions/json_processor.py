@@ -369,8 +369,11 @@ def loadjs(s: JsonSerializedObject, **kwargs) -> Any:
         The Python object reconstructed from the JSON string.
 
     Raises:
+        TypeError: If s is not a string.
         ValueError: If object_hook is provided in kwargs.
     """
+    if not isinstance(s, str):
+        raise TypeError(f"s must be a string, got {type(s).__name__}")
     if "object_hook" in kwargs:
         raise ValueError("object_hook cannot be used with mixinforge.loadjs()")
     return _from_serializable_dict(json.loads(s, **kwargs))
@@ -424,10 +427,13 @@ def update_jsparams(jsparams: JsonSerializedObject, **kwargs) -> JsonSerializedO
         A new JSON string with updated parameters.
 
     Raises:
+        TypeError: If jsparams is not a string.
         KeyError: If jsparams does not contain the expected
             PARAMS -> DICT structure (i.e., the input is not a serialized
             mixinforge object).
     """
+    if not isinstance(jsparams, str):
+        raise TypeError(f"jsparams must be a string, got {type(jsparams).__name__}")
     params = json.loads(jsparams)
 
     if not isinstance(params, dict):
@@ -457,9 +463,12 @@ def access_jsparams(jsparams: JsonSerializedObject, *args: str) -> dict[str, Any
          dicts) rather than the raw internal JSON representation.
 
      Raises:
+         TypeError: If jsparams is not a string.
          KeyError: If a requested key is not present, or if the JSON string does
              not contain the expected PARAMS -> DICT structure.
      """
+    if not isinstance(jsparams, str):
+        raise TypeError(f"jsparams must be a string, got {type(jsparams).__name__}")
     params = json.loads(jsparams)
 
     if not isinstance(params, dict):

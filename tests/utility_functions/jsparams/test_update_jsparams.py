@@ -62,3 +62,21 @@ def test_update_jsparams_invalid_json_root():
         update_jsparams(invalid_js, x=5)
 
 
+def test_update_jsparams_non_string_input_raises_typeerror():
+    """Raise TypeError when jsparams is not a string."""
+    with pytest.raises(TypeError, match="jsparams"):
+        update_jsparams(None, x=5)
+
+
+@pytest.mark.parametrize("invalid_input", [
+    None,
+    123,
+    ["list"],
+    {"dict": "value"},
+    b"bytes",
+])
+def test_update_jsparams_various_non_string_inputs_raise_typeerror(invalid_input):
+    """Various non-string inputs should raise TypeError."""
+    with pytest.raises(TypeError):
+        update_jsparams(invalid_input, x=5)
+

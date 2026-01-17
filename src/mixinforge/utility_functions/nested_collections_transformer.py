@@ -310,8 +310,14 @@ def transform_instances_inside_composite_object(
         TypeError: If target_type is atomic.
     """
 
+    if not isinstance(target_type, type):
+        raise TypeError(f"target_type must be a type, got {type(target_type).__name__}")
+
     if is_atomic_type(target_type):
         raise TypeError(f"target_type must be a composite type, got {target_type.__name__}")
+
+    if not callable(transform_fn):
+        raise TypeError(f"transform_fn must be callable, got {type(transform_fn).__name__}")
 
     # If obj is an iterator, convert to list to allow traversal
     if isinstance(obj, Iterator):

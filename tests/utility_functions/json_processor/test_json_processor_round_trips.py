@@ -301,3 +301,23 @@ def test_loads_forbids_object_hook_and_invalid_json():
         loadjs("{}", object_hook=lambda d: d)
     with pytest.raises(json.JSONDecodeError):
         loadjs("not a json")
+
+
+def test_loadjs_non_string_input_raises_typeerror():
+    """Raise TypeError when loadjs input is not a string."""
+    with pytest.raises(TypeError, match="s"):
+        loadjs(None)
+
+
+@pytest.mark.parametrize("invalid_input", [
+    None,
+    123,
+    12.5,
+    ["list"],
+    {"dict": "value"},
+    b"bytes",
+])
+def test_loadjs_various_non_string_inputs_raise_typeerror(invalid_input):
+    """Various non-string inputs should raise TypeError."""
+    with pytest.raises(TypeError):
+        loadjs(invalid_input)

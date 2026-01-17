@@ -431,6 +431,33 @@ def test_strings_are_atomic_despite_being_iterable():
 
 
 # ============================================================================
+# Tests for input validation
+# ============================================================================
+
+
+def test_is_atomic_type_non_type_raises_typeerror():
+    """Raise TypeError when is_atomic_type receives a non-type argument."""
+    is_atomic_type.cache_clear()
+    with pytest.raises(TypeError, match="type_to_check"):
+        is_atomic_type("not_a_type")
+
+
+@pytest.mark.parametrize("invalid_input", [
+    None,
+    42,
+    "str",
+    ["list"],
+    {"dict": "value"},
+    3.14,
+])
+def test_is_atomic_type_various_non_types_raise_typeerror(invalid_input):
+    """Various non-type values should raise TypeError."""
+    is_atomic_type.cache_clear()
+    with pytest.raises(TypeError):
+        is_atomic_type(invalid_input)
+
+
+# ============================================================================
 # Helper functions
 # ============================================================================
 

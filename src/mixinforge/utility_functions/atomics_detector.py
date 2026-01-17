@@ -335,7 +335,12 @@ def is_atomic_type(type_to_check: type) -> bool:
 
     Returns:
         True if the type or any of its ancestors is registered as atomic.
+
+    Raises:
+        TypeError: If type_to_check is not a type.
     """
+    if not isinstance(type_to_check, type):
+        raise TypeError(f"type_to_check must be a type, got {type(type_to_check).__name__}")
     return _ATOMIC_TYPES_REGISTRY.is_inherited_from_registered(type_to_check)
 
 

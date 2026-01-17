@@ -59,3 +59,22 @@ def test_access_jsparams_invalid_json_root():
 
     with pytest.raises(KeyError, match="Invalid structure: JSON root must be a dictionary"):
         access_jsparams(invalid_js, "x")
+
+
+def test_access_jsparams_non_string_input_raises_typeerror():
+    """Raise TypeError when jsparams is not a string."""
+    with pytest.raises(TypeError, match="jsparams"):
+        access_jsparams(None, "x")
+
+
+@pytest.mark.parametrize("invalid_input", [
+    None,
+    123,
+    ["list"],
+    {"dict": "value"},
+    b"bytes",
+])
+def test_access_jsparams_various_non_string_inputs_raise_typeerror(invalid_input):
+    """Various non-string inputs should raise TypeError."""
+    with pytest.raises(TypeError):
+        access_jsparams(invalid_input, "x")
