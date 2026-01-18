@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mixinforge"
-version = "0.227.0"
+version = "0.227.1"
 description = "A collection of Python mixins, metaclasses, context managers, utility functions, and CLI tools for building robust, configurable classes."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -55,7 +55,8 @@ dev = [
     "pydata-sphinx-theme",
     "sphinx-autodoc-typehints",
     "sphinx-copybutton",
-    "myst-parser"
+    "myst-parser",
+    "uv-publish"
 ]
 
 
