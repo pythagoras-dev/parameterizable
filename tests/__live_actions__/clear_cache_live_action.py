@@ -1,9 +1,7 @@
-"""Live-on-self CI/CD "test" for cache clearing functionality.
+"""Live action that clears cache for Python, pytest, and related tools.
 
-This test runs against the actual project to ensure that cache clearing works
-correctly on the real project structure. It's a CI/CD test that validates the
-cache cleaning functionality works as expected while actually removing the
-cache files.
+This "test" validates the cache cleaning functionality works as expected
+while actually removing the cache files.
 
 The test fails if:
 1. pyproject.toml is not found at project root
@@ -24,9 +22,9 @@ from mixinforge.command_line_tools.basic_file_utils import (
 
 @pytest.mark.live_actions
 def test_live_clear_cache(pytestconfig):
-    """Test that cache clearing works on the actual project.
+    """Clear cache on the actual project.
 
-    This is a live-on-self test that validates:
+    This is a live-on-self "test" that validates:
     - pyproject.toml exists at project root
     - remove_python_cache_files() executes without errors
     - Function returns valid tuple structure (count, list)

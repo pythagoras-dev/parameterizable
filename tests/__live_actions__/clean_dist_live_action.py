@@ -1,6 +1,6 @@
-"""Live-on-self CI/CD "test" for cleaning distribution artifacts.
+"""Live action for cleaning distribution artifacts.
 
-This test runs against the actual project to remove distribution artifacts
+This "test" runs against the actual project to remove distribution artifacts
 created by `uv build` (the `dist/` directory).
 
 The test fails if:
