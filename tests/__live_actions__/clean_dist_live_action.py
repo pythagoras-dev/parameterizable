@@ -23,10 +23,10 @@ from mixinforge.command_line_tools._cli_entry_points import _format_size
 def test_live_clean_dist(pytestconfig):
     """Remove distribution artifacts (dist/ directory) from the project.
 
-    This is a live-on-self test that:
+    This is a live-on-self "test" that:
     - Validates pyproject.toml exists at project root
     - Removes the dist/ directory if it exists
-    - Is idempotent (passes with or without dist/ present)
+    - Passes with or without dist/ present
 
     Args:
         pytestconfig: Pytest config fixture providing rootdir.
