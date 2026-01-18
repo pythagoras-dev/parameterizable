@@ -5,6 +5,7 @@ from pathlib import Path
 from ..command_line_tools.project_analyzer import analyze_project
 from ..command_line_tools.basic_file_utils import (
     remove_python_cache_files,
+    remove_dist_artifacts,
     folder_contains_pyproject_toml,
     format_cache_statistics
 )
@@ -432,4 +433,55 @@ def mf_clear_cache():
         print('\n' + format_cache_statistics(removed_count, removed_items))
 
     except (ValueError, Exception) as e:
+        _print_error_and_exit(e)
+
+
+def _format_size(size_bytes: int) -> str:
+    """Format a size in bytes as a human-readable string."""
+    if size_bytes >= 1024 * 1024:
+        return f"{size_bytes / (1024 * 1024):.2f} MB"
+    elif size_bytes >= 1024:
+        return f"{size_bytes / 1024:.2f} KB"
+    else:
+        return f"{size_bytes} bytes"
+
+
+def mf_clear_dist():
+    """CLI entry point for clearing distribution artifacts.
+
+    Removes the dist/ directory created by build tools like `uv build`.
+    """
+    parser = argparse.ArgumentParser(
+        description='Remove distribution artifacts (dist/ directory) from a Python project'
+    )
+    parser.add_argument(
+        'directory',
+        nargs='?',
+        default='.',
+        help='Directory to process (default: current directory)'
+    )
+    args = parser.parse_args()
+
+    try:
+        target_dir = Path(args.directory).resolve()
+        if not folder_contains_pyproject_toml(target_dir):
+            print(f'\n✗ Error: No pyproject.toml found in {target_dir}', file=sys.stderr)
+            print('This command requires a Python project directory with pyproject.toml', file=sys.stderr)
+            sys.exit(1)
+    except Exception as e:
+        print(f'\n✗ Invalid directory path: {e}', file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Cleaning dist/ from: {target_dir}")
+
+    try:
+        file_count, total_size = remove_dist_artifacts(target_dir)
+
+        if file_count > 0:
+            size_str = _format_size(total_size)
+            print(f'\n✓ Removed dist/ directory ({file_count} files, {size_str})')
+        else:
+            print('\n✓ No dist/ directory found (already clean)')
+
+    except (ValueError, OSError, Exception) as e:
         _print_error_and_exit(e)

@@ -253,6 +253,45 @@ def categorize_cache_items(removed_items: list[str]) -> dict[str, dict[str, int]
     }
 
 
+def remove_dist_artifacts(folder_path: Path | str) -> tuple[int, int]:
+    """Remove distribution artifacts (dist/ directory) from a project folder.
+
+    Removes the dist/ directory created by build tools like `uv build`,
+    `python -m build`, or `pip wheel`.
+
+    Args:
+        folder_path: Path to the project folder; accepts string or Path object.
+
+    Returns:
+        Tuple of (file_count, total_size_bytes) of removed items.
+        Returns (0, 0) if dist/ doesn't exist (idempotent behavior).
+
+    Raises:
+        ValueError: If folder_path is invalid or doesn't exist.
+        TypeError: If folder_path is not a string or Path object.
+        OSError: If dist/ directory cannot be removed.
+    """
+    validated_folder = sanitize_and_validate_path(folder_path, must_exist=True, must_be_dir=True)
+    dist_path = validated_folder / "dist"
+
+    if not dist_path.exists():
+        return 0, 0
+
+    # Collect statistics before deletion
+    file_count = 0
+    total_size = 0
+
+    for item in dist_path.rglob("*"):
+        if item.is_file():
+            file_count += 1
+            total_size += item.stat().st_size
+
+    # Remove the dist directory
+    shutil.rmtree(dist_path)
+
+    return file_count, total_size
+
+
 def format_cache_statistics(removed_count: int, removed_items: list[str]) -> str:
     """Format cache cleaning statistics for console output.
 
