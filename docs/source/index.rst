@@ -192,6 +192,8 @@ CLI Tools
      - Analyze project metrics and generate reports
    * - ``mf-clear-cache``
      - Remove Python cache files and directories
+   * - ``mf-clear-dist``
+     - Remove distribution artifacts (dist/ directory)
 
 Mixins & Metaclasses
 --------------------
@@ -484,6 +486,33 @@ Removes all Python cache files and directories from a project.
 
 Generates a detailed markdown report categorizing removed items. Useful
 for cleaning build artifacts before commits or releases.
+
+mf-clear-dist
+~~~~~~~~~~~~~
+
+Removes distribution artifacts (the ``dist/`` directory) created by build tools.
+
+**Usage:**
+
+.. code-block:: bash
+
+   # Clean current directory
+   mf-clear-dist
+
+   # Clean specific directory
+   mf-clear-dist /path/to/project
+
+**What it removes:**
+
+* ``dist/`` directory containing:
+
+  * Source distributions (``.tar.gz``)
+  * Wheel files (``.whl``)
+  * Any other build artifacts
+
+This tool is useful for cleaning up after ``uv build``, ``python -m build``,
+or similar build commands. It reports the number of files removed and
+total size freed.
 
 Full API Documentation
 ----------------------
