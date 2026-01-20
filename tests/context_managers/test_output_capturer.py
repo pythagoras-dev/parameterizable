@@ -173,3 +173,16 @@ def test_output_captured_before_exception():
     assert "Line 1" in output
     assert "Line 2" in output
     assert "Log message" in output
+
+
+def test_repr_shows_captured_chars():
+    """Verify __repr__ shows the number of captured characters."""
+    capturer = OutputCapturer()
+    assert "OutputCapturer" in repr(capturer)
+
+    text_to_print = "Hello"
+
+    with capturer:
+        print(text_to_print)
+
+    assert "OutputCapturer" in repr(capturer)
