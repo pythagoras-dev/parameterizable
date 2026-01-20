@@ -22,6 +22,20 @@ class NotPicklableMixin:
         """
         raise TypeError(f"{type(self).__name__} cannot be pickled")
 
+    def __reduce_ex__(self, protocol):
+        """Prevent object serialization by raising TypeError.
+
+        This method is called by the pickle module before __reduce__ when
+        using a specific protocol version. It unconditionally raises
+        a TypeError to prevent pickling.
+
+        Args:
+            protocol: The pickle protocol version being used.
+
+        Raises:
+            TypeError: Always raised to prevent the object from being pickled.
+        """
+        raise TypeError(f"{type(self).__name__} cannot be pickled")
 
     def __getstate__(self):
         """Prevent object serialization by raising TypeError.
