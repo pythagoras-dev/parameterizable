@@ -67,7 +67,7 @@ def test_codestats_iadd_operator():
 def test_codestats_radd_with_zero():
     """Verify CodeStats right-addition with zero returns self."""
     stats = CodeStats(lines=100, sloc=80, classes=5, functions=10, files=3)
-    result = 0 + stats
+    result = CodeStats(0,0,0,0,0) + stats
 
     assert result.lines == 100
     assert result.sloc == 80

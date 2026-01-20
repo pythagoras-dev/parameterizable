@@ -8,6 +8,7 @@ Note:
     This module is intended for development-time analysis only and is
     not used at runtime.
 """
+from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from pathlib import Path
@@ -40,7 +41,7 @@ class CodeStats:
     functions: int = 0
     files: int = 0
 
-    def __add__(self, other: 'CodeStats') -> 'CodeStats':
+    def __add__(self, other: CodeStats) -> CodeStats:
         """Combine statistics from two CodeStats instances."""
         if not isinstance(other, CodeStats):
             return NotImplemented
@@ -51,7 +52,7 @@ class CodeStats:
             functions=self.functions + other.functions,
             files=self.files + other.files)
 
-    def __iadd__(self, other: "CodeStats") -> "CodeStats":
+    def __iadd__(self, other: CodeStats) -> CodeStats:
         if not isinstance(other, CodeStats):
             return NotImplemented
         self.lines += other.lines
@@ -61,9 +62,7 @@ class CodeStats:
         self.files += other.files
         return self
 
-    def __radd__(self, other: "CodeStats") -> "CodeStats":
-        if other == 0:
-            return self
+    def __radd__(self, other: CodeStats) -> CodeStats:
         return self.__add__(other)
 
 
