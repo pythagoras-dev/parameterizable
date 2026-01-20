@@ -17,6 +17,10 @@ class SingletonMixin(ParameterizableMixin):
     on every instantiation. The singleton instance is stored per class type,
     so each subclass has its own singleton instance.
 
+    Attributes:
+        _instances: Dictionary storing the singleton instance for each class.
+        _counters: Dictionary tracking the number of instantiation requests per class.
+
     Note:
         This implementation is not thread-safe. For multi-threaded applications,
         additional synchronization mechanisms should be added.
