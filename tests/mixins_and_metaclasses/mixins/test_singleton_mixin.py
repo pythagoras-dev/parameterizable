@@ -139,3 +139,30 @@ def test_singleton_subclass_independence():
 
     assert first is first_again
     assert second is second_again
+
+
+def test_singleton_counters():
+    """Test that singleton instantiation counters are maintained correctly."""
+    class CounterSingleton(SingletonMixin):
+        pass
+
+    # Initial state check
+    assert CounterSingleton not in SingletonMixin._counters
+
+    # First instantiation
+    s1 = CounterSingleton()
+    assert SingletonMixin._counters[CounterSingleton] == 1
+
+    # Second instantiation
+    s2 = CounterSingleton()
+    assert SingletonMixin._counters[CounterSingleton] == 2
+    assert s1 is s2
+
+    # Independent class check
+    class AnotherCounterSingleton(SingletonMixin):
+        pass
+
+    s3 = AnotherCounterSingleton()
+    assert SingletonMixin._counters[AnotherCounterSingleton] == 1
+    # Check that previous one didn't change
+    assert SingletonMixin._counters[CounterSingleton] == 2

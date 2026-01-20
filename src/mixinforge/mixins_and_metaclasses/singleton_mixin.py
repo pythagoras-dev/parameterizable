@@ -22,6 +22,7 @@ class SingletonMixin(ParameterizableMixin):
         additional synchronization mechanisms should be added.
     """
     _instances: dict[type, SingletonMixin] = {}
+    _counters: dict[type, int] = {}
 
     def __new__(cls, *args, **kwargs):
         """Create or return the singleton instance for this class.
@@ -31,5 +32,7 @@ class SingletonMixin(ParameterizableMixin):
         """
         if cls not in SingletonMixin._instances:
             SingletonMixin._instances[cls] = super().__new__(cls)
+            SingletonMixin._counters[cls] = 0
+        SingletonMixin._counters[cls] += 1
         return SingletonMixin._instances[cls]
 
