@@ -108,6 +108,15 @@ class OutputCapturer:
         self.capture_handler = self._CaptureHandler(
             self.captured_buffer, self.original_log_handlers)
 
+    def __repr__(self) -> str:
+        """Return a string representation of the OutputCapturer.
+
+        Returns:
+            A string showing the current size of the captured output buffer.
+        """
+        captured_size = len(self.captured_buffer.getvalue())
+        return f"OutputCapturer(captured_chars={captured_size})"
+
     def __enter__(self):
         """Start capturing stdout, stderr, and logging output.
 
