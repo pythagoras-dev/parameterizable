@@ -20,11 +20,11 @@ class ImmutableParameterizableMixin(ParameterizableMixin, ImmutableMixin):
     """Immutable objects with parameter-based identity and hashing.
 
     Combines ParameterizableMixin's parameter management with ImmutableMixin's
-    immutability support. Objects use their JSON-serialized parameters as
-    their identity key, enabling parameter-based equality comparisons and hashing.
+    immutability support. Objects use JSON-serialized essential parameters
+    as their identity key, enabling parameter-based equality comparisons and hashing.
 
-    This design ensures that two instances with identical parameters are
-    considered equal and have the same hash, regardless of when or where they
+    This design ensures that two instances with identical essential parameters
+    are considered equal and have the same hash, regardless of when or where they
     were created. This makes it possible to use parameterizable objects as
     dictionary keys and set members.
 
@@ -35,29 +35,30 @@ class ImmutableParameterizableMixin(ParameterizableMixin, ImmutableMixin):
 
 
     def get_identity_key(self) -> Any:
-        """Return JSON-serialized parameters as identity key.
+        """Return JSON-serialized essential parameters as an identity key.
 
-        Uses JSON-serialized parameters to ensure consistent, deterministic
-        identity across instances. This approach guarantees that objects with
-        identical parameters produce the same hash and compare as equal,
-        enabling reliable use in hash-based collections.
+        Uses JSON-serialized essential parameters to ensure consistent,
+        deterministic identity across instances. This approach guarantees that
+        objects with identical essential parameters produce the same hash
+        and compare as equal, enabling reliable use in hash-based collections.
 
         Returns:
-            JSON string representation of parameters used for hashing
+            JSON string representation of essential parameters used for hashing
             and equality comparisons.
         """
-        return self.jsparams
+        return self.essential_jsparams
+
 
     @cached_property
-    def jsparams(self) -> JsonSerializedObject:
-        """Cached JSON-serialized parameters for identity operations.
+    def essential_jsparams(self) -> JsonSerializedObject:
+        """Cached JSON-serialized essential parameters for identity operations.
 
-        Provides a cached JSON representation of the object's parameters,
+        Provides a cached JSON representation of the object's core parameters,
         used as the basis for hashing and equality comparisons. Caching
         ensures that serialization happens only once, improving performance
-        for repeated identity operations.
+        for repeated operations.
 
         Returns:
-            JSON string representation of the object's parameters.
+            JSON string representation of the object's essential parameters.
         """
-        return self.get_jsparams()
+        return self.get_essential_jsparams()

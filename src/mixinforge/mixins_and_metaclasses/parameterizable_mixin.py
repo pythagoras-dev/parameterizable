@@ -100,7 +100,9 @@ class ParameterizableMixin:
         or identity - for example, the maximum number of trees in a random forest
         or the maximum depth of a decision tree.
         
-        These parameters are typically immutable throughout the object's lifetime.
+        These parameters are oftentimes immutable throughout the object's lifetime.
+        They are guaranteed to be preserved during the copying/deepcopying,
+        serialization/deserialization processes, and similar operations.
         
         Note:
             Subclasses should override this property to specify which parameters are
@@ -116,9 +118,14 @@ class ParameterizableMixin:
     def auxiliary_param_names(self) -> set[str]:
         """Names of the object's auxiliary parameters.
 
-        Auxiliary parameters are parameters that do not fundamentally impact the
-        object's behavior or identity. These might include settings like logging
-        verbosity, debug flags, or probability thresholds for consistency checks.
+        Auxiliary parameters are parameters that do not fundamentally impact
+        the object's behavior or identity. These parameters
+        might include settings like logging verbosity, debug flags,
+        or probability thresholds for consistency checks.
+
+        They are considered "disregardable" in the sense that they are not
+        guaranteed to be preserved during serialization/deserialization
+        processes, or even during simple copying/deepcopying operations.
 
         Returns:
             Set of auxiliary parameter names.
