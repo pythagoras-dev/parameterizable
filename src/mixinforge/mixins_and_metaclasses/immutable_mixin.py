@@ -150,7 +150,7 @@ class ImmutableMixin(metaclass=GuardedInitMeta):
         """
         return self
 
-    def __deepcopy__(self, memo: dict) -> Self:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Self:
         """Return self since immutable objects need no deep copying.
         
         Immutable objects can safely share references instead of creating
