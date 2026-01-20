@@ -541,20 +541,20 @@ Project Statistics
      - Total
    * - Lines Of Code (LOC)
      - 4197
-     - 9205
-     - 13402
+     - 9312
+     - 13509
    * - Source Lines Of Code (SLOC)
      - 1880
-     - 5414
-     - 7294
+     - 5481
+     - 7361
    * - Classes
      - 19
      - 168
      - 187
    * - Functions / Methods
      - 143
-     - 772
-     - 915
+     - 780
+     - 923
    * - Files
      - 24
      - 72
