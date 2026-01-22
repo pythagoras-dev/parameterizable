@@ -4,9 +4,10 @@ This module offers sample classes that are used
 for testing the fundamental
 """
 
-from mixinforge.mixins_and_metaclasses.parameterizable_mixin import *
-
 from abc import ABC
+from typing import Any
+
+from mixinforge.mixins_and_metaclasses.parameterizable_mixin import ParameterizableMixin
 
 class GoodParameterizable(ABC, ParameterizableMixin):
     """A well-implemented mixinforge class for testing."""
@@ -38,4 +39,3 @@ class EvenBetterOne(GoodParameterizable):
 class EmptyClass:
     """A class that doesn't implement the mixinforge interface."""
     pass
-
