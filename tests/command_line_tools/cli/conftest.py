@@ -5,7 +5,6 @@ functions, reducing code duplication across test files.
 """
 import sys
 import pytest
-from pathlib import Path
 from unittest.mock import patch
 from io import StringIO
 from contextlib import contextmanager
