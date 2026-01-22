@@ -6,6 +6,7 @@
 [![Documentation Status](https://app.readthedocs.org/projects/mixinforge/badge/?version=latest)](https://mixinforge.readthedocs.io/en/latest/)
 [![Code style: pep8](https://img.shields.io/badge/code_style-pep8-blue.svg)](https://peps.python.org/pep-0008/)
 [![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
+[![Ruff](https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml/badge.svg?branch=main)](https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml)
 
 A collection of Python mixins, metaclasses, utility functions, and CLI
 tools for building robust, configurable classes.
@@ -418,10 +419,10 @@ total size freed.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 4226 | 9794 | 14020 |
-| Source Lines Of Code (SLOC) | 1887 | 5716 | 7603 |
+| Lines Of Code (LOC) | 4303 | 9758 | 14061 |
+| Source Lines Of Code (SLOC) | 1960 | 5683 | 7643 |
 | Classes | 19 | 186 | 205 |
-| Functions / Methods | 145 | 823 | 968 |
+| Functions / Methods | 145 | 824 | 969 |
 | Files | 24 | 73 | 97 |
 <!-- MIXINFORGE_STATS_END -->
 
