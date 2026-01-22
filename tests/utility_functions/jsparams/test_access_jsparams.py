@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from mixinforge.utility_functions.json_processor import dumpjs, loadjs, access_jsparams
+from mixinforge.utility_functions.json_processor import dumpjs, access_jsparams
 
 
 class ParamObj:

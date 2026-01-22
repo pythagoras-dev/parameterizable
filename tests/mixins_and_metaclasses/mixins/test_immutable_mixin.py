@@ -70,7 +70,7 @@ def test_inequality_with_different_types():
 def test_equality_with_other_types():
     """Verify inequality with completely different types."""
     s = StringIdentifiable("alice")
-    assert s != None
+    assert s is not None
     assert s != "alice"
     assert s != 123
     assert s != object()

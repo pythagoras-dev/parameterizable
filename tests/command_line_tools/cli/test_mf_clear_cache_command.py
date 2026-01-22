@@ -4,10 +4,8 @@ This module tests the mf_clear_cache command-line interface function,
 including success scenarios with and without cached items, error handling,
 and custom output options.
 """
-import sys
 import pytest
 from unittest.mock import patch, mock_open
-from io import StringIO
 
 from mixinforge.command_line_tools._cli_entry_points import mf_clear_cache
 

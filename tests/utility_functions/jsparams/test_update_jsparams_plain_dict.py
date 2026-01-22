@@ -1,4 +1,3 @@
-import json
 
 from mixinforge.utility_functions.json_processor import dumpjs, loadjs, update_jsparams
 

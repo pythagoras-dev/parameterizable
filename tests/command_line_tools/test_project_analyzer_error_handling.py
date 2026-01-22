@@ -4,8 +4,6 @@ This module tests error handling paths including OSError, IOError,
 and other exceptions during file analysis and project traversal.
 """
 from pathlib import Path
-from unittest.mock import Mock, patch
-import pytest
 
 from mixinforge.command_line_tools.project_analyzer import (
     analyze_file,

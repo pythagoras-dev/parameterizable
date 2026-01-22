@@ -1,6 +1,5 @@
 # tests/test_transform_edge_cases.py
-import pytest
-from dataclasses import dataclass, field, FrozenInstanceError
+from dataclasses import dataclass
 from collections.abc import Iterator, Mapping
 
 from mixinforge.utility_functions.nested_collections_transformer import (
@@ -107,7 +106,8 @@ def test_mapping_subclass_constructor_mismatch():
     inner = Target("k", 1)
     original: Mapping = StrictDict("required", {"k": inner})
 
-    transform = lambda t: Target(t.name, t.value + 1)
+    def transform(t: Target) -> Target:
+        return Target(t.name, t.value + 1)
 
     out = transform_instances_inside_composite_object(original, Target, transform)
     # On success we should get back a *StrictDict* with transformed values

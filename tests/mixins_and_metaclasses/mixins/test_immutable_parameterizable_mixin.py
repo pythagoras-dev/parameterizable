@@ -43,7 +43,7 @@ def test_inequality_with_different_types():
 def test_equality_with_other_types():
     """Verify inequality with completely different types."""
     p = Point(1, 2)
-    assert p != None
+    assert p is not None
     assert p != "string"
     assert p != 123
     assert p != object()

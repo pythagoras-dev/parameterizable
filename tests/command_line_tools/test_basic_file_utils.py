@@ -3,7 +3,6 @@
 Tests cover detection of pyproject.toml files in project directories,
 including path validation and error handling.
 """
-from pathlib import Path
 import pytest
 
 from mixinforge.command_line_tools.basic_file_utils import folder_contains_pyproject_toml, remove_python_cache_files

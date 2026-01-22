@@ -2,7 +2,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
 
-import pytest
 
 from mixinforge.utility_functions.nested_collections_transformer import (
     transform_instances_inside_composite_object,

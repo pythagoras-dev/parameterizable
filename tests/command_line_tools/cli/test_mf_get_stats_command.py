@@ -3,10 +3,8 @@
 This module tests the mf_get_stats command-line interface function,
 including success scenarios, error handling, and file writing.
 """
-import sys
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
-from io import StringIO
 
 from mixinforge.command_line_tools._cli_entry_points import mf_get_stats
 

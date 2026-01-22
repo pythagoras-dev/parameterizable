@@ -3,9 +3,6 @@
 Tests cover analyze_project function including nested structures, symlinks,
 error handling, and integration scenarios.
 """
-import ast
-from pathlib import Path
-import pytest
 
 from mixinforge.command_line_tools.project_analyzer import (
     analyze_project,
@@ -160,7 +157,7 @@ def test_analyze_project_verbose_mode(tmp_path, capsys):
     test_file = tmp_path / "test.py"
     test_file.write_text("x = 1")
 
-    analysis = analyze_project(tmp_path, verbose=True)
+    analyze_project(tmp_path, verbose=True)
     captured = capsys.readouterr()
 
     assert "Analyzing project at:" in captured.out

@@ -1,4 +1,3 @@
-import json
 
 from mixinforge.utility_functions.json_processor import _from_serializable_dict, _to_serializable_dict, _Markers
 

@@ -3,7 +3,6 @@
 This module tests the _update_readme_if_possible function that updates
 README files with statistics between MIXINFORGE_STATS markers.
 """
-import pytest
 from pathlib import Path
 
 from mixinforge.command_line_tools._cli_entry_points import _update_readme_if_possible

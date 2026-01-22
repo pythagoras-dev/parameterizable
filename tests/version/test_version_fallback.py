@@ -1,7 +1,5 @@
 import importlib
-import types
 
-import pytest
 
 
 def test_version_fallback_to_unknown(monkeypatch):

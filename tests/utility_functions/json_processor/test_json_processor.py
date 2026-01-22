@@ -150,10 +150,10 @@ def test_to_serializable_get_params_has_precedence_over_getstate():
 @pytest.mark.parametrize(
     "obj_creator, type_name",
     [
-        (lambda: (l := [], l.append(l)), "list"),
+        (lambda: (lst := [], lst.append(lst)), "list"),
         (lambda: (d := {}, d.update({"d": d})), "dict"),
         (lambda: (o := SelfRefer(), setattr(o, "me", o)), "SelfRefer"),
-        (lambda: (l := [{}], l[0].update({"l": l})), "list"),
+        (lambda: (nested_list := [{}], nested_list[0].update({"l": nested_list})), "list"),
     ],
 )
 def test_to_serializable_cycle_detection(obj_creator, type_name):

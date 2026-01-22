@@ -5,10 +5,9 @@ of the transformation logic, particularly around container recreation fallbacks,
 defaultdict subclass handling, and objects without standard attribute storage.
 """
 from collections import defaultdict
-from collections.abc import Mapping, Iterator
+from collections.abc import Mapping
 from dataclasses import dataclass
 
-import pytest
 
 from mixinforge.utility_functions.nested_collections_transformer import (
     transform_instances_inside_composite_object,

@@ -1,5 +1,4 @@
 """Tests for _extract_params_dict edge cases in json_processor."""
-import json
 import pytest
 
 from mixinforge.utility_functions.json_processor import (

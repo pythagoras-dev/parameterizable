@@ -3,7 +3,6 @@
 This module tests the singleton pattern implementation to ensure each subclass
 maintains exactly one instance throughout its lifetime.
 """
-import pytest
 from mixinforge import SingletonMixin
 
 
@@ -58,7 +57,7 @@ def test_singleton_different_classes_have_different_instances():
     singleton2 = AnotherSingleton()
 
     assert singleton1 is not singleton2
-    assert type(singleton1) != type(singleton2)
+    assert type(singleton1) is not type(singleton2)
 
 def test_singleton_inheritance():
     """Test that singleton behavior is maintained in subclasses."""
@@ -162,7 +161,7 @@ def test_singleton_counters():
     class AnotherCounterSingleton(SingletonMixin):
         pass
 
-    s3 = AnotherCounterSingleton()
+    _ = AnotherCounterSingleton()
     assert SingletonMixin._counters[AnotherCounterSingleton] == 1
     # Check that previous one didn't change
     assert SingletonMixin._counters[CounterSingleton] == 2

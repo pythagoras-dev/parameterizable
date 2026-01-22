@@ -3,8 +3,6 @@
 This module tests the categorize_cache_items function and ensures
 all cache types are properly detected and categorized.
 """
-from pathlib import Path
-import pytest
 
 from mixinforge.command_line_tools.basic_file_utils import (
     remove_python_cache_files,

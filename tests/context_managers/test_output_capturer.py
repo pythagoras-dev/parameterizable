@@ -1,4 +1,5 @@
-import sys, logging
+import sys
+import logging
 import pytest
 from mixinforge import OutputCapturer
 

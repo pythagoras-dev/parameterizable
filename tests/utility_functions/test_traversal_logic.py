@@ -1,5 +1,4 @@
 """Tests for internal traversal logic (slots, dicts, properties)."""
-import pytest
 from dataclasses import dataclass
 from collections.abc import Mapping
 from typing import Any

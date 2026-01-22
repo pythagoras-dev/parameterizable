@@ -1,10 +1,9 @@
 import json
 from typing import Any
 
-import pytest
 
 from mixinforge.mixins_and_metaclasses.parameterizable_mixin import ParameterizableMixin
-from mixinforge.utility_functions.json_processor import dumpjs, loadjs
+from mixinforge.utility_functions.json_processor import loadjs
 
 
 class MyParam(ParameterizableMixin):

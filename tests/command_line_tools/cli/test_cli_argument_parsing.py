@@ -3,11 +3,7 @@
 This module tests the helper functions that parse command-line arguments,
 validate output filenames, and handle errors.
 """
-import sys
 import pytest
-from pathlib import Path
-from unittest.mock import patch
-from io import StringIO
 
 from mixinforge.command_line_tools._cli_entry_points import (
     _parse_cli_arguments_with_optional_output,

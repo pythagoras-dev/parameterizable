@@ -284,7 +284,6 @@ def test_analyze_file_unexpected_error_during_analysis(tmp_path, monkeypatch):
     test_file.write_text("x = 1")
 
     # Mock ast.walk to raise an exception
-    original_walk = ast.walk
     def mock_walk(*args):
         raise RuntimeError("Unexpected error")
 

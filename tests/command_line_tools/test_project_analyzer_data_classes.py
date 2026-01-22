@@ -3,7 +3,6 @@
 Tests cover CodeStats, MetricRow, and ProjectAnalysis dataclasses including
 operators, conversion methods, and output formatting.
 """
-import pytest
 
 from mixinforge.command_line_tools.project_analyzer import (
     CodeStats,
