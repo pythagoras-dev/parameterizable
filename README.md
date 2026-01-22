@@ -6,7 +6,7 @@
 [![Documentation Status](https://app.readthedocs.org/projects/mixinforge/badge/?version=latest)](https://mixinforge.readthedocs.io/en/latest/)
 [![Code style: pep8](https://img.shields.io/badge/code_style-pep8-blue.svg)](https://peps.python.org/pep-0008/)
 [![Docstring Style: Google](https://img.shields.io/badge/docstrings_style-Google-blue)](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
-[![Ruff](https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml/badge.svg?branch=main)](https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml)
+[![Ruff](https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml/badge.svg?branch=master)](https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml)
 
 A collection of Python mixins, metaclasses, utility functions, and CLI
 tools for building robust, configurable classes.
