@@ -3,6 +3,9 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
+import sys
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -10,12 +13,10 @@ project = 'mixinforge'
 copyright = '2025-2026 Vlad (Volodymyr) Pavlov'
 author = 'Vlad (Volodymyr) Pavlov'
 
-import os
-import sys
 sys.path.insert(0, os.path.abspath('../../src'))
 
 # Version from package
-from mixinforge import __version__
+from mixinforge import __version__  # noqa: E402
 version = release = __version__
 
 
