@@ -12,7 +12,10 @@ Design Rationale:
     interactive use and production logging.
 """
 
-import sys, io, logging, traceback
+import sys
+import io
+import logging
+import traceback
 
 
 # TODO: see if we can use https://capturer.readthedocs.io/en/latest/index.html

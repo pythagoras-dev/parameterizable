@@ -8,11 +8,10 @@ from collections.abc import Iterable, Iterator, Mapping, Callable
 from typing import Any, TypeVar
 from dataclasses import replace, fields
 
-from ..utility_functions.atomics_detector import is_atomic_object, is_atomic_type
+from ..utility_functions.atomics_detector import is_atomic_object
 from .nested_collections_inspector import (
     _is_standard_mapping,
     _is_standard_iterable,
-    _yield_attributes,
 )
 
 T = TypeVar('T')
