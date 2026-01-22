@@ -51,9 +51,7 @@ result = db.query("SELECT * FROM users")
 
 # Calling from another thread raises RuntimeError
 import threading
-threading.Thread(
-    target=lambda: db.query("SELECT *")
-).start()  # Raises RuntimeError!
+threading.Thread(target=lambda: db.query("SELECT *")).start()  # Raises RuntimeError!
 ```
 
 ## Installation
