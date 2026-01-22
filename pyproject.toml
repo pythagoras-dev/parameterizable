@@ -88,3 +88,6 @@ markers = [
 [tool.coverage.run]
 source = ["src/mixinforge"]
 branch = true
+
+[tool.ruff]
+lint.ignore = ["F403", "F405"]
