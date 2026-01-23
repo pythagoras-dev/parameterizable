@@ -9,7 +9,7 @@ mixinforge
    :target: https://github.com/pythagoras-dev/mixinforge
    :alt: Python versions
 
-.. image:: https://img.shields.io/badge/License-MIT-blue.svg
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/pythagoras-dev/mixinforge/blob/master/LICENSE
    :alt: License: MIT
 
@@ -28,6 +28,10 @@ mixinforge
 .. image:: https://img.shields.io/badge/docstrings_style-Google-blue
    :target: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
    :alt: Docstring Style: Google
+
+.. image:: https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml/badge.svg?branch=master
+   :target: https://github.com/pythagoras-dev/mixinforge/actions/workflows/ruff.yml
+   :alt: Ruff
 
 A collection of Python mixins, metaclasses, utility functions, and CLI
 tools for building robust, configurable classes.
