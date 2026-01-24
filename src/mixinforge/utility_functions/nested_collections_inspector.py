@@ -5,14 +5,34 @@ composite objects including collections, mappings, and custom objects.
 """
 from collections import deque, defaultdict, OrderedDict, Counter, ChainMap
 from collections.abc import Iterable, Iterator, Mapping, Callable
-from types import GetSetDescriptorType, MappingProxyType
-from typing import Any, TypeVar, Optional
+from types import GetSetDescriptorType, MappingProxyType, UnionType
+from typing import Any, TypeVar, Optional, TypeAlias
 from itertools import chain
 from weakref import WeakKeyDictionary, WeakValueDictionary
 
 from ..utility_functions.atomics_detector import is_atomic_object
 
 T = TypeVar('T')
+
+# Type alias matching isinstance()'s classinfo parameter.
+# Supports: single type, tuple of types (recursively), or union types (int | str).
+ClassInfo: TypeAlias = type | UnionType | tuple["ClassInfo", ...]
+
+
+def _is_valid_classinfo(classinfo: Any) -> bool:
+    """Check if classinfo is valid for isinstance() usage.
+
+    Args:
+        classinfo: Value to validate.
+
+    Returns:
+        True if classinfo is a type, UnionType, or tuple of valid classinfo values.
+    """
+    if isinstance(classinfo, (type, UnionType)):
+        return True
+    if isinstance(classinfo, tuple):
+        return all(_is_valid_classinfo(item) for item in classinfo)
+    return False
 
 
 # ==============================================================================
@@ -244,12 +264,12 @@ def flatten_nested_collection(obj: Iterable[Any]) -> Iterator[Any]:
 
 def find_instances_inside_composite_object(
     obj: Any,
-    target_type: type[T]
-) -> Iterator[T]:
+    classinfo: ClassInfo
+) -> Iterator[Any]:
     """Find all instances of a target type within any object.
 
     Performs traversal of iterables, mappings, and custom objects
-    (via __dict__ and __slots__). Yields all instances of target_type,
+    (via __dict__ and __slots__). Yields all instances matching classinfo,
     continuing to search inside matched objects for nested instances.
     Exact return order and complete deduplication are not guaranteed.
 
@@ -259,16 +279,22 @@ def find_instances_inside_composite_object(
 
     Args:
         obj: The object to search within.
-        target_type: The type to search for.
+        classinfo: Type or tuple of types to search for. Accepts the same
+            values as the second argument to isinstance(): a single type,
+            a tuple of types (recursively), or a union type (e.g., int | str).
 
     Yields:
-        Instances of target_type in depth-first order, deduplicated by identity.
+        Instances matching classinfo in depth-first order, deduplicated by identity.
 
     Raises:
-        TypeError: If target_type is not a type.
+        TypeError: If classinfo is not a valid type specification (must be a
+            type, tuple of types, or union type).
     """
-    if not isinstance(target_type, type):
-        raise TypeError(f"target_type must be a type, got {type(target_type).__name__}")
+    if not _is_valid_classinfo(classinfo):
+        raise TypeError(
+            f"classinfo must be a type, tuple of types, or union type, "
+            f"got {type(classinfo).__name__}"
+        )
 
     def _get_children(item: Any) -> Optional[Iterator[Any]]:
         if is_atomic_object(item):
@@ -276,5 +302,5 @@ def find_instances_inside_composite_object(
         return _get_children_from_object(item)
 
     for item in _traverse(obj, _get_children):
-        if isinstance(item, target_type):
+        if isinstance(item, classinfo):
             yield item

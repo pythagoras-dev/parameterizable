@@ -166,8 +166,10 @@ Utility Functions
      - Sort dictionary keys alphabetically
    * - ``flatten_nested_collection(obj)``
      - Find atomics in nested collections
-   * - ``find_instances_inside_composite_object(obj, type)``
-     - Find instances of type in composite
+   * - ``find_instances_inside_composite_object(obj, classinfo)``
+     - Find instances of type(s) in composite
+   * - ``transform_instances_inside_composite_object(obj, classinfo, fn)``
+     - Transform instances of type(s) in composite
    * - ``is_executed_in_notebook()``
      - Detect if running in Jupyter/IPython notebook
 
@@ -378,12 +380,21 @@ Tools for working with nested data structures:
 * **flatten_nested_collection(obj)** — Recursively find all
   atomic-type objects (primitives, strings, etc.) within nested
   collections (returns iterator)
-* **find_instances_inside_composite_object(obj, target_type)** —
-  Recursively find all instances of a specific non-atomic type within
-  composite structures (returns iterator)
+* **find_instances_inside_composite_object(obj, classinfo)** —
+  Recursively find all instances of the specified type(s) within
+  composite structures (returns iterator). Accepts a single type or
+  tuple of types, like ``isinstance()``.
+* **transform_instances_inside_composite_object(obj, classinfo, transform_fn)** —
+  Transform all instances of the specified type(s) within composite
+  structures, reconstructing the object graph with transformed instances
+  (returns transformed object). Accepts a single type or tuple of types,
+  like ``isinstance()``.
 
 These functions handle arbitrary nesting depths and complex object
-graphs, useful for introspection and validation.
+graphs including cyclic references. Each object is visited only once
+(deduplication by identity), making them safe for graphs with cycles
+or shared references. Useful for introspection, validation, and
+structural transformations.
 
 Dictionary Utilities
 ~~~~~~~~~~~~~~~~~~~~
@@ -544,21 +555,21 @@ Project Statistics
      - Unit Tests
      - Total
    * - Lines Of Code (LOC)
-     - 4226
-     - 9794
-     - 14020
+     - 4260
+     - 9928
+     - 14188
    * - Source Lines Of Code (SLOC)
-     - 1887
-     - 5716
-     - 7603
+     - 1904
+     - 5788
+     - 7692
    * - Classes
      - 19
      - 186
      - 205
    * - Functions / Methods
-     - 145
-     - 823
-     - 968
+     - 146
+     - 837
+     - 983
    * - Files
      - 24
      - 73

@@ -279,27 +279,29 @@ def test_transform_atomic_target_type():
     assert result[4]["KEY"] == "VALUE"
 
 
-def test_non_type_target_raises_typeerror():
-    """Raise TypeError when target_type is not a type."""
+def test_non_type_classinfo_raises_typeerror():
+    """Raise TypeError when classinfo is not a valid type specification."""
     data = [1, 2, 3]
 
-    with pytest.raises(TypeError, match="target_type"):
+    with pytest.raises(TypeError, match="classinfo"):
         transform_instances_inside_composite_object(data, "not_a_type", lambda x: x)
 
 
-@pytest.mark.parametrize("invalid_target", [
+@pytest.mark.parametrize("invalid_classinfo", [
     None,
     42,
     "str",
-    ["list"],
+    ["list"],  # list is not valid, only tuple
     {"dict": "value"},
+    (str, "not_a_type"),  # tuple containing invalid item
+    (str, (int, None)),   # nested tuple with invalid item
 ])
-def test_various_non_type_targets_raise_typeerror(invalid_target):
-    """Various non-type values should raise TypeError."""
+def test_various_invalid_classinfo_raise_typeerror(invalid_classinfo):
+    """Various invalid classinfo values should raise TypeError."""
     data = [1, 2, 3]
 
     with pytest.raises(TypeError):
-        transform_instances_inside_composite_object(data, invalid_target, lambda x: x)
+        transform_instances_inside_composite_object(data, invalid_classinfo, lambda x: x)
 
 
 def test_non_callable_transform_fn_raises_typeerror():
@@ -640,3 +642,112 @@ def test_shallow_transformation_mixed_containers():
     assert result["dict"][0]["inner_dict"][0].name == "outer!"
     # Nested target NOT transformed
     assert result["dict"][0]["inner_dict"][0].nested.name == "nested"
+
+
+# ==============================================================================
+# Tests for tuple of types and union types (classinfo parameter)
+# ==============================================================================
+
+def test_transform_with_tuple_of_types():
+    """Transform instances matching any type in a tuple."""
+    t1 = Target("target1", 1)
+    data = [t1, "hello", 42, 3.14]
+
+    def transform(x):
+        if isinstance(x, Target):
+            return Target(x.name + "!", x.value * 10)
+        if isinstance(x, str):
+            return x.upper()
+        return x
+
+    result = transform_instances_inside_composite_object(data, (Target, str), transform)
+
+    # Note: The Target's name is also a string, so it gets transformed too (deep transformation)
+    # First the Target is transformed (name becomes "target1!"), then the name string
+    # inside the new Target is also transformed (becomes "TARGET1!")
+    assert result[0].name == "TARGET1!"
+    assert result[0].value == 10
+    assert result[1] == "HELLO"
+    assert result[2] == 42  # unchanged
+    assert result[3] == 3.14  # unchanged
+
+
+def test_transform_with_nested_tuple_of_types():
+    """Transform instances with nested tuple of types."""
+    data = ["hello", 42, 3.14]
+
+    result = transform_instances_inside_composite_object(
+        data,
+        (str, (int, float)),  # nested tuple
+        lambda x: str(x) + "_transformed"
+    )
+
+    assert result[0] == "hello_transformed"
+    assert result[1] == "42_transformed"
+    assert result[2] == "3.14_transformed"
+
+
+def test_transform_with_union_type():
+    """Transform instances using union type syntax (Python 3.10+)."""
+    data = ["hello", 42, 3.14]
+
+    result = transform_instances_inside_composite_object(
+        data,
+        str | int,  # union type
+        lambda x: f"[{x}]"
+    )
+
+    assert result[0] == "[hello]"
+    assert result[1] == "[42]"
+    assert result[2] == 3.14  # float unchanged
+
+
+def test_transform_with_empty_tuple():
+    """Empty tuple of types transforms nothing, returns original."""
+    data = [1, "hello", Target("t", 1)]
+
+    result = transform_instances_inside_composite_object(data, (), lambda x: "changed")
+
+    assert result is data  # no matches, original returned
+
+
+def test_transform_with_single_type_in_tuple():
+    """Single type wrapped in tuple works like single type."""
+    t1 = Target("target1", 1)
+    data = [t1, "hello", 42]
+
+    result = transform_instances_inside_composite_object(
+        data,
+        (Target,),
+        lambda t: Target(t.name + "!", t.value)
+    )
+
+    assert result[0].name == "target1!"
+    assert result[1] == "hello"
+    assert result[2] == 42
+
+
+def test_transform_multiple_types_in_nested_structure():
+    """Transform multiple types in deeply nested structure."""
+    t1 = Target("t1", 1)
+    data = {
+        "targets": [t1],
+        "strings": ["a", "b"],
+        "numbers": [1, 2, 3],
+        "nested": {"inner": Target("inner", 2)}
+    }
+
+    def transform(x):
+        if isinstance(x, Target):
+            return Target(x.name.upper(), x.value * 100)
+        if isinstance(x, str):
+            return x + "!"
+        return x
+
+    result = transform_instances_inside_composite_object(data, (Target, str), transform)
+
+    # Note: dict keys are also strings and get transformed
+    assert result["targets!"][0].name == "T1!"  # name is a string, gets transformed too
+    assert result["strings!"] == ["a!", "b!"]   # strings in list transformed once
+    assert result["numbers!"] == [1, 2, 3]
+    assert result["nested!"]["inner!"].name == "INNER!"

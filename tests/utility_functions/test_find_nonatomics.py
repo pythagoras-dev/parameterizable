@@ -84,28 +84,30 @@ def test_deduplication_by_identity():
     assert result == [t1]
 
 
-def test_non_type_target_raises_typeerror():
-    """Raise TypeError when target_type is not a type."""
+def test_non_type_classinfo_raises_typeerror():
+    """Raise TypeError when classinfo is not a valid type specification."""
     data = [1, 2, 3]
 
-    with pytest.raises(TypeError, match="target_type"):
+    with pytest.raises(TypeError, match="classinfo"):
         list(find_instances_inside_composite_object(data, "not_a_type"))
 
 
-@pytest.mark.parametrize("invalid_target", [
+@pytest.mark.parametrize("invalid_classinfo", [
     None,
     42,
     "str",
-    ["list"],
+    ["list"],  # list is not valid, only tuple
     {"dict": "value"},
     lambda x: x,
+    (str, "not_a_type"),  # tuple containing invalid item
+    (str, (int, None)),   # nested tuple with invalid item
 ])
-def test_various_non_type_targets_raise_typeerror(invalid_target):
-    """Various non-type values should raise TypeError."""
+def test_various_invalid_classinfo_raise_typeerror(invalid_classinfo):
+    """Various invalid classinfo values should raise TypeError."""
     data = [1, 2, 3]
 
     with pytest.raises(TypeError):
-        list(find_instances_inside_composite_object(data, invalid_target))
+        list(find_instances_inside_composite_object(data, invalid_classinfo))
 
 
 def test_find_atomic_target_type():
@@ -119,3 +121,60 @@ def test_find_atomic_target_type():
     assert "world" in result
     assert "key" in result
     assert "value" in result
+
+
+def test_find_with_tuple_of_types():
+    """Find instances matching any type in a tuple."""
+    t1 = Target("target1")
+    data = [t1, "hello", 42, 3.14, Container(t1)]
+
+    result = list(find_instances_inside_composite_object(data, (Target, str)))
+
+    assert t1 in result
+    assert "hello" in result
+    assert 42 not in result
+    assert 3.14 not in result
+
+
+def test_find_with_nested_tuple_of_types():
+    """Find instances with nested tuple of types."""
+    t1 = Target("target1")
+    data = [t1, "hello", 42, 3.14]
+
+    result = list(find_instances_inside_composite_object(data, (Target, (str, int))))
+
+    assert t1 in result
+    assert "hello" in result
+    assert 42 in result
+    assert 3.14 not in result
+
+
+def test_find_with_union_type():
+    """Find instances using union type syntax (Python 3.10+)."""
+    t1 = Target("target1")
+    data = [t1, "hello", 42, 3.14]
+
+    result = list(find_instances_inside_composite_object(data, Target | str))
+
+    assert t1 in result
+    assert "hello" in result
+    assert 42 not in result
+
+
+def test_find_with_empty_tuple():
+    """Empty tuple of types finds nothing."""
+    data = [1, "hello", Target("t")]
+
+    result = list(find_instances_inside_composite_object(data, ()))
+
+    assert result == []
+
+
+def test_find_with_single_type_in_tuple():
+    """Single type wrapped in tuple works like single type."""
+    t1 = Target("target1")
+    data = [t1, "hello", 42]
+
+    result = list(find_instances_inside_composite_object(data, (Target,)))
+
+    assert result == [t1]

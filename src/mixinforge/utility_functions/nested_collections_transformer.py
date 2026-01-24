@@ -12,6 +12,8 @@ from ..utility_functions.atomics_detector import is_atomic_object
 from .nested_collections_inspector import (
     _is_standard_mapping,
     _is_standard_iterable,
+    ClassInfo,
+    _is_valid_classinfo,
 )
 
 T = TypeVar('T')
@@ -73,9 +75,9 @@ def _create_dict_subclass_copy(original: dict) -> dict:
 
 class _ObjectReconstructor:
     """Helper class for recursive object reconstruction with cycle handling."""
-    
-    def __init__(self, target_type: type[Any], transform_fn: Callable[[Any], Any], deep_transformation: bool = True):
-        self.target_type = target_type
+
+    def __init__(self, classinfo: ClassInfo, transform_fn: Callable[[Any], Any], deep_transformation: bool = True):
+        self.classinfo = classinfo
         self.transform_fn = transform_fn
         self.deep_transformation = deep_transformation
         self.seen_ids: dict[int, Any] = {}
@@ -90,7 +92,7 @@ class _ObjectReconstructor:
             return self.seen_ids[obj_id]
 
         # Check if this is a target instance BEFORE the atomic early-return
-        if isinstance(original, self.target_type):
+        if isinstance(original, self.classinfo):
             return self._reconstruct_target_type(original, obj_id)
 
         # Atomic objects don't need reconstruction (and aren't targets at this point)
@@ -301,19 +303,18 @@ class _ObjectReconstructor:
 
 def transform_instances_inside_composite_object(
     obj: Any,
-    target_type: type[T],
-    transform_fn: Callable[[T], Any],
+    classinfo: ClassInfo,
+    transform_fn: Callable[[Any], Any],
     deep_transformation: bool = True
 ) -> Any:
     """Transform all instances of a target type within any object.
 
     Performs traversal of iterables, mappings, and custom objects
-    (via __dict__ and __slots__). Transforms all instances of target_type
+    (via __dict__ and __slots__). Transforms all instances matching classinfo
     using transform_fn and reconstructs the composite object with the
     transformed instances.
 
-    If no instances of target_type are found, returns the original object
-    unchanged.
+    If no matching instances are found, returns the original object unchanged.
 
     Handles cycles gracefully: each object is transformed only once, and
     cycle structure is preserved in the result.
@@ -322,21 +323,26 @@ def transform_instances_inside_composite_object(
 
     Args:
         obj: The object to search within and transform.
-        target_type: The type to search for and transform.
-        transform_fn: Function to apply to each instance of target_type.
+        classinfo: Type or tuple of types to search for and transform. Accepts
+            the same values as the second argument to isinstance(): a single
+            type, a tuple of types (recursively), or a union type (e.g., int | str).
+        transform_fn: Function to apply to each matching instance.
             Should be idempotent (return the same result for the same input)
             since objects are deduplicated by identity and the function is
             called only once per unique object.
         deep_transformation: If True (default), after transforming an instance,
-            continue recursively processing its children for more target
+            continue recursively processing its children for more matching
             instances. If False, stop traversal at transformed instances.
 
     Returns:
         The transformed composite object, or the original if no matches found.
     """
 
-    if not isinstance(target_type, type):
-        raise TypeError(f"target_type must be a type, got {type(target_type).__name__}")
+    if not _is_valid_classinfo(classinfo):
+        raise TypeError(
+            f"classinfo must be a type, tuple of types, or union type, "
+            f"got {type(classinfo).__name__}"
+        )
 
 
     if not callable(transform_fn):
@@ -346,6 +352,6 @@ def transform_instances_inside_composite_object(
     if isinstance(obj, Iterator):
         obj = list(obj)
 
-    reconstructor = _ObjectReconstructor(target_type, transform_fn, deep_transformation)
+    reconstructor = _ObjectReconstructor(classinfo, transform_fn, deep_transformation)
     result = reconstructor.reconstruct(obj)
     return result if reconstructor.any_replacements else obj

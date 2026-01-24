@@ -109,8 +109,8 @@ For development:
 | `access_jsparams(js, *names)` | Extract params from JSON |
 | `sort_dict_by_keys(d)` | Sort dictionary keys alphabetically |
 | `flatten_nested_collection(obj)` | Find atomics in nested collections |
-| `find_instances_inside_composite_object(obj, type)` | Find instances of type in composite |
-| `transform_instances_inside_composite_object(obj, type, fn)` | Transform instances of type in composite |
+| `find_instances_inside_composite_object(obj, classinfo)` | Find instances of type(s) in composite |
+| `transform_instances_inside_composite_object(obj, classinfo, fn)` | Transform instances of type(s) in composite |
 | `is_executed_in_notebook()` | Detect if running in Jupyter/IPython notebook |
 
 ### Context Managers
@@ -288,13 +288,15 @@ Tools for working with nested data structures:
 - **`flatten_nested_collection(obj)`** — Recursively find all
   atomic-type objects (primitives, strings, etc.) within nested
   collections (returns iterator)
-- **`find_instances_inside_composite_object(obj, target_type)`** —
-  Recursively find all instances of a specific non-atomic type within
-  composite structures (returns iterator)
-- **`transform_instances_inside_composite_object(obj, target_type, transform_fn)`** —
-  Transform all instances of a specific type within composite structures,
-  reconstructing the object graph with transformed instances (returns
-  transformed object)
+- **`find_instances_inside_composite_object(obj, classinfo)`** —
+  Recursively find all instances of the specified type(s) within
+  composite structures (returns iterator). Accepts a single type or
+  tuple of types, like `isinstance()`.
+- **`transform_instances_inside_composite_object(obj, classinfo, transform_fn)`** —
+  Transform all instances of the specified type(s) within composite
+  structures, reconstructing the object graph with transformed instances
+  (returns transformed object). Accepts a single type or tuple of types,
+  like `isinstance()`.
 
 These functions handle arbitrary nesting depths and complex object
 graphs including cyclic references. Each object is visited only once
@@ -419,10 +421,10 @@ total size freed.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 4303 | 9758 | 14061 |
-| Source Lines Of Code (SLOC) | 1960 | 5683 | 7643 |
+| Lines Of Code (LOC) | 4260 | 9928 | 14188 |
+| Source Lines Of Code (SLOC) | 1904 | 5788 | 7692 |
 | Classes | 19 | 186 | 205 |
-| Functions / Methods | 145 | 824 | 969 |
+| Functions / Methods | 146 | 837 | 983 |
 | Files | 24 | 73 | 97 |
 <!-- MIXINFORGE_STATS_END -->
 
