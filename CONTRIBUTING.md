@@ -43,13 +43,14 @@ Please provide a clear description, steps to reproduce, and your Python version.
     ```
 2.  **Make Changes:** Write your code and add corresponding tests in the `tests/` directory.
 3.  **Follow Code Style:**
-    *   Make sure the code passes tests and linting.
     *   Adhere to PEP 8 guidelines.
     *   Write clear, Google-style docstrings for public functions and classes. See [docstrings_comments.md](https://github.com/pythagoras-dev/mixinforge/blob/master/docstrings_comments.md) for detailed guidelines.
     *   Add type hints where appropriate. See [type_hints.md](https://github.com/pythagoras-dev/mixinforge/blob/master/type_hints.md) for detailed guidelines.
     *   For documentation build configuration, see [readthedocs.md](https://github.com/pythagoras-dev/mixinforge/blob/master/readthedocs.md).
-4.  **Write Commit Messages:** Follow the conventions below.
-5.  **Push and Open a Pull Request:** Push your branch to your fork and open a pull request.
+4. **Check Tests:** Make sure the test suite passes.
+5. **Check Linting:** Make sure the code is free of linting errors.
+6. **Write Commit Messages:** Follow the conventions below.
+7. **Push and Open a Pull Request:** Push your branch to your fork and open a pull request.
 
 ### Commit Message Prefixes
 
