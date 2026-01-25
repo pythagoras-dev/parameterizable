@@ -56,7 +56,8 @@ dev = [
     "sphinx-autodoc-typehints",
     "sphinx-copybutton",
     "myst-parser",
-    "uv-publish"
+    "uv-publish",
+    "ruff"
 ]
 
 
