@@ -22,8 +22,8 @@ Public API:
 - access_jsparams: Access parameters in a JSON-serialized string.
 - JsonSerializedObject: NewType alias for JSON strings produced by dumpjs.
 - flatten_nested_collection: Find all atomic objects in nested collections (handles cycles).
-- find_instances_inside_composite_object: Find instances of type(s) in composite structures (handles cycles).
-- transform_instances_inside_composite_object: Transform instances of type(s) in composite structures (handles cycles).
+- find_instances_inside_composite_object: Find instances of type(s) in composite structures (handles cycles). Supports deep or shallow search.
+- transform_instances_inside_composite_object: Transform instances of type(s) in composite structures. Supports deep (handles cycles) or shallow search.
 - is_executed_in_notebook: Detect if running in Jupyter/IPython notebook.
 - reset_notebook_detection: Clear cached notebook detection result.
 """

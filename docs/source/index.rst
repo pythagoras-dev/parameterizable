@@ -166,7 +166,7 @@ Utility Functions
      - Sort dictionary keys alphabetically
    * - ``flatten_nested_collection(obj)``
      - Find atomics in nested collections
-   * - ``find_instances_inside_composite_object(obj, classinfo)``
+   * - ``find_instances_inside_composite_object(obj, classinfo, deep_search=True)``
      - Find instances of type(s) in composite
    * - ``transform_instances_inside_composite_object(obj, classinfo, fn)``
      - Transform instances of type(s) in composite
@@ -380,10 +380,11 @@ Tools for working with nested data structures:
 * **flatten_nested_collection(obj)** — Recursively find all
   atomic-type objects (primitives, strings, etc.) within nested
   collections (returns iterator)
-* **find_instances_inside_composite_object(obj, classinfo)** —
+* **find_instances_inside_composite_object(obj, classinfo, deep_search=True)** —
   Recursively find all instances of the specified type(s) within
   composite structures (returns iterator). Accepts a single type or
-  tuple of types, like ``isinstance()``.
+  tuple of types, like ``isinstance()``. Set ``deep_search=False`` to
+  stop traversal at matched instances.
 * **transform_instances_inside_composite_object(obj, classinfo, transform_fn)** —
   Transform all instances of the specified type(s) within composite
   structures, reconstructing the object graph with transformed instances
@@ -555,21 +556,21 @@ Project Statistics
      - Unit Tests
      - Total
    * - Lines Of Code (LOC)
-     - 4260
-     - 9928
-     - 14188
+     - 4266
+     - 10025
+     - 14291
    * - Source Lines Of Code (SLOC)
-     - 1904
-     - 5788
-     - 7692
+     - 1907
+     - 5842
+     - 7749
    * - Classes
      - 19
-     - 186
-     - 205
+     - 187
+     - 206
    * - Functions / Methods
      - 146
-     - 837
-     - 983
+     - 843
+     - 989
    * - Files
      - 24
      - 73

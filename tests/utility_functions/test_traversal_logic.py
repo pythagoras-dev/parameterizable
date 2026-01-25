@@ -161,3 +161,100 @@ def test_custom_mapping_traverses_attributes_and_keys():
     result = find_leaves(obj)
 
     assert result == [1, 2, 3]
+
+
+# ==============================================================================
+# Tests for deep_search parameter
+# ==============================================================================
+
+@dataclass
+class Target:
+    name: str
+    value: int = 0
+    nested: "Target | None" = None
+
+
+def test_shallow_search_stops_at_nested_target():
+    """With deep_search=False, nested targets inside matched instances are not yielded."""
+    inner = Target("inner", 1)
+    outer = Target("outer", 2, nested=inner)
+
+    result = list(find_instances_inside_composite_object(outer, Target, deep_search=False))
+
+    # Only outer should be found, inner should NOT be yielded
+    assert len(result) == 1
+    assert result[0].name == "outer"
+
+
+def test_shallow_search_traverses_non_target_containers():
+    """With deep_search=False, targets in non-target containers (dicts, lists) are still found."""
+    t1 = Target("first", 1)
+    t2 = Target("second", 2)
+    data = {"a": t1, "b": [t2]}
+
+    result = list(find_instances_inside_composite_object(data, Target, deep_search=False))
+
+    # Both targets should be found (they are in non-target containers)
+    assert len(result) == 2
+    names = {t.name for t in result}
+    assert names == {"first", "second"}
+
+
+def test_shallow_search_multilevel_nesting():
+    """With deep_search=False, only the outermost target is yielded."""
+    level3 = Target("level3", 3)
+    level2 = Target("level2", 2, nested=level3)
+    level1 = Target("level1", 1, nested=level2)
+
+    result = list(find_instances_inside_composite_object(level1, Target, deep_search=False))
+
+    # Only level1 should be found
+    assert len(result) == 1
+    assert result[0].name == "level1"
+
+
+def test_shallow_search_sibling_targets_in_container():
+    """With deep_search=False, sibling targets in a container are all found."""
+    inner1 = Target("inner1", 1)
+    inner2 = Target("inner2", 2)
+    outer1 = Target("outer1", 10, nested=inner1)
+    outer2 = Target("outer2", 20, nested=inner2)
+    data = [outer1, outer2]
+
+    result = list(find_instances_inside_composite_object(data, Target, deep_search=False))
+
+    # Both outer targets are found (they are siblings in the list)
+    # But their nested children are NOT found
+    assert len(result) == 2
+    names = {t.name for t in result}
+    assert names == {"outer1", "outer2"}
+
+
+def test_shallow_search_mixed_containers():
+    """With deep_search=False, traversal continues through all non-target container types."""
+    nested_target = Target("nested", 1)
+    outer_target = Target("outer", 2, nested=nested_target)
+    data = {"dict": [{"inner_dict": (outer_target,)}]}
+
+    result = list(find_instances_inside_composite_object(data, Target, deep_search=False))
+
+    # Outer target found, nested target NOT found
+    assert len(result) == 1
+    assert result[0].name == "outer"
+
+
+def test_deep_search_default_is_true():
+    """Verify default behavior with no deep_search argument matches deep_search=True."""
+    inner = Target("inner", 1)
+    outer = Target("outer", 2, nested=inner)
+
+    result_default = list(find_instances_inside_composite_object(outer, Target))
+    result_explicit = list(find_instances_inside_composite_object(outer, Target, deep_search=True))
+
+    # Both should find outer and inner
+    assert len(result_default) == 2
+    assert len(result_explicit) == 2
+    default_names = {t.name for t in result_default}
+    explicit_names = {t.name for t in result_explicit}
+    assert default_names == {"outer", "inner"}
+    assert explicit_names == {"outer", "inner"}

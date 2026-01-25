@@ -264,7 +264,8 @@ def flatten_nested_collection(obj: Iterable[Any]) -> Iterator[Any]:
 
 def find_instances_inside_composite_object(
     obj: Any,
-    classinfo: ClassInfo
+    classinfo: ClassInfo,
+    deep_search: bool = True
 ) -> Iterator[Any]:
     """Find all instances of a target type within any object.
 
@@ -282,6 +283,9 @@ def find_instances_inside_composite_object(
         classinfo: Type or tuple of types to search for. Accepts the same
             values as the second argument to isinstance(): a single type,
             a tuple of types (recursively), or a union type (e.g., int | str).
+        deep_search: If True (default), after finding an instance, continue
+            recursively searching inside it for more matching instances.
+            If False, stop traversal at matched instances.
 
     Yields:
         Instances matching classinfo in depth-first order, deduplicated by identity.
@@ -298,6 +302,8 @@ def find_instances_inside_composite_object(
 
     def _get_children(item: Any) -> Optional[Iterator[Any]]:
         if is_atomic_object(item):
+            return None
+        if not deep_search and isinstance(item, classinfo):
             return None
         return _get_children_from_object(item)
 
