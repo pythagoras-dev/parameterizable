@@ -155,22 +155,35 @@ def _get_children_from_object(obj: Any) -> Iterator[Any]:
     Args:
         obj: Object to extract children from.
 
-    Yields:
-        Child objects to traverse.
+    Returns:
+        Iterator of child objects to traverse.
     """
     if is_atomic_object(obj):
         return iter(())
 
     if _is_standard_mapping(obj):
-        yield from _create_standard_mapping_iterator(obj)
-    elif _is_standard_iterable(obj):
-        yield from obj
-    elif isinstance(obj, Mapping):
-        yield from chain(_yield_attributes(obj), _create_standard_mapping_iterator(obj))
-    elif isinstance(obj, Iterable):
-        yield from chain(_yield_attributes(obj), obj)
-    else:
-        yield from _yield_attributes(obj)
+        return _create_standard_mapping_iterator(obj)
+
+    if _is_standard_iterable(obj):
+        return iter(obj)
+
+    if isinstance(obj, Mapping):
+        # Optimization: treat as standard mapping if no instance attributes
+        # (avoid overhead of chaining generators if __dict__ is empty and no __slots__)
+        # This is critical for performance when traversing deep structures of
+        # dict subclasses (like KwArgs in Pythagoras) to avoid massive slowdowns.
+        if (isinstance(obj, dict)
+                and not hasattr(obj.__class__, "__slots__")
+                and hasattr(obj, "__dict__")
+                and not obj.__dict__):
+            return _create_standard_mapping_iterator(obj)
+
+        return chain(_yield_attributes(obj), _create_standard_mapping_iterator(obj))
+
+    if isinstance(obj, Iterable):
+        return chain(_yield_attributes(obj), obj)
+
+    return _yield_attributes(obj)
 
 
 def _is_traversable_collection(obj: Any) -> bool:
