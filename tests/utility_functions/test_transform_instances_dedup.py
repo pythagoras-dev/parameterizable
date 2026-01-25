@@ -216,9 +216,8 @@ def test_transform_dedup_set_elements():
     # Set with two different targets
     structure = {t1, t2}
 
-    result = transform_instances_inside_composite_object(
-        structure, Target, counting_transform
-    )
+    transform_instances_inside_composite_object(
+        structure, Target, counting_transform)
 
     # Each unique instance transformed once
     assert len(call_ids) == 2
