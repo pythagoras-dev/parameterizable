@@ -23,6 +23,12 @@ Your help is greatly appreciated. These guidelines will help you get started.
     pytest
     ```
 
+4.  **Run Linting:**
+    Make sure the code is free of linting errors.
+    ```bash
+    uv run ruff check .
+    ```
+
 ## How to Contribute
 
 *   **Report Bugs:** Use the GitHub issue tracker to report bugs. 
@@ -37,6 +43,7 @@ Please provide a clear description, steps to reproduce, and your Python version.
     ```
 2.  **Make Changes:** Write your code and add corresponding tests in the `tests/` directory.
 3.  **Follow Code Style:**
+    *   Make sure the code passes tests and linting.
     *   Adhere to PEP 8 guidelines.
     *   Write clear, Google-style docstrings for public functions and classes. See [docstrings_comments.md](https://github.com/pythagoras-dev/mixinforge/blob/master/docstrings_comments.md) for detailed guidelines.
     *   Add type hints where appropriate. See [type_hints.md](https://github.com/pythagoras-dev/mixinforge/blob/master/type_hints.md) for detailed guidelines.
