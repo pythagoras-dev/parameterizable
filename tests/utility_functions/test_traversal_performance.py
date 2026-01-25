@@ -1,5 +1,4 @@
 import time
-import pytest
 from mixinforge.utility_functions import find_instances_inside_composite_object
 
 class MockKwArgs(dict):
