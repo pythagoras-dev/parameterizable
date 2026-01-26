@@ -233,7 +233,7 @@ _ATOMIC_TYPES_REGISTRY.register_many_types(_BUILTIN_ATOMIC_TYPES)
 
 
 # Key standard library atomics beyond builtins
-_STANDARD_LIBRARY_ATOMIC_TYPES: Final[list] = [
+_STANDARD_LIBRARY_ATOMIC_TYPES: Final[list[type]] = [
     pathlib.Path,
     pathlib.PurePath,
     datetime.datetime,
