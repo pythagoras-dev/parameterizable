@@ -15,7 +15,7 @@ import re
 import sys
 import uuid
 from functools import cache
-from typing import TypeAlias, Iterable, Union
+from typing import Final, Iterable, TypeAlias, Union
 import importlib
 
 TypeSpec: TypeAlias = Union[type, "_LazyTypeDescriptor", tuple[str, str]]
@@ -219,12 +219,12 @@ class _LazyTypeRegistry:
 
 
 # A registry of atomic (indivisible) types.
-_ATOMIC_TYPES_REGISTRY = _LazyTypeRegistry()
+_ATOMIC_TYPES_REGISTRY: Final[_LazyTypeRegistry] = _LazyTypeRegistry()
 
 
 # Builtin types treated as atomic (not recursively flattened).
 # Strings/bytes are iterable but should not be decomposed into characters/bytes.
-_BUILTIN_ATOMIC_TYPES = [
+_BUILTIN_ATOMIC_TYPES: Final[list[type]] = [
     str, bytes, bytearray, memoryview,
     int, float, complex, bool, type(None)
 ]
@@ -233,7 +233,7 @@ _ATOMIC_TYPES_REGISTRY.register_many_types(_BUILTIN_ATOMIC_TYPES)
 
 
 # Key standard library atomics beyond builtins
-_STANDARD_LIBRARY_ATOMIC_TYPES = [
+_STANDARD_LIBRARY_ATOMIC_TYPES: Final[list] = [
     pathlib.Path,
     pathlib.PurePath,
     datetime.datetime,
@@ -254,7 +254,7 @@ _ATOMIC_TYPES_REGISTRY.register_many_types(
 
 
 # Atomic types from popular packages
-_ATOMIC_TYPES_FROM_POPULAR_PACKAGES = [
+_ATOMIC_TYPES_FROM_POPULAR_PACKAGES: Final[list[tuple[str,str]]] = [
     ("numpy", "ndarray"),
     ("numpy", "generic"),
     ("numpy", "dtype"),

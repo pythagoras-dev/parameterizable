@@ -12,10 +12,11 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
 
 from ..command_line_tools.basic_file_utils import sanitize_and_validate_path, is_path_within_root
 
-EXCLUDE_DIRS: set[str] = {'.venv', 'venv', '__pycache__', '.pytest_cache',
+EXCLUDE_DIRS: Final[set[str]] = {'.venv', 'venv', '__pycache__', '.pytest_cache',
     '.tox','build', 'dist', '.git', '.eggs', 'htmlcov', 'htmlReport',
     '.mypy_cache', '.coverage', 'node_modules', 'docs', '.ruff_cache',
     '.ipynb_checkpoints', '__pypackages__', 'site-packages'}

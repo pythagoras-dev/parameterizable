@@ -13,13 +13,13 @@ import importlib
 import json
 import types
 from enum import Enum
-from typing import Any, Mapping, NewType
+from typing import Any, Final, Mapping, NewType
 
 from ..utility_functions.dict_sorter import sort_dict_by_keys
 
 JsonSerializedObject = NewType("JsonSerializedObject", str)
 
-_UNSUPPORTED_TYPES = (
+_UNSUPPORTED_TYPES: Final[list[type]] = [
     types.ModuleType,
     types.FunctionType,
     types.LambdaType,
@@ -27,7 +27,7 @@ _UNSUPPORTED_TYPES = (
     types.MethodType,
     types.CodeType,
     type,
-)
+]
 
 class _Markers:
     """Internal keys used to tag non-JSON-native constructs.
