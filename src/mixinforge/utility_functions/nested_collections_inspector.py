@@ -6,7 +6,7 @@ composite objects including collections, mappings, and custom objects.
 from collections import deque, defaultdict, OrderedDict, Counter, ChainMap
 from collections.abc import Iterable, Iterator, Mapping, Callable
 from types import GetSetDescriptorType, MappingProxyType, UnionType
-from typing import Any, TypeVar, Optional, TypeAlias
+from typing import Any, Final, Optional, TypeAlias, TypeVar
 from itertools import chain
 from weakref import WeakKeyDictionary, WeakValueDictionary
 
@@ -81,7 +81,7 @@ def _is_standard_iterable(obj: Any) -> bool:
     return type(obj) in {list, tuple, set, frozenset, deque}
 
 
-_MISSING = object()  # private sentinel
+_MISSING: Final = object()  # private sentinel
 
 
 def _yield_attributes(obj: Any) -> Iterator[Any]:
