@@ -118,6 +118,7 @@ For development:
 | Component | Description |
 |-----------|-------------|
 | `OutputCapturer` | Captures stdout, stderr, and logging output while preserving display |
+| `OutputSuppressor` | Suppresses stdout and stderr output by redirecting to /dev/null |
 
 ### CLI Tools
 
@@ -326,6 +327,18 @@ buffer (for storage).
 - `get_output()` — Retrieve all captured output as a single string
 - Ideal for testing CLI tools or logging execution traces without suppressing output
 
+### OutputSuppressor
+
+A context manager that suppresses stdout and stderr by redirecting them to
+the system null device (`os.devnull`). Useful for silencing noisy operations
+in background processes or tests.
+
+**Key features:**
+- Suppresses both `sys.stdout` and `sys.stderr`
+- Uses `contextlib.ExitStack` for reliable cleanup even on exceptions
+- Automatically restores original streams when exiting the context
+- Ideal for background workers, batch processing, or tests that need silence
+
 ## CLI Tools
 
 mixinforge provides two command-line tools for project analysis and
@@ -422,11 +435,11 @@ total size freed.
 <!-- MIXINFORGE_STATS_START -->
 | Metric | Main code | Unit Tests | Total |
 |--------|-----------|------------|-------|
-| Lines Of Code (LOC) | 4280 | 11217 | 15497 |
-| Source Lines Of Code (SLOC) | 1912 | 6451 | 8363 |
-| Classes | 19 | 200 | 219 |
-| Functions / Methods | 146 | 945 | 1091 |
-| Files | 24 | 81 | 105 |
+| Lines Of Code (LOC) | 4332 | 11251 | 15583 |
+| Source Lines Of Code (SLOC) | 1926 | 6475 | 8401 |
+| Classes | 20 | 200 | 220 |
+| Functions / Methods | 148 | 948 | 1096 |
+| Files | 25 | 82 | 107 |
 <!-- MIXINFORGE_STATS_END -->
 
 ## Development

@@ -15,6 +15,7 @@ Public API:
 - GuardedInitMeta: Metaclass for strict initialization control and lifecycle hooks.
 - SingletonMixin: Ensures each subclass maintains exactly one instance.
 - OutputCapturer: Context manager that captures stdout, stderr, and logging output.
+- OutputSuppressor: Context manager that suppresses stdout and stderr output.
 - sort_dict_by_keys: Sort a dictionary by its keys alphabetically.
 - dumpjs: Serialize an object (or parameters) into a JSON string.
 - loadjs: Deserialize a JSON string produced by dumpjs back into a Python object.
@@ -29,7 +30,7 @@ Public API:
 """
 
 from ._version_info import __version__
-from .context_managers import OutputCapturer
+from .context_managers import OutputCapturer, OutputSuppressor
 from .mixins_and_metaclasses import (
     CacheablePropertiesMixin,
     GuardedInitMeta,
@@ -62,6 +63,7 @@ __all__ = [
     'JsonSerializedObject',
     'NotPicklableMixin',
     'OutputCapturer',
+    'OutputSuppressor',
     'ParameterizableMixin',
     'SingleThreadEnforcerMixin',
     'SingletonMixin',
